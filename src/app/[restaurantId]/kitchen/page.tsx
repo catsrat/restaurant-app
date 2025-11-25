@@ -103,7 +103,7 @@ function KitchenContent() {
 
     return (
         <div className="min-h-screen bg-slate-900 text-slate-50 p-6">
-            <header className="mb-8 flex justify-between items-center border-b border-slate-700 pb-4">
+            <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 pb-4 gap-4">
                 <div className="flex items-center gap-3">
                     <ChefHat className="h-8 w-8 text-orange-500" />
                     <div>
@@ -111,9 +111,9 @@ function KitchenContent() {
                         <p className="text-slate-400">Orders to prepare</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 self-end md:self-auto">
                     <Button variant="outline" size="sm" onClick={testSound} className="bg-slate-800 hover:bg-slate-700">
-                        🔔 Test Sound
+                        🔔 <span className="hidden sm:inline">Test Sound</span>
                     </Button>
                     <div className="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
                         <span className="font-bold text-xl text-orange-500">{kitchenOrders.length}</span> Active

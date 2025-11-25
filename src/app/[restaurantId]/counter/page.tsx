@@ -370,41 +370,43 @@ function CounterContent() {
 
     return (
         <div className="min-h-screen bg-gray-100 p-6">
-            <header className="mb-8 flex justify-between items-center">
+            <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
                     <p className="text-gray-500">Manage orders, tables, menu, and sales</p>
                 </div>
-                <div className="flex items-center gap-4">
-                    {orders.filter(o => o.status === 'pending').length > 0 && (
-                        <div className="flex items-center gap-2 bg-red-100 text-red-800 px-4 py-2 rounded-full animate-pulse">
-                            <span className="font-bold text-lg">{orders.filter(o => o.status === 'pending').length}</span>
-                            <span className="text-sm">New Order{orders.filter(o => o.status === 'pending').length > 1 ? 's' : ''}</span>
-                        </div>
-                    )}
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setIsPOSOpen(true)}>
-                        <Plus className="h-4 w-4 mr-2" /> New Order (POS)
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={testSound} title="Test notification sound">
-                        🔔 Test Sound
-                    </Button>
-                    <div className="flex gap-2">
-                        <Button variant={activeTab === 'orders' ? 'default' : 'outline'} onClick={() => setActiveTab('orders')}>
+                <div className="flex flex-col w-full md:w-auto gap-4">
+                    <div className="flex items-center gap-2 self-end md:self-auto">
+                        {orders.filter(o => o.status === 'pending').length > 0 && (
+                            <div className="flex items-center gap-2 bg-red-100 text-red-800 px-4 py-2 rounded-full animate-pulse">
+                                <span className="font-bold text-lg">{orders.filter(o => o.status === 'pending').length}</span>
+                                <span className="text-sm">New Order{orders.filter(o => o.status === 'pending').length > 1 ? 's' : ''}</span>
+                            </div>
+                        )}
+                        <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setIsPOSOpen(true)}>
+                            <Plus className="h-4 w-4 mr-2" /> <span className="hidden sm:inline">New Order (POS)</span><span className="sm:hidden">POS</span>
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={testSound} title="Test notification sound">
+                            🔔 <span className="hidden sm:inline">Test Sound</span>
+                        </Button>
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto no-scrollbar">
+                        <Button variant={activeTab === 'orders' ? 'default' : 'outline'} onClick={() => setActiveTab('orders')} className="whitespace-nowrap">
                             <Utensils className="h-4 w-4 mr-2" /> Orders
                         </Button>
-                        <Button variant={activeTab === 'tables' ? 'default' : 'outline'} onClick={() => setActiveTab('tables')}>
+                        <Button variant={activeTab === 'tables' ? 'default' : 'outline'} onClick={() => setActiveTab('tables')} className="whitespace-nowrap">
                             <BadgeCheck className="h-4 w-4 mr-2" /> Tables
                         </Button>
-                        <Button variant={activeTab === 'qrcodes' ? 'default' : 'outline'} onClick={() => setActiveTab('qrcodes')}>
+                        <Button variant={activeTab === 'qrcodes' ? 'default' : 'outline'} onClick={() => setActiveTab('qrcodes')} className="whitespace-nowrap">
                             <QrCode className="h-4 w-4 mr-2" /> QR Codes
                         </Button>
-                        <Button variant={activeTab === 'menu' ? 'default' : 'outline'} onClick={() => setActiveTab('menu')}>
+                        <Button variant={activeTab === 'menu' ? 'default' : 'outline'} onClick={() => setActiveTab('menu')} className="whitespace-nowrap">
                             <List className="h-4 w-4 mr-2" /> Menu
                         </Button>
-                        <Button variant={activeTab === 'sales' ? 'default' : 'outline'} onClick={() => setActiveTab('sales')}>
+                        <Button variant={activeTab === 'sales' ? 'default' : 'outline'} onClick={() => setActiveTab('sales')} className="whitespace-nowrap">
                             <DollarSign className="h-4 w-4 mr-2" /> Sales
                         </Button>
-                        <Button variant={activeTab === 'analytics' ? 'default' : 'outline'} onClick={() => setActiveTab('analytics')}>
+                        <Button variant={activeTab === 'analytics' ? 'default' : 'outline'} onClick={() => setActiveTab('analytics')} className="whitespace-nowrap">
                             <BarChart3 className="h-4 w-4 mr-2" /> Analytics
                         </Button>
                     </div>
