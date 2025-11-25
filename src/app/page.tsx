@@ -19,19 +19,25 @@ export default function LandingPage() {
   const handleCreate = async () => {
     if (!restaurantName) return;
 
-    const { data, error } = await supabase
-      .from('restaurants')
-      .insert({ name: restaurantName, currency })
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('restaurants')
+        .insert({ name: restaurantName, currency })
+        .select()
+        .single();
 
-    if (error) {
-      console.error('Error creating restaurant:', error);
-      return;
-    }
+      if (error) {
+        console.error('Error creating restaurant:', error);
+        alert(`Error creating restaurant: ${error.message}`);
+        return;
+      }
 
-    if (data) {
-      router.push(`/${data.id}/counter`);
+      if (data) {
+        router.push(`/${data.id}/counter`);
+      }
+    } catch (err: any) {
+      console.error('Unexpected error:', err);
+      alert(`Unexpected error: ${err.message || err}`);
     }
   };
 
