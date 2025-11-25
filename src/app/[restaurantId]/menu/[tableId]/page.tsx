@@ -72,10 +72,10 @@ export default function MenuPage() {
                             </div>
                             <CardHeader>
                                 <div className="flex justify-between items-start">
-                                    <CardTitle className="text-lg">{item.name}</CardTitle>
+                                    <CardTitle className="text-lg text-gray-900 font-bold">{item.name}</CardTitle>
                                     <span className="font-bold text-primary">{format(item.price)}</span>
                                 </div>
-                                <CardDescription>{item.description}</CardDescription>
+                                <CardDescription className="text-gray-600 font-medium">{item.description}</CardDescription>
                             </CardHeader>
                             <CardFooter>
                                 <Button
