@@ -79,7 +79,7 @@ export default function MenuPage() {
                             </CardHeader>
                             <CardFooter>
                                 <Button
-                                    className="w-full text-white font-bold"
+                                    className="w-full bg-gray-900 text-white font-bold hover:bg-gray-800"
                                     onClick={() => handleAddToCart(item)}
                                 >
                                     <Plus className="h-4 w-4 mr-2" /> Add to Order
@@ -161,7 +161,7 @@ export default function MenuPage() {
                                 <span>{format(totalAmount)}</span>
                             </div>
                             <Button
-                                className="w-full text-white font-bold text-lg py-6"
+                                className="w-full bg-gray-900 text-white font-bold text-lg py-6 hover:bg-gray-800"
                                 size="lg"
                                 disabled={cart.length === 0}
                                 onClick={handlePlaceOrder}
