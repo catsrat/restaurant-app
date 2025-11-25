@@ -1,7 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Order, OrderItem, OrderStatus, OrderType, MenuItem, MENU_ITEMS as INITIAL_MENU_ITEMS, Table, Banner } from '@/types';
+import { Order, OrderItem, OrderStatus, OrderType, MenuItem, MENU_ITEMS as INITIAL_MENU_ITEMS, Table, Banner, MenuCategory } from '@/types';
 import { supabase } from '@/lib/supabase';
 
 interface OrderContextType {
@@ -27,6 +27,10 @@ interface OrderContextType {
     banners: Banner[];
     addBanner: (url: string, title?: string) => Promise<void>;
     deleteBanner: (id: string) => Promise<void>;
+    // Category Management
+    categories: MenuCategory[];
+    addCategory: (name: string) => Promise<void>;
+    deleteCategory: (id: string) => Promise<void>;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -37,6 +41,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [tables, setTables] = useState<Table[]>([]);
     const [banners, setBanners] = useState<Banner[]>([]);
+    const [categories, setCategories] = useState<MenuCategory[]>([]);
 
     // Fetch Initial Data
     useEffect(() => {
@@ -74,6 +79,16 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
 
             if (bannerError) console.error("Error fetching banners:", bannerError);
             if (bannerData) setBanners(bannerData);
+
+            // Fetch Categories
+            const { data: categoryData, error: categoryError } = await supabase
+                .from('menu_categories')
+                .select('*')
+                .eq('restaurant_id', restaurantId)
+                .order('display_order', { ascending: true });
+
+            if (categoryError) console.error("Error fetching categories:", categoryError);
+            if (categoryData) setCategories(categoryData);
 
             // Fetch Orders (Active only for performance)
             const { data: orderData, error: orderError } = await supabase
@@ -397,6 +412,29 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         }
     };
 
+    // Category Actions
+    const addCategory = async (name: string) => {
+        const { data, error } = await supabase.from('menu_categories').insert({
+            restaurant_id: restaurantId,
+            name,
+            display_order: categories.length
+        }).select().single();
+
+        if (error) {
+            console.error("Error adding category:", error);
+            alert("Failed to add category: " + error.message);
+        } else if (data) {
+            setCategories(prev => [...prev, data]);
+        }
+    };
+
+    const deleteCategory = async (id: string) => {
+        const { error } = await supabase.from('menu_categories').delete().eq('id', id);
+        if (!error) {
+            setCategories(prev => prev.filter(c => c.id !== id));
+        }
+    };
+
     return (
         <OrderContext.Provider value={{
             orders,
@@ -417,7 +455,10 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             resetTableStatus,
             banners,
             addBanner,
-            deleteBanner
+            deleteBanner,
+            categories,
+            addCategory,
+            deleteCategory
         }}>
             {children}
         </OrderContext.Provider>

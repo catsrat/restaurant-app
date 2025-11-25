@@ -81,7 +81,7 @@ export default function MenuPage() {
                     </div>
                 )}
 
-                <MenuGrid menuItems={menuItems} onAddToCart={handleAddToCart} />
+                <MenuGrid menuItems={menuItems} categories={useOrder().categories} onAddToCart={handleAddToCart} />
             </main>
 
             {/* Add to Cart Toast Overlay */}
