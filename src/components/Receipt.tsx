@@ -23,11 +23,17 @@ export const Receipt = React.forwardRef<HTMLDivElement, ReceiptProps>(({ restaur
         });
     });
 
+    const [dateString, setDateString] = React.useState('');
+
+    React.useEffect(() => {
+        setDateString(new Date().toLocaleString());
+    }, []);
+
     return (
         <div ref={ref} className="hidden print:block p-4 bg-white text-black font-mono text-sm w-[80mm] mx-auto">
             <div className="text-center mb-4">
                 <h1 className="text-xl font-bold uppercase">{restaurantName}</h1>
-                <p className="text-xs mt-1">{new Date().toLocaleString()}</p>
+                <p className="text-xs mt-1">{dateString}</p>
             </div>
 
             <div className="border-b border-black pb-2 mb-2">

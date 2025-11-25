@@ -198,7 +198,11 @@ function CounterContent() {
     // --- Orders Logic ---
     // Show all active orders (not paid)
     const activeOrders = orders.filter(o => o.status !== 'paid');
-    activeOrders.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    activeOrders.sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime() || 0;
+        const dateB = new Date(b.createdAt).getTime() || 0;
+        return dateA - dateB;
+    });
 
     // Group by table for billing
     const ordersByTable = activeOrders.reduce((acc, order) => {
@@ -444,7 +448,7 @@ function CounterContent() {
                                                     <span className="uppercase font-bold">{order.status}</span>
                                                 </div>
                                                 <ul className="space-y-1">
-                                                    {order.items.map((item, idx) => (
+                                                    {order.items?.map((item, idx) => (
                                                         <li key={idx} className="flex justify-between text-sm">
                                                             <span>{item.quantity}x {item.name}</span>
                                                         </li>
