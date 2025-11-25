@@ -12,8 +12,10 @@ import { Utensils, QrCode, List, DollarSign, BarChart3, Trash2, Plus, BadgeCheck
 import { Receipt } from '@/components/Receipt';
 import { cn } from '@/lib/utils';
 import AdminGuard from '@/components/AdminGuard';
-import { MenuItem } from '@/types';
+import { MenuItem, OrderItem, OrderType } from '@/types';
 import QRCodeLib from 'qrcode';
+import { MenuGrid } from '@/components/MenuGrid';
+import { CartDrawer } from '@/components/CartDrawer';
 
 export default function CounterPage() {
     return (
@@ -26,9 +28,61 @@ export default function CounterPage() {
 function CounterContent() {
     const params = useParams();
     const restaurantId = params.restaurantId as string;
-    const { orders, updateOrderStatus, menuItems, addMenuItem, deleteMenuItem, tables, addTable, deleteTable, markTablePaid, resetTableStatus } = useOrder();
+    const { orders, updateOrderStatus, menuItems, addMenuItem, deleteMenuItem, tables, addTable, deleteTable, markTablePaid, resetTableStatus, addOrder } = useOrder();
     const { format } = useCurrency();
     const [activeTab, setActiveTab] = useState<'orders' | 'tables' | 'menu' | 'sales' | 'qrcodes' | 'analytics'>('orders');
+
+    // POS State
+    const [isPOSOpen, setIsPOSOpen] = useState(false);
+    const [posCart, setPosCart] = useState<OrderItem[]>([]);
+    const [posOrderType, setPosOrderType] = useState<OrderType>('dine-in');
+    const [posTableId, setPosTableId] = useState<string>('');
+    const [posContactNumber, setPosContactNumber] = useState<string>('');
+
+    const handleAddToPosCart = (item: MenuItem | OrderItem) => {
+        setPosCart(prev => {
+            const existing = prev.find(i => i.id === item.id);
+            if (existing) {
+                return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
+            }
+            // Ensure we have all MenuItem properties. If coming from OrderItem, it should have them.
+            // If not, we might need to fetch or ensure they are present.
+            // For now, assuming OrderItem has compatible structure or we just need core fields.
+            return [...prev, { ...item, quantity: 1 } as OrderItem];
+        });
+    };
+
+    const handleRemoveFromPosCart = (itemId: string) => {
+        setPosCart(prev => prev.reduce((acc, item) => {
+            if (item.id === itemId) {
+                if (item.quantity > 1) return [...acc, { ...item, quantity: item.quantity - 1 }];
+                return acc;
+            }
+            return [...acc, item];
+        }, [] as OrderItem[]));
+    };
+
+    const handlePlacePosOrder = async () => {
+        if (posCart.length === 0) return;
+        if (posOrderType === 'dine-in' && !posTableId) {
+            alert('Please select a table');
+            return;
+        }
+        if (posOrderType === 'takeaway' && !posContactNumber) {
+            alert('Please enter contact number/name');
+            return;
+        }
+
+        await addOrder(posCart, posOrderType, {
+            tableId: posOrderType === 'dine-in' ? posTableId : undefined,
+            contactNumber: posOrderType === 'takeaway' ? posContactNumber : undefined
+        });
+
+        setPosCart([]);
+        setIsPOSOpen(false);
+        setPosContactNumber('');
+        setPosTableId('');
+    };
 
     // Printing Logic
     const [printingData, setPrintingData] = useState<{ tableName: string, orders: typeof orders, totalAmount: number } | null>(null);
@@ -328,6 +382,9 @@ function CounterContent() {
                             <span className="text-sm">New Order{orders.filter(o => o.status === 'pending').length > 1 ? 's' : ''}</span>
                         </div>
                     )}
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setIsPOSOpen(true)}>
+                        <Plus className="h-4 w-4 mr-2" /> New Order (POS)
+                    </Button>
                     <Button variant="outline" size="sm" onClick={testSound} title="Test notification sound">
                         🔔 Test Sound
                     </Button>
@@ -655,6 +712,12 @@ function CounterContent() {
                                             restaurantId={restaurantId}
                                         />
                                     ))}
+                                    {/* Takeaway QR Code */}
+                                    <QRCodeCard
+                                        tableName="Takeaway"
+                                        restaurantId={restaurantId}
+                                        isTakeaway={true}
+                                    />
                                 </div>
                             )}
                         </CardContent>
@@ -868,15 +931,102 @@ function CounterContent() {
             )}
         </div>
     );
+    {/* POS Modal */ }
+    {
+        isPOSOpen && (
+            <div className="fixed inset-0 z-50 bg-gray-100 flex flex-col animate-in fade-in">
+                <header className="bg-white shadow-sm p-4 flex justify-between items-center">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                        <ChefHat className="h-6 w-6" /> New Order (POS)
+                    </h2>
+                    <Button variant="ghost" onClick={() => setIsPOSOpen(false)}>Close</Button>
+                </header>
+                <div className="flex-1 flex overflow-hidden">
+                    <div className="flex-1 overflow-y-auto p-6">
+                        <MenuGrid menuItems={menuItems} onAddToCart={handleAddToPosCart} />
+                    </div>
+                    <div className="w-96 bg-white border-l shadow-xl flex flex-col">
+                        <div className="p-4 border-b bg-gray-50">
+                            <h3 className="font-bold text-lg mb-4">Order Details</h3>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label>Order Type</Label>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant={posOrderType === 'dine-in' ? 'default' : 'outline'}
+                                            onClick={() => setPosOrderType('dine-in')}
+                                            className="flex-1"
+                                        >
+                                            Dine-In
+                                        </Button>
+                                        <Button
+                                            variant={posOrderType === 'takeaway' ? 'default' : 'outline'}
+                                            onClick={() => setPosOrderType('takeaway')}
+                                            className="flex-1"
+                                        >
+                                            Takeaway
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                {posOrderType === 'dine-in' ? (
+                                    <div className="space-y-2">
+                                        <Label>Select Table</Label>
+                                        <select
+                                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                            value={posTableId}
+                                            onChange={(e) => setPosTableId(e.target.value)}
+                                        >
+                                            <option value="" disabled>Select a table</option>
+                                            {tables.map(table => (
+                                                <option key={table.id} value={table.id}>
+                                                    {table.name} ({table.status})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <Label>Customer Name / Number</Label>
+                                        <Input
+                                            placeholder="e.g. John / 9876543210"
+                                            value={posContactNumber}
+                                            onChange={(e) => setPosContactNumber(e.target.value)}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-4">
+                            <CartDrawer
+                                isOpen={true}
+                                onClose={() => { }}
+                                cart={posCart}
+                                onRemove={handleRemoveFromPosCart}
+                                onAdd={(item) => handleAddToPosCart(item)}
+                                onPlaceOrder={handlePlacePosOrder}
+                                totalAmount={posCart.reduce((sum, item) => sum + item.price * item.quantity, 0)}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+        </div >
+    );
 }
 
-function QRCodeCard({ tableName, restaurantId }: { tableName: string, restaurantId: string }) {
+function QRCodeCard({ tableName, restaurantId, isTakeaway = false }: { tableName: string, restaurantId: string, isTakeaway?: boolean }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [qrGenerated, setQrGenerated] = useState(false);
 
     useEffect(() => {
         if (canvasRef.current) {
-            const url = `${window.location.origin}/${restaurantId}/menu/${tableName}`;
+            const url = isTakeaway
+                ? `${window.location.origin}/${restaurantId}/menu/Takeaway?type=takeaway`
+                : `${window.location.origin}/${restaurantId}/menu/${tableName}`;
             QRCodeLib.toCanvas(canvasRef.current, url, {
                 width: 256,
                 margin: 2,
