@@ -929,91 +929,90 @@ function CounterContent() {
                     />
                 </div>
             )}
-        </div>
-    );
-    {/* POS Modal */ }
-    {
-        isPOSOpen && (
-            <div className="fixed inset-0 z-50 bg-gray-100 flex flex-col animate-in fade-in">
-                <header className="bg-white shadow-sm p-4 flex justify-between items-center">
-                    <h2 className="text-xl font-bold flex items-center gap-2">
-                        <ChefHat className="h-6 w-6" /> New Order (POS)
-                    </h2>
-                    <Button variant="ghost" onClick={() => setIsPOSOpen(false)}>Close</Button>
-                </header>
-                <div className="flex-1 flex overflow-hidden">
-                    <div className="flex-1 overflow-y-auto p-6">
-                        <MenuGrid menuItems={menuItems} onAddToCart={handleAddToPosCart} />
-                    </div>
-                    <div className="w-96 bg-white border-l shadow-xl flex flex-col">
-                        <div className="p-4 border-b bg-gray-50">
-                            <h3 className="font-bold text-lg mb-4">Order Details</h3>
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label>Order Type</Label>
-                                    <div className="flex gap-2">
-                                        <Button
-                                            variant={posOrderType === 'dine-in' ? 'default' : 'outline'}
-                                            onClick={() => setPosOrderType('dine-in')}
-                                            className="flex-1"
-                                        >
-                                            Dine-In
-                                        </Button>
-                                        <Button
-                                            variant={posOrderType === 'takeaway' ? 'default' : 'outline'}
-                                            onClick={() => setPosOrderType('takeaway')}
-                                            className="flex-1"
-                                        >
-                                            Takeaway
-                                        </Button>
+
+            {/* POS Modal */}
+            {
+                isPOSOpen && (
+                    <div className="fixed inset-0 z-50 bg-gray-100 flex flex-col animate-in fade-in">
+                        <header className="bg-white shadow-sm p-4 flex justify-between items-center">
+                            <h2 className="text-xl font-bold flex items-center gap-2">
+                                <ChefHat className="h-6 w-6" /> New Order (POS)
+                            </h2>
+                            <Button variant="ghost" onClick={() => setIsPOSOpen(false)}>Close</Button>
+                        </header>
+                        <div className="flex-1 flex overflow-hidden">
+                            <div className="flex-1 overflow-y-auto p-6">
+                                <MenuGrid menuItems={menuItems} onAddToCart={handleAddToPosCart} />
+                            </div>
+                            <div className="w-96 bg-white border-l shadow-xl flex flex-col">
+                                <div className="p-4 border-b bg-gray-50">
+                                    <h3 className="font-bold text-lg mb-4">Order Details</h3>
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label>Order Type</Label>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    variant={posOrderType === 'dine-in' ? 'default' : 'outline'}
+                                                    onClick={() => setPosOrderType('dine-in')}
+                                                    className="flex-1"
+                                                >
+                                                    Dine-In
+                                                </Button>
+                                                <Button
+                                                    variant={posOrderType === 'takeaway' ? 'default' : 'outline'}
+                                                    onClick={() => setPosOrderType('takeaway')}
+                                                    className="flex-1"
+                                                >
+                                                    Takeaway
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {posOrderType === 'dine-in' ? (
+                                            <div className="space-y-2">
+                                                <Label>Select Table</Label>
+                                                <select
+                                                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    value={posTableId}
+                                                    onChange={(e) => setPosTableId(e.target.value)}
+                                                >
+                                                    <option value="" disabled>Select a table</option>
+                                                    {tables.map(table => (
+                                                        <option key={table.id} value={table.id}>
+                                                            {table.name} ({table.status})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <Label>Customer Name / Number</Label>
+                                                <Input
+                                                    placeholder="e.g. John / 9876543210"
+                                                    value={posContactNumber}
+                                                    onChange={(e) => setPosContactNumber(e.target.value)}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
-                                {posOrderType === 'dine-in' ? (
-                                    <div className="space-y-2">
-                                        <Label>Select Table</Label>
-                                        <select
-                                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                            value={posTableId}
-                                            onChange={(e) => setPosTableId(e.target.value)}
-                                        >
-                                            <option value="" disabled>Select a table</option>
-                                            {tables.map(table => (
-                                                <option key={table.id} value={table.id}>
-                                                    {table.name} ({table.status})
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-2">
-                                        <Label>Customer Name / Number</Label>
-                                        <Input
-                                            placeholder="e.g. John / 9876543210"
-                                            value={posContactNumber}
-                                            onChange={(e) => setPosContactNumber(e.target.value)}
-                                        />
-                                    </div>
-                                )}
+                                <div className="flex-1 overflow-y-auto p-4">
+                                    <CartDrawer
+                                        isOpen={true}
+                                        onClose={() => { }}
+                                        cart={posCart}
+                                        onRemove={handleRemoveFromPosCart}
+                                        onAdd={(item) => handleAddToPosCart(item)}
+                                        onPlaceOrder={handlePlacePosOrder}
+                                        totalAmount={posCart.reduce((sum, item) => sum + item.price * item.quantity, 0)}
+                                    />
+                                </div>
                             </div>
                         </div>
-
-                        <div className="flex-1 overflow-y-auto p-4">
-                            <CartDrawer
-                                isOpen={true}
-                                onClose={() => { }}
-                                cart={posCart}
-                                onRemove={handleRemoveFromPosCart}
-                                onAdd={(item) => handleAddToPosCart(item)}
-                                onPlaceOrder={handlePlacePosOrder}
-                                totalAmount={posCart.reduce((sum, item) => sum + item.price * item.quantity, 0)}
-                            />
-                        </div>
                     </div>
-                </div>
-            </div>
-        )
-    }
+                )
+            }
         </div >
     );
 }
