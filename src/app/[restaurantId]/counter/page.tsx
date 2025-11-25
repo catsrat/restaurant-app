@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Utensils, QrCode, List, DollarSign, BarChart3, Trash2, Plus, BadgeCheck, Clock, CheckCircle2, ChefHat, Printer, Download, TrendingUp } from 'lucide-react';
+import { Utensils, QrCode, List, DollarSign, BarChart3, Trash2, Plus, BadgeCheck, Clock, CheckCircle2, ChefHat, Printer, Download, TrendingUp, Image as ImageIcon } from 'lucide-react';
 import { Receipt } from '@/components/Receipt';
 import { cn } from '@/lib/utils';
 import AdminGuard from '@/components/AdminGuard';
@@ -28,9 +28,9 @@ export default function CounterPage() {
 function CounterContent() {
     const params = useParams();
     const restaurantId = params.restaurantId as string;
-    const { orders, updateOrderStatus, menuItems, addMenuItem, deleteMenuItem, tables, addTable, deleteTable, markTablePaid, resetTableStatus, addOrder } = useOrder();
+    const { orders, updateOrderStatus, menuItems, addMenuItem, deleteMenuItem, tables, addTable, deleteTable, markTablePaid, resetTableStatus, addOrder, banners, addBanner, deleteBanner } = useOrder();
     const { format } = useCurrency();
-    const [activeTab, setActiveTab] = useState<'orders' | 'tables' | 'menu' | 'sales' | 'qrcodes' | 'analytics'>('orders');
+    const [activeTab, setActiveTab] = useState<'orders' | 'tables' | 'menu' | 'sales' | 'qrcodes' | 'analytics' | 'banners'>('orders');
 
     // POS State
     const [isPOSOpen, setIsPOSOpen] = useState(false);
@@ -239,6 +239,17 @@ function CounterContent() {
         setNewItem({ name: '', description: '', price: 0, category: '', image_url: '' });
     };
 
+    // --- Banner Logic ---
+    const [newBannerUrl, setNewBannerUrl] = useState('');
+    const [newBannerTitle, setNewBannerTitle] = useState('');
+
+    const handleAddBanner = async () => {
+        if (!newBannerUrl) return;
+        await addBanner(newBannerUrl, newBannerTitle);
+        setNewBannerUrl('');
+        setNewBannerTitle('');
+    };
+
     // --- Sales Logic ---
     const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
@@ -412,6 +423,9 @@ function CounterContent() {
                         </Button>
                         <Button variant={activeTab === 'analytics' ? 'default' : 'outline'} onClick={() => setActiveTab('analytics')} className="whitespace-nowrap">
                             <BarChart3 className="h-4 w-4 mr-2" /> Analytics
+                        </Button>
+                        <Button variant={activeTab === 'banners' ? 'default' : 'outline'} onClick={() => setActiveTab('banners')} className="whitespace-nowrap">
+                            <ImageIcon className="h-4 w-4 mr-2" /> Banners
                         </Button>
                     </div>
                 </div>
@@ -728,6 +742,73 @@ function CounterContent() {
                             )}
                         </CardContent>
                     </Card>
+                </div>
+            )}
+
+            {activeTab === 'banners' && (
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Manage Banners</CardTitle>
+                            <CardDescription>Add promotional banners to your menu</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex flex-col md:flex-row gap-4">
+                                <div className="flex-1 space-y-2">
+                                    <Label>Image URL</Label>
+                                    <Input
+                                        placeholder="https://example.com/banner.jpg"
+                                        value={newBannerUrl}
+                                        onChange={(e) => setNewBannerUrl(e.target.value)}
+                                    />
+                                </div>
+                                <div className="flex-1 space-y-2">
+                                    <Label>Title (Optional)</Label>
+                                    <Input
+                                        placeholder="Special Offer"
+                                        value={newBannerTitle}
+                                        onChange={(e) => setNewBannerTitle(e.target.value)}
+                                    />
+                                </div>
+                                <div className="flex items-end">
+                                    <Button onClick={handleAddBanner} disabled={!newBannerUrl}>
+                                        <Plus className="h-4 w-4 mr-2" /> Add Banner
+                                    </Button>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {banners.map(banner => (
+                            <Card key={banner.id} className="overflow-hidden">
+                                <div className="aspect-video relative bg-gray-100">
+                                    <img
+                                        src={banner.image_url}
+                                        alt={banner.title || 'Banner'}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <CardContent className="p-4 flex justify-between items-center">
+                                    <span className="font-medium truncate">{banner.title || 'Untitled Banner'}</span>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                        onClick={() => deleteBanner(banner.id)}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                        {banners.length === 0 && (
+                            <div className="col-span-full text-center py-12 text-gray-500">
+                                <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                                <p>No banners added yet.</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 

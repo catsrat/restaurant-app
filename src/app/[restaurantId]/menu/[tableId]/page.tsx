@@ -21,7 +21,7 @@ export default function MenuPage() {
     const orderType = (searchParams.get('type') as OrderType) || 'dine-in';
     const contactNumber = searchParams.get('contact') || undefined;
 
-    const { cart, addToCart, removeFromCart, addOrder, menuItems } = useOrder();
+    const { cart, addToCart, removeFromCart, addOrder, menuItems, banners } = useOrder();
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [showToast, setShowToast] = useState(false);
 
@@ -60,7 +60,27 @@ export default function MenuPage() {
                 </div>
             </header>
 
-            <main className="max-w-7xl mx-auto px-4 py-6">
+            <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+                {/* Banners Carousel */}
+                {banners.length > 0 && (
+                    <div className="w-full overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory flex gap-4">
+                        {banners.map(banner => (
+                            <div key={banner.id} className="snap-center shrink-0 w-[85vw] md:w-[400px] aspect-video rounded-xl overflow-hidden shadow-md relative">
+                                <img
+                                    src={banner.image_url}
+                                    alt={banner.title || 'Offer'}
+                                    className="w-full h-full object-cover"
+                                />
+                                {banner.title && (
+                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
+                                        <h3 className="text-white font-bold text-lg">{banner.title}</h3>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 <MenuGrid menuItems={menuItems} onAddToCart={handleAddToCart} />
             </main>
 

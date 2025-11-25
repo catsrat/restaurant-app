@@ -67,6 +67,20 @@ create policy "Public orders access" on orders for all using (true);
 alter table order_items enable row level security;
 create policy "Public order_items access" on order_items for all using (true);
 
+-- Enable RLS for banners
+ALTER TABLE restaurant_banners ENABLE ROW LEVEL SECURITY;
+
+-- Policies for banners
+CREATE POLICY "Public banners are viewable by everyone" 
+    ON restaurant_banners FOR SELECT 
+    USING (true);
+
+CREATE POLICY "Owners can manage their banners" 
+    ON restaurant_banners FOR ALL 
+    USING (true) 
+    WITH CHECK (true);
+
 -- Enable Realtime (Must be done AFTER table creation)
 alter publication supabase_realtime add table orders;
 alter publication supabase_realtime add table tables;
+alter publication supabase_realtime add table restaurant_banners;

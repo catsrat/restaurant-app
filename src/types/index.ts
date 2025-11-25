@@ -1,6 +1,15 @@
 export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'served' | 'paid';
 export type OrderType = 'dine-in' | 'takeaway';
 
+export interface Banner {
+    id: string;
+    restaurant_id: string;
+    title?: string;
+    image_url: string;
+    is_active: boolean;
+    created_at: Date;
+}
+
 export interface Table {
     id: string;
     name: string;
