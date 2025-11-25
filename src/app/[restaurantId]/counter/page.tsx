@@ -15,7 +15,7 @@ import AdminGuard from '@/components/AdminGuard';
 import { MenuItem, OrderItem, OrderType } from '@/types';
 import QRCodeLib from 'qrcode';
 import { MenuGrid } from '@/components/MenuGrid';
-import { CartDrawer } from '@/components/CartDrawer';
+import { CartDrawer, CartContent } from '@/components/CartDrawer';
 
 export default function CounterPage() {
     return (
@@ -998,8 +998,7 @@ function CounterContent() {
                                 </div>
 
                                 <div className="flex-1 overflow-y-auto p-4">
-                                    <CartDrawer
-                                        isOpen={true}
+                                    <CartContent
                                         onClose={() => { }}
                                         cart={posCart}
                                         onRemove={handleRemoveFromPosCart}
