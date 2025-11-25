@@ -78,7 +78,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                     totalAmount: o.total_amount,
                     orderType: o.order_type, // Map snake_case to camelCase
                     createdAt: new Date(o.created_at),
-                    items: o.items.map((i: any) => ({ ...i, id: String(i.menu_item_id) })) // Map back to internal structure
+                    items: Array.isArray(o.items) ? o.items.map((i: any) => ({ ...i, id: String(i.menu_item_id) })) : [] // Map back to internal structure
                 }));
                 setOrders(parsedOrders);
             }
