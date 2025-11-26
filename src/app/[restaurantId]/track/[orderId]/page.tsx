@@ -50,11 +50,16 @@ export default function OrderTrackingPage() {
                 const parsedOrder = {
                     ...data,
                     createdAt: new Date(data.created_at),
-                    items: data.items.map((i: any) => ({
-                        ...i,
-                        id: String(i.id),
-                        name: i.name || i.menu_item?.name || 'Unknown Item'
-                    }))
+                    items: data.items.map((i: any) => {
+                        const menuItemName = Array.isArray(i.menu_item)
+                            ? i.menu_item[0]?.name
+                            : i.menu_item?.name;
+                        return {
+                            ...i,
+                            id: String(i.id),
+                            name: i.name || menuItemName || 'Unknown Item'
+                        };
+                    })
                 };
                 setFetchedOrder(parsedOrder);
             }

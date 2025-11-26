@@ -115,12 +115,17 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                     totalAmount: o.total_amount,
                     orderType: o.order_type, // Map snake_case to camelCase
                     createdAt: new Date(o.created_at),
-                    items: Array.isArray(o.items) ? o.items.map((i: any) => ({
-                        ...i,
-                        id: String(i.id),
-                        status: i.status || 'pending',
-                        name: i.name || i.menu_item?.name || 'Unknown Item'
-                    })) : [] // Map back to internal structure
+                    items: Array.isArray(o.items) ? o.items.map((i: any) => {
+                        const menuItemName = Array.isArray(i.menu_item)
+                            ? i.menu_item[0]?.name
+                            : i.menu_item?.name;
+                        return {
+                            ...i,
+                            id: String(i.id),
+                            status: i.status || 'pending',
+                            name: i.name || menuItemName || 'Unknown Item'
+                        };
+                    }) : [] // Map back to internal structure
                 }));
                 setOrders(parsedOrders);
             }
