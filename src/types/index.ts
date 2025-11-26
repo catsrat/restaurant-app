@@ -32,6 +32,7 @@ export interface OrderItem {
     status: 'pending' | 'ready';
     notes?: string;
     selectedOptions?: Record<string, string | string[]>;
+    cartId?: string; // Unique ID for cart operations
 }
 
 export interface UpsellRule {

@@ -32,7 +32,7 @@ export function CartContent({ onClose, cart, onRemove, onAdd, onPlaceOrder, tota
                     </div>
                 ) : (
                     cart.map((item) => (
-                        <div key={item.id} className="flex justify-between items-center border-b pb-4 last:border-0">
+                        <div key={item.cartId || item.id} className="flex justify-between items-center border-b pb-4 last:border-0">
                             <div>
                                 <h3 className="font-bold text-gray-900">{item.name}</h3>
                                 {item.selectedOptions && (
@@ -55,7 +55,7 @@ export function CartContent({ onClose, cart, onRemove, onAdd, onPlaceOrder, tota
                                     variant="outline"
                                     size="icon"
                                     className="h-8 w-8 text-gray-900 border-gray-300"
-                                    onClick={() => onRemove(item.id)}
+                                    onClick={() => onRemove(item.cartId || item.id)}
                                 >
                                     <Minus className="h-3 w-3" />
                                 </Button>

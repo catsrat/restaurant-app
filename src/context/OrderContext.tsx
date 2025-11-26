@@ -313,12 +313,19 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                 newCart[existingIndex].quantity += item.quantity;
                 return newCart;
             }
-            return [...prev, item];
+            // Add new item with unique cartId
+            return [...prev, { ...item, cartId: `${item.id}-${Date.now()}-${Math.random()}` }];
         });
     };
 
-    const removeFromCart = (itemId: string) => {
-        setCart((prev) => prev.filter((i) => i.id !== itemId));
+    const removeFromCart = (cartId: string) => {
+        setCart((prev) => {
+            const existingItem = prev.find(i => i.cartId === cartId);
+            if (existingItem && existingItem.quantity > 1) {
+                return prev.map(i => i.cartId === cartId ? { ...i, quantity: i.quantity - 1 } : i);
+            }
+            return prev.filter((i) => i.cartId !== cartId);
+        });
     };
 
     const clearCart = () => {
