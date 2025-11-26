@@ -30,7 +30,7 @@ export default function CounterPage() {
 function CounterContent() {
     const params = useParams();
     const restaurantId = params.restaurantId as string;
-    const { orders, updateOrderStatus, menuItems, addMenuItem, deleteMenuItem, tables, addTable, deleteTable, markTablePaid, resetTableStatus, addOrder, banners, addBanner, deleteBanner, categories, addCategory, deleteCategory } = useOrder();
+    const { orders, updateOrderStatus, menuItems, addMenuItem, deleteMenuItem, tables, addTable, deleteTable, markTablePaid, resetTableStatus, addOrder, banners, addBanner, deleteBanner, categories, addCategory, deleteCategory, applyDiscount } = useOrder();
     const { user, signOut } = useAuth();
     const { format } = useCurrency();
     const [activeTab, setActiveTab] = useState<'orders' | 'tables' | 'menu' | 'sales' | 'qrcodes' | 'analytics' | 'banners'>('orders');
@@ -309,8 +309,18 @@ function CounterContent() {
               </div>
             `).join('')}
             <div class="total">
-              <span>TOTAL</span>
+              <span>Subtotal</span>
               <span>$${total.toFixed(2)}</span>
+            </div>
+            ${order.discount > 0 ? `
+            <div class="item" style="color: red;">
+              <span>Discount</span>
+              <span>-$${Number(order.discount).toFixed(2)}</span>
+            </div>
+            ` : ''}
+            <div class="total" style="border-top: 2px solid #000; font-size: 1.2em;">
+              <span>TOTAL</span>
+              <span>$${(total - (order.discount || 0)).toFixed(2)}</span>
             </div>
             <div style="text-align: center; margin-top: 20px;">Thank you!</div>
           </body>
@@ -481,19 +491,54 @@ function CounterContent() {
                                                 </ul>
                                             </div>
                                         ))}
-                                        <div className="mt-4 pt-2 border-t flex justify-between font-bold text-lg">
-                                            <span>Total Bill</span>
-                                            <span>{format(totalAmount)}</span>
+                                        <div className="mt-4 pt-2 border-t space-y-1">
+                                            <div className="flex justify-between text-gray-500">
+                                                <span>Subtotal</span>
+                                                <span>{format(totalAmount)}</span>
+                                            </div>
+                                            {orders[0]?.discount && orders[0].discount > 0 ? (
+                                                <div className="flex justify-between text-red-500">
+                                                    <span>Discount</span>
+                                                    <span>-{format(orders[0].discount || 0)}</span>
+                                                </div>
+                                            ) : null}
+                                            <div className="flex justify-between font-bold text-lg pt-1 border-t">
+                                                <span>Total</span>
+                                                <span>{format(totalAmount - (orders[0]?.discount || 0))}</span>
+                                            </div>
                                         </div>
                                     </CardContent>
                                     <CardFooter className="flex-col gap-2">
-                                        <Button
-                                            variant="outline"
-                                            className="w-full border-slate-400 hover:bg-slate-100"
-                                            onClick={() => handlePrint(tableName, groupOrders, totalAmount)}
-                                        >
-                                            <Printer className="h-4 w-4 mr-2" /> Print Bill
-                                        </Button>
+                                        <div className="flex gap-2 w-full">
+                                            <Button
+                                                variant="outline"
+                                                className="flex-1 border-slate-400 hover:bg-slate-100"
+                                                onClick={() => handlePrint(tableName, groupOrders, totalAmount)}
+                                            >
+                                                <Printer className="h-4 w-4 mr-2" /> Print
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                className="flex-1 border-orange-400 text-orange-600 hover:bg-orange-50"
+                                                onClick={() => {
+                                                    const currentDiscount = orders[0]?.discount || 0;
+                                                    const discount = prompt("Enter discount amount:", currentDiscount.toString());
+                                                    if (discount !== null) {
+                                                        const numDiscount = parseFloat(discount);
+                                                        if (!isNaN(numDiscount) && numDiscount >= 0) {
+                                                            // Apply to the first order (or main order) of the table
+                                                            if (orders[0]) {
+                                                                applyDiscount(orders[0].id, numDiscount);
+                                                            }
+                                                        } else {
+                                                            alert("Invalid discount amount");
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                <DollarSign className="h-4 w-4 mr-2" /> Discount
+                                            </Button>
+                                        </div>
                                         {allServed ? (
                                             <Button
                                                 className="w-full bg-green-700 hover:bg-green-800"
@@ -507,7 +552,7 @@ function CounterContent() {
                                                     }
                                                 }}
                                             >
-                                                <DollarSign className="h-4 w-4 mr-2" /> Payment Done (All)
+                                                <CheckCircle2 className="h-4 w-4 mr-2" /> Payment Done
                                             </Button>
                                         ) : (
                                             <div className="flex flex-col gap-2 w-full">

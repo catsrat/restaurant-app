@@ -62,6 +62,7 @@ export interface Order {
     tableId?: string;
     contactNumber?: string;
     orderType: OrderType;
+    discount?: number;
 }
 
 export interface MenuItem {

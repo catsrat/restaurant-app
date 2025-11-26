@@ -33,7 +33,10 @@ interface OrderContextType {
     addCategory: (name: string) => Promise<void>;
     deleteCategory: (id: string) => Promise<void>;
     // Upsell
+    // Upsell
     checkUpsell: (addedItem: OrderItem) => { rule: any, suggestedItem: MenuItem } | null;
+    // Discount
+    applyDiscount: (orderId: string, discount: number) => Promise<void>;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -113,6 +116,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                     id: String(o.id), // Ensure ID is string
                     tableId: String(o.table_id), // Ensure tableId is string
                     totalAmount: o.total_amount,
+                    discount: o.discount || 0,
                     orderType: o.order_type, // Map snake_case to camelCase
                     createdAt: new Date(o.created_at),
                     items: Array.isArray(o.items) ? o.items.map((i: any) => {
@@ -603,7 +607,27 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         }
         return null;
     };
+    const applyDiscount = async (orderId: string, discount: number) => {
+        console.log(`Applying discount of ${discount} to order ${orderId}`);
 
+        // Optimistic update
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, discount } : o));
+
+        try {
+            const { error } = await supabase
+                .from('orders')
+                .update({ discount })
+                .eq('id', orderId);
+
+            if (error) throw error;
+            console.log("Discount applied successfully");
+        } catch (error: any) {
+            console.error("Error applying discount:", error);
+            alert(`Failed to apply discount: ${error.message}`);
+            // Revert
+            setOrders(prev => prev.map(o => o.id === orderId ? { ...o, discount: 0 } : o));
+        }
+    };
     return (
         <OrderContext.Provider value={{
             orders,
@@ -629,7 +653,8 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             categories,
             addCategory,
             deleteCategory,
-            checkUpsell
+            checkUpsell,
+            applyDiscount
         }}>
             {children}
         </OrderContext.Provider>
