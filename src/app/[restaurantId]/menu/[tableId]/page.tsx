@@ -233,24 +233,26 @@ export default function MenuPage() {
                 onAddToCart={handleAddToCart}
             />
 
-            <UpsellModal
-                isOpen={!!upsellItem}
-                onClose={() => {
-                    setUpsellItem(null);
-                    setShowToast(true);
-                    setTimeout(() => setShowToast(false), 3000);
-                }}
-                onAdd={() => {
-                    if (upsellItem) {
-                        addToCart({ ...upsellItem, quantity: 1, status: 'pending' });
+            {upsellItem && (
+                <UpsellModal
+                    isOpen={!!upsellItem}
+                    onClose={() => {
                         setUpsellItem(null);
                         setShowToast(true);
                         setTimeout(() => setShowToast(false), 3000);
-                    }
-                }}
-                suggestedItem={upsellItem!}
-                message={upsellMessage}
-            />
+                    }}
+                    onAdd={() => {
+                        if (upsellItem) {
+                            addToCart({ ...upsellItem, quantity: 1, status: 'pending' });
+                            setUpsellItem(null);
+                            setShowToast(true);
+                            setTimeout(() => setShowToast(false), 3000);
+                        }
+                    }}
+                    suggestedItem={upsellItem}
+                    message={upsellMessage}
+                />
+            )}
         </div>
     );
 }
