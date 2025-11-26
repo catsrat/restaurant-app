@@ -33,6 +33,7 @@ export interface OrderItem {
     notes?: string;
     selectedOptions?: Record<string, string | string[]>;
     cartId?: string; // Unique ID for cart operations
+    isUpsell?: boolean; // Track if item was added via upsell
 }
 
 export interface UpsellRule {

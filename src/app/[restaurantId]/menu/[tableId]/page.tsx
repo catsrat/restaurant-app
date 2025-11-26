@@ -243,7 +243,7 @@ export default function MenuPage() {
                     }}
                     onAdd={() => {
                         if (upsellItem) {
-                            addToCart({ ...upsellItem, quantity: 1, status: 'pending' });
+                            addToCart({ ...upsellItem, quantity: 1, status: 'pending', isUpsell: true });
                             setUpsellItem(null);
                             setShowToast(true);
                             setTimeout(() => setShowToast(false), 3000);

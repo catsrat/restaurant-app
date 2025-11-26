@@ -17,6 +17,7 @@ import QRCodeLib from 'qrcode';
 import { MenuGrid } from '@/components/MenuGrid';
 import { CartDrawer, CartContent } from '@/components/CartDrawer';
 import { useAuth } from '@/context/AuthContext';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 export default function CounterPage() {
     return (
@@ -800,6 +801,10 @@ function CounterContent() {
                 </div>
             )}
 
+            {activeTab === 'analytics' && (
+                <AnalyticsTab orders={orders} />
+            )}
+
             {activeTab === 'banners' && (
                 <div className="space-y-6">
                     <Card>
@@ -866,198 +871,6 @@ function CounterContent() {
                     </div>
                 </div>
             )}
-
-            {/* Analytics Tab */}
-            {activeTab === 'analytics' && (() => {
-                const servedOrders = orders.filter(o => o.status === 'served' || o.status === 'paid');
-                const totalRevenue = servedOrders.reduce((sum, order) =>
-                    sum + order.items.reduce((s, i) => s + i.price * i.quantity, 0), 0
-                );
-                const totalOrders = servedOrders.length;
-                const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-
-                // Popular items analysis
-                const itemSales: { [key: string]: { count: number, revenue: number } } = {};
-                servedOrders.forEach(order => {
-                    order.items.forEach(item => {
-                        if (!itemSales[item.name]) {
-                            itemSales[item.name] = { count: 0, revenue: 0 };
-                        }
-                        itemSales[item.name].count += item.quantity;
-                        itemSales[item.name].revenue += item.price * item.quantity;
-                    });
-                });
-                const popularItems = Object.entries(itemSales)
-                    .sort((a, b) => b[1].count - a[1].count)
-                    .slice(0, 5);
-
-                // Peak hours analysis
-                const hourlyOrders: { [key: number]: number } = {};
-                servedOrders.forEach(order => {
-                    const hour = new Date(order.createdAt).getHours();
-                    hourlyOrders[hour] = (hourlyOrders[hour] || 0) + 1;
-                });
-                const peakHour = Object.entries(hourlyOrders)
-                    .sort((a, b) => b[1] - a[1])[0];
-
-                // Order type breakdown
-                const dineInOrders = servedOrders.filter(o => o.orderType === 'dine-in').length;
-                const takeawayOrders = servedOrders.filter(o => o.orderType === 'takeaway').length;
-
-                return (
-                    <div className="space-y-6">
-                        {/* Summary Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-500">Total Revenue</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-3xl font-bold text-green-600">{format(totalRevenue)}</div>
-                                    <p className="text-xs text-gray-500 mt-1">From {totalOrders} orders</p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-500">Avg Order Value</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-3xl font-bold text-blue-600">{format(avgOrderValue)}</div>
-                                    <p className="text-xs text-gray-500 mt-1">Per order</p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-500">Total Orders</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-3xl font-bold text-purple-600">{totalOrders}</div>
-                                    <p className="text-xs text-gray-500 mt-1">Completed</p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-500">Peak Hour</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-3xl font-bold text-orange-600">
-                                        {peakHour ? `${peakHour[0]}:00` : 'N/A'}
-                                    </div>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        {peakHour ? `${peakHour[1]} orders` : 'No data'}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        {/* Popular Items */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <TrendingUp className="h-5 w-5" />
-                                    Top 5 Popular Items
-                                </CardTitle>
-                                <CardDescription>Best selling menu items</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                {popularItems.length > 0 ? (
-                                    <div className="space-y-4">
-                                        {popularItems.map(([name, data], index) => (
-                                            <div key={name} className="flex items-center justify-between border-b pb-3 last:border-0">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={cn(
-                                                        "w-8 h-8 rounded-full flex items-center justify-center font-bold text-white",
-                                                        index === 0 ? "bg-yellow-500" :
-                                                            index === 1 ? "bg-gray-400" :
-                                                                index === 2 ? "bg-orange-600" : "bg-gray-300"
-                                                    )}>
-                                                        {index + 1}
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-semibold">{name}</p>
-                                                        <p className="text-sm text-gray-500">{data.count} sold</p>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="font-bold text-green-600">{format(data.revenue)}</p>
-                                                    <p className="text-xs text-gray-500">Revenue</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-center text-gray-400 py-8">No sales data yet</p>
-                                )}
-                            </CardContent>
-                        </Card>
-
-                        {/* Order Type Breakdown & Hourly Distribution */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Order Type Distribution</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <div className="flex justify-between mb-2">
-                                                <span className="font-medium">Dine-In</span>
-                                                <span className="font-bold">{dineInOrders} ({totalOrders > 0 ? Math.round(dineInOrders / totalOrders * 100) : 0}%)</span>
-                                            </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-3">
-                                                <div
-                                                    className="bg-blue-600 h-3 rounded-full transition-all"
-                                                    style={{ width: `${totalOrders > 0 ? (dineInOrders / totalOrders * 100) : 0}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className="flex justify-between mb-2">
-                                                <span className="font-medium">Takeaway</span>
-                                                <span className="font-bold">{takeawayOrders} ({totalOrders > 0 ? Math.round(takeawayOrders / totalOrders * 100) : 0}%)</span>
-                                            </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-3">
-                                                <div
-                                                    className="bg-green-600 h-3 rounded-full transition-all"
-                                                    style={{ width: `${totalOrders > 0 ? (takeawayOrders / totalOrders * 100) : 0}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Hourly Order Distribution</CardTitle>
-                                    <CardDescription>Orders by hour of day</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-2">
-                                        {Object.entries(hourlyOrders)
-                                            .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
-                                            .map(([hour, count]) => (
-                                                <div key={hour} className="flex items-center gap-2">
-                                                    <span className="text-sm font-medium w-16">{hour}:00</span>
-                                                    <div className="flex-1 bg-gray-200 rounded-full h-2">
-                                                        <div
-                                                            className="bg-purple-600 h-2 rounded-full transition-all"
-                                                            style={{ width: `${(count / Math.max(...Object.values(hourlyOrders))) * 100}%` }}
-                                                        />
-                                                    </div>
-                                                    <span className="text-sm font-bold w-8">{count}</span>
-                                                </div>
-                                            ))}
-                                        {Object.keys(hourlyOrders).length === 0 && (
-                                            <p className="text-center text-gray-400 py-4">No hourly data yet</p>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </div>
-                );
-            })()}
             {/* Hidden Receipt Component for Printing */}
             {printingData && (
                 <div className="hidden print:block">
@@ -1213,5 +1026,149 @@ function QRCodeCard({ tableName, restaurantId, isTakeaway = false }: { tableName
                 </Button>
             </CardFooter>
         </Card>
+    );
+}
+
+function AnalyticsTab({ orders }: { orders: Order[] }) {
+    const { format } = useCurrency();
+
+    // 1. Calculate Revenue Split (Organic vs Upsell)
+    // Filter for paid orders only
+    const paidOrders = orders.filter(o => o.status === 'paid');
+
+    let organicRevenue = 0;
+    let upsellRevenue = 0;
+
+    paidOrders.forEach(order => {
+        order.items.forEach((item: any) => {
+            const itemTotal = item.price * item.quantity;
+            if (item.is_upsell) {
+                upsellRevenue += itemTotal;
+            } else {
+                organicRevenue += itemTotal;
+            }
+        });
+    });
+
+    const revenueData = [
+        { name: 'Organic Sales', value: organicRevenue, color: '#3b82f6' }, // Blue
+        { name: 'AI Upsells', value: upsellRevenue, color: '#10b981' },    // Green
+    ];
+
+    // 2. Hourly Sales
+    const hourlyData = Array(24).fill(0).map((_, i) => ({ hour: i, sales: 0 }));
+    paidOrders.forEach(order => {
+        const hour = new Date(order.createdAt).getHours();
+        hourlyData[hour].sales += order.totalAmount;
+    });
+
+    const activeHourlyData = hourlyData.filter(d => d.sales > 0).map(d => ({
+        ...d,
+        hourLabel: `${d.hour}:00`
+    }));
+
+    // 3. Top Items
+    const itemCounts: Record<string, number> = {};
+    paidOrders.forEach(order => {
+        order.items.forEach(item => {
+            itemCounts[item.name] = (itemCounts[item.name] || 0) + item.quantity;
+        });
+    });
+
+    const topItemsData = Object.entries(itemCounts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+    return (
+        <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="bg-gradient-to-br from-green-50 to-white border-green-200">
+                    <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-green-800">AI Upsell Revenue</CardTitle></CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold text-green-600">{format(upsellRevenue)}</div>
+                        <p className="text-xs text-green-700 mt-1">Extra revenue generated by AI</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-gray-500">Total Revenue</CardTitle></CardHeader>
+                    <CardContent><div className="text-3xl font-bold">{format(organicRevenue + upsellRevenue)}</div></CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-gray-500">Upsell Contribution</CardTitle></CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold">
+                            {((upsellRevenue / (organicRevenue + upsellRevenue || 1)) * 100).toFixed(1)}%
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Revenue Source</CardTitle>
+                        <CardDescription>Where is your money coming from?</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-[300px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={revenueData}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={60}
+                                    outerRadius={80}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                >
+                                    {revenueData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                </Pie>
+                                <Tooltip formatter={(value: number) => format(value)} />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Top Selling Items</CardTitle>
+                        <CardDescription>Your most popular dishes</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-[300px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={topItemsData} layout="vertical" margin={{ left: 20 }}>
+                                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                                <XAxis type="number" hide />
+                                <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} />
+                                <Tooltip />
+                                <Bar dataKey="count" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Hourly Sales Performance</CardTitle>
+                    <CardDescription>When are you busiest?</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={activeHourlyData}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="hourLabel" />
+                            <YAxis tickFormatter={(value) => `$${value}`} />
+                            <Tooltip formatter={(value: number) => format(value)} />
+                            <Bar dataKey="sales" fill="#8884d8" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+        </div>
     );
 }

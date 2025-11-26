@@ -183,7 +183,8 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             quantity: item.quantity,
             status: 'pending',
             notes: item.notes,
-            selected_options: item.selectedOptions
+            selected_options: item.selectedOptions,
+            is_upsell: item.isUpsell || false
         }));
 
         await supabase.from('order_items').insert(orderItems);
