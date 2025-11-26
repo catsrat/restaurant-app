@@ -47,8 +47,15 @@ export default function LoginPage() {
                 // Actually, let's just redirect to root and let them navigate, or maybe '/admin' if we had one.
                 // Let's check if we can find a restaurant.
 
-                // Fetch the first restaurant
-                const { data: restaurants } = await supabase.from('restaurants').select('id').limit(1);
+                // Fetch the restaurant owned by this user
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) throw new Error('No user found after login');
+
+                const { data: restaurants } = await supabase
+                    .from('restaurants')
+                    .select('id')
+                    .eq('user_id', user.id)
+                    .limit(1);
                 if (restaurants && restaurants.length > 0) {
                     router.push(`/${restaurants[0].id}/counter`);
                 } else {

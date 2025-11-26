@@ -32,7 +32,11 @@ export default function LandingPage() {
     try {
       const { data, error } = await supabase
         .from('restaurants')
-        .insert({ name: restaurantName, currency })
+        .insert({
+          name: restaurantName,
+          currency,
+          user_id: user.id
+        })
         .select()
         .single();
 
