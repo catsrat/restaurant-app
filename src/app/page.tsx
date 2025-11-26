@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,25 @@ export default function LandingPage() {
   const [restaurantName, setRestaurantName] = useState('');
   const [currency, setCurrency] = useState<CurrencyCode>('CZK');
   const [existingId, setExistingId] = useState('');
+
+  const [userRestaurantId, setUserRestaurantId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchUserRestaurant() {
+      if (user) {
+        const { data } = await supabase
+          .from('restaurants')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+        if (data) {
+          setUserRestaurantId(String(data.id));
+          setExistingId(String(data.id)); // Auto-fill for convenience
+        }
+      }
+    }
+    fetchUserRestaurant();
+  }, [user]);
 
   const handleCreate = async () => {
     if (!restaurantName) return;
@@ -67,9 +86,16 @@ export default function LandingPage() {
           {loading ? (
             <span className="text-gray-400">Loading...</span>
           ) : user ? (
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-medium text-gray-700">Hi, {user.email}</span>
-              {/* We could add a logout button here, but let's keep it simple */}
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium text-gray-700">Hi, {user.email}</span>
+                {/* We could add a logout button here, but let's keep it simple */}
+              </div>
+              {userRestaurantId && (
+                <div className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-mono">
+                  Your Restaurant ID: <strong>{userRestaurantId}</strong>
+                </div>
+              )}
             </div>
           ) : (
             <Button variant="ghost" onClick={() => router.push('/login')}>Login</Button>
@@ -137,6 +163,11 @@ export default function LandingPage() {
                 value={existingId}
                 onChange={(e) => setExistingId(e.target.value)}
               />
+              {userRestaurantId && (
+                <p className="text-xs text-gray-500">
+                  Found your restaurant: <span className="font-mono font-bold text-blue-600">{userRestaurantId}</span>
+                </p>
+              )}
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="outline" onClick={() => router.push(`/${existingId}/counter`)} disabled={!existingId}>
                   Admin
