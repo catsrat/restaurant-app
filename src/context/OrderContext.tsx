@@ -197,7 +197,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             status: 'pending',
             notes: item.notes,
             selected_options: item.selectedOptions,
-            is_upsell: item.isUpsell || false
+            // is_upsell: item.isUpsell || false // FIXME: Uncomment after migration is applied
         }));
 
         await supabase.from('order_items').insert(orderItems);
