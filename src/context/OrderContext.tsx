@@ -179,7 +179,9 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             name: item.name,
             price: item.price,
             quantity: item.quantity,
-            status: 'pending'
+            status: 'pending',
+            notes: item.notes,
+            selected_options: item.selectedOptions
         }));
 
         await supabase.from('order_items').insert(orderItems);
@@ -297,13 +299,19 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
 
     const addToCart = (item: OrderItem) => {
         setCart((prev) => {
-            const existing = prev.find((i) => i.id === item.id);
-            if (existing) {
-                return prev.map((i) =>
-                    i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-                );
+            // Check for existing item with SAME options and notes
+            const existingIndex = prev.findIndex((i) =>
+                i.id === item.id &&
+                i.notes === item.notes &&
+                JSON.stringify(i.selectedOptions) === JSON.stringify(item.selectedOptions)
+            );
+
+            if (existingIndex > -1) {
+                const newCart = [...prev];
+                newCart[existingIndex].quantity += item.quantity;
+                return newCart;
             }
-            return [...prev, { ...item, quantity: 1 }];
+            return [...prev, item];
         });
     };
 

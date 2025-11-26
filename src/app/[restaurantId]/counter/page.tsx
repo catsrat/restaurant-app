@@ -12,7 +12,7 @@ import { Utensils, QrCode, List, DollarSign, BarChart3, Trash2, Plus, BadgeCheck
 import { Receipt } from '@/components/Receipt';
 import { cn } from '@/lib/utils';
 import AdminGuard from '@/components/AdminGuard';
-import { MenuItem, OrderItem, OrderType } from '@/types';
+import { Order, OrderStatus, MenuItem, Table, MenuCategory, OrderItem, OrderType } from '@/types';
 import QRCodeLib from 'qrcode';
 import { MenuGrid } from '@/components/MenuGrid';
 import { CartDrawer, CartContent } from '@/components/CartDrawer';
@@ -262,7 +262,7 @@ function CounterContent() {
         return orderDate === selectedDate;
     });
 
-    const totalRevenue = paidOrders.reduce((sum, order) => sum + order.items.reduce((s, i) => s + i.price * i.quantity, 0), 0);
+    const totalRevenue = paidOrders.reduce((sum, order) => sum + order.items.reduce((s: number, i: any) => s + i.price * i.quantity, 0), 0);
     const totalOrders = paidOrders.length;
 
     const handlePaymentDone = (order: any) => {
@@ -271,7 +271,7 @@ function CounterContent() {
 
         // Generate Bill (Aggregate if table)
         let billItems = order.items;
-        let total = order.items.reduce((s: any, i: any) => s + i.price * i.quantity, 0);
+        let total = order.items.reduce((s: number, i: any) => s + i.price * i.quantity, 0);
 
         if (order.orderType === 'dine-in') {
             // Find all other served/ready orders for this table to include in bill?
@@ -449,11 +449,12 @@ function CounterContent() {
                         </div>
                     ) : (
                         Object.entries(ordersByTable).map(([tableName, groupOrders]) => {
-                            const totalAmount = groupOrders.reduce((sum, o) => sum + o.totalAmount, 0);
-                            const hasPending = groupOrders.some(o => o.status === 'pending');
-                            const hasPreparing = groupOrders.some(o => o.status === 'preparing');
-                            const hasReady = groupOrders.some(o => o.status === 'ready');
-                            const allServed = groupOrders.every(o => o.status === 'served');
+                            const orders = groupOrders as Order[];
+                            const totalAmount = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+                            const hasPending = orders.some(o => o.status === 'pending');
+                            const hasPreparing = orders.some(o => o.status === 'preparing');
+                            const hasReady = orders.some(o => o.status === 'ready');
+                            const allServed = orders.every(o => o.status === 'served');
 
                             return (
                                 <Card key={tableName} className={cn("shadow-md border-l-4", allServed ? "border-l-green-500 bg-green-50" : "border-l-blue-500")}>

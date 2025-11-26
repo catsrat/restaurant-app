@@ -30,17 +30,26 @@ export interface OrderItem {
     price: number;
     quantity: number;
     status: 'pending' | 'ready';
+    notes?: string;
+    selectedOptions?: Record<string, string | string[]>;
 }
 
 export interface Order {
     id: string;
+    restaurant_id: string;
+    table_id?: string;
+    customer_name?: string;
+    order_type: OrderType;
+    items: OrderItem[];
+    status: OrderStatus;
+    total_amount: number;
+    created_at: Date;
+    // Helper for UI (mapped from total_amount)
+    totalAmount: number;
+    createdAt: Date;
     tableId?: string;
     contactNumber?: string;
     orderType: OrderType;
-    items: OrderItem[];
-    status: OrderStatus;
-    totalAmount: number;
-    createdAt: Date;
 }
 
 export interface MenuItem {
@@ -52,6 +61,17 @@ export interface MenuItem {
     image?: string;
     image_url?: string;
     is_available?: boolean;
+    tags?: string[]; // e.g. ['Veg', 'Spicy']
+    options?: MenuItemOption[]; // e.g. Size, Toppings
+}
+
+export interface MenuItemOption {
+    name: string; // e.g. "Size"
+    type: 'radio' | 'checkbox';
+    choices: {
+        name: string; // e.g. "Regular"
+        price: number; // e.g. 0 or 2.00
+    }[];
 }
 
 export const MENU_ITEMS: MenuItem[] = [

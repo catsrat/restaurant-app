@@ -13,6 +13,11 @@ import { cn } from '@/lib/utils';
 import { MenuGrid } from '@/components/MenuGrid';
 import { CartDrawer } from '@/components/CartDrawer';
 
+import { SearchBar } from '@/components/SearchBar';
+import { CategoryNav } from '@/components/CategoryNav';
+import { ItemModal } from '@/components/ItemModal';
+import { MenuItem } from '@/types';
+
 export default function MenuPage() {
     const params = useParams();
     const searchParams = useSearchParams();
@@ -21,14 +26,33 @@ export default function MenuPage() {
     const orderType = (searchParams.get('type') as OrderType) || 'dine-in';
     const contactNumber = searchParams.get('contact') || undefined;
 
-    const { cart, addToCart, removeFromCart, addOrder, menuItems, banners } = useOrder();
+    const { cart, addToCart, removeFromCart, addOrder, menuItems, banners, categories } = useOrder();
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [showToast, setShowToast] = useState(false);
 
+    // Smart Menu State
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeCategory, setActiveCategory] = useState('all');
+    const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+
     const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-    const handleAddToCart = (item: any) => {
-        addToCart({ ...item, quantity: 1 } as OrderItem);
+    // Filter Logic
+    const filteredItems = menuItems.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.description.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = activeCategory === 'all' || item.category === categories.find(c => c.id === activeCategory)?.name;
+
+        return matchesSearch && matchesCategory;
+    });
+
+    const handleItemClick = (item: MenuItem) => {
+        setSelectedItem(item);
+    };
+
+    const handleAddToCart = (item: OrderItem) => {
+        addToCart(item);
+        setSelectedItem(null); // Close modal
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
     };
@@ -43,7 +67,7 @@ export default function MenuPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
-            <header className="bg-white shadow-sm sticky top-0 z-10">
+            <header className="bg-white shadow-sm sticky top-0 z-20">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
                     <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                         <ChefHat className="h-6 w-6" />
@@ -81,7 +105,65 @@ export default function MenuPage() {
                     </div>
                 )}
 
-                <MenuGrid menuItems={menuItems} categories={useOrder().categories} onAddToCart={handleAddToCart} />
+                {/* Smart Menu Controls */}
+                <div className="space-y-4 sticky top-[72px] z-10 bg-gray-50 pt-2 pb-4 -mx-4 px-4 shadow-sm">
+                    <SearchBar value={searchQuery} onChange={setSearchQuery} />
+                    <CategoryNav
+                        categories={categories}
+                        activeCategory={activeCategory}
+                        onSelect={setActiveCategory}
+                    />
+                </div>
+
+                {/* Filtered Menu Grid */}
+                {filteredItems.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredItems.map((item) => (
+                            <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleItemClick(item)}>
+                                <div className="aspect-video w-full overflow-hidden relative">
+                                    <img
+                                        src={item.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
+                                        alt={item.name}
+                                        className="w-full h-full object-cover transition-transform hover:scale-105"
+                                    />
+                                    {!item.is_available && (
+                                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                            <span className="text-white font-bold px-4 py-2 border-2 border-white rounded-md uppercase tracking-wider">Sold Out</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <CardHeader className="pb-2">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <CardTitle className="text-lg">{item.name}</CardTitle>
+                                            <CardDescription className="line-clamp-2 mt-1">{item.description}</CardDescription>
+                                        </div>
+                                        <span className="font-bold text-lg bg-green-50 text-green-700 px-2 py-1 rounded-md">
+                                            {useCurrency().format(item.price)}
+                                        </span>
+                                    </div>
+                                </CardHeader>
+                                <CardFooter>
+                                    <Button
+                                        className="w-full font-bold"
+                                        disabled={!item.is_available}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleItemClick(item);
+                                        }}
+                                    >
+                                        <Plus className="h-4 w-4 mr-2" /> Add
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-12 text-gray-500">
+                        <p className="text-lg">No items found matching your search.</p>
+                        <Button variant="link" onClick={() => { setSearchQuery(''); setActiveCategory('all'); }}>Clear Filters</Button>
+                    </div>
+                )}
             </main>
 
             {/* Add to Cart Toast Overlay */}
@@ -129,6 +211,13 @@ export default function MenuPage() {
                     </div>
                 )}
             </CartDrawer>
+
+            <ItemModal
+                item={selectedItem}
+                isOpen={!!selectedItem}
+                onClose={() => setSelectedItem(null)}
+                onAddToCart={handleAddToCart}
+            />
         </div>
     );
 }
