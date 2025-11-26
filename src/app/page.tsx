@@ -113,7 +113,7 @@ export default function LandingPricing() {
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold">QR</div>
                     <div>
-                        <div className="text-lg font-bold">Scan QR</div>
+                        <div className="text-lg font-bold">Order QR</div>
                         <div className="text-xs text-gray-500">Digital menus & ordering</div>
                     </div>
                 </div>
@@ -141,7 +141,7 @@ export default function LandingPricing() {
                 <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                     <div>
                         <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight">Digital menus, faster orders — built for restaurants</h1>
-                        <p className="mt-4 text-lg opacity-90">Scan QR gives you QR menus, table ordering, and a real-time kitchen display — all in one simple plan. Onboard in 30 minutes.</p>
+                        <p className="mt-4 text-lg opacity-90">Order QR gives you QR menus, table ordering, and a real-time kitchen display — all in one simple plan. Onboard in 30 minutes.</p>
 
                         <div className="mt-8 flex gap-4">
                             <a href="#book" className="bg-white text-indigo-600 px-5 py-3 rounded-lg font-semibold shadow">Start free trial</a>
@@ -264,7 +264,7 @@ export default function LandingPricing() {
 
             <footer className="bg-white border-t mt-10">
                 <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div className="text-sm text-gray-600">© {new Date().getFullYear()} Scan QR. Vercel + Supabase</div>
+                    <div className="text-sm text-gray-600">© {new Date().getFullYear()} Order QR. Vercel + Supabase</div>
                     <div className="flex items-center gap-4 text-sm">
                         <a className="text-gray-600">Privacy</a>
                         <a className="text-gray-600">Terms</a>
