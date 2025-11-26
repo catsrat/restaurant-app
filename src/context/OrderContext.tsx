@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Order, OrderItem, OrderStatus, OrderType, MenuItem, MENU_ITEMS as INITIAL_MENU_ITEMS, Table, Banner, MenuCategory } from '@/types';
 import { supabase } from '@/lib/supabase';
+import { CurrencyCode } from '@/lib/currency';
 
 interface OrderContextType {
     orders: Order[];
@@ -37,6 +38,7 @@ interface OrderContextType {
     checkUpsell: (addedItem: OrderItem) => { rule: any, suggestedItem: MenuItem } | null;
     // Discount
     applyDiscount: (orderId: string, discount: number) => Promise<void>;
+    currency: CurrencyCode;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -48,6 +50,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
     const [tables, setTables] = useState<Table[]>([]);
     const [banners, setBanners] = useState<Banner[]>([]);
     const [categories, setCategories] = useState<MenuCategory[]>([]);
+    const [currency, setCurrency] = useState<CurrencyCode>('CZK');
 
     // Fetch Initial Data
     useEffect(() => {
@@ -63,6 +66,18 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
 
             if (menuError) console.error("Error fetching menu items:", menuError);
             if (menuData) setMenuItems(menuData);
+
+            // Fetch Restaurant Details (Currency)
+            const { data: restaurantData, error: restaurantError } = await supabase
+                .from('restaurants')
+                .select('currency')
+                .eq('id', restaurantId)
+                .single();
+
+            if (restaurantError) console.error("Error fetching restaurant details:", restaurantError);
+            if (restaurantData && restaurantData.currency) {
+                setCurrency(restaurantData.currency as CurrencyCode);
+            }
 
             // Fetch Tables
             const { data: tableData, error: tableError } = await supabase
@@ -654,7 +669,8 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             addCategory,
             deleteCategory,
             checkUpsell,
-            applyDiscount
+            applyDiscount,
+            currency
         }}>
             {children}
         </OrderContext.Provider>
