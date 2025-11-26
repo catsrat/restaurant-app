@@ -200,28 +200,18 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}`, {
-                method: 'PATCH',
-                headers: {
-                    'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-                    'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify({ status })
-            });
+            const { error } = await supabase
+                .from('orders')
+                .update({ status })
+                .eq('id', orderId);
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: response.statusText }));
-                throw new Error(errorData.message || `HTTP error ${response.status}`);
-            }
+            if (error) throw error;
 
-            console.log("Order updated successfully via fetch");
+            console.log("Order updated successfully via supabase client");
         } catch (error: any) {
             console.error("Error updating order status:", error);
-            console.error("Failed Order ID:", orderId, typeof orderId);
             // Revert on error
-            setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'pending' } : o)); // Simple revert
+            setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'pending' } : o)); // Simple revert (imperfect if previous wasn't pending)
             alert(`Failed to update order status: ${error.message}`);
         }
     };
@@ -323,41 +313,30 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         setOrders(prev => prev.map(o => o.tableId === tableId && o.status !== 'paid' ? { ...o, status: 'paid' } : o));
         setTables(prev => prev.map(t => t.id === table.id ? { ...t, status: 'available' } : t));
 
-        // Update all active orders for this table to 'paid'
-        // Update all active orders for this table to 'paid'
         try {
             // 1. Mark orders as paid
-            const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/orders?table_id=eq.${table.id}&status=neq.paid`, {
-                method: 'PATCH',
-                headers: {
-                    'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-                    'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify({ status: 'paid' })
-            });
+            const { error: orderError } = await supabase
+                .from('orders')
+                .update({ status: 'paid' })
+                .eq('table_id', table.id)
+                .neq('status', 'paid');
 
-            if (!orderResponse.ok) console.error("Error marking orders paid via fetch:", await orderResponse.text());
+            if (orderError) throw orderError;
 
             // 2. Free the table
-            const tableResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/tables?id=eq.${table.id}`, {
-                method: 'PATCH',
-                headers: {
-                    'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-                    'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify({ status: 'available' })
-            });
+            const { error: tableError } = await supabase
+                .from('tables')
+                .update({ status: 'available' })
+                .eq('id', table.id);
 
-            if (!tableResponse.ok) console.error("Error freeing table via fetch:", await tableResponse.text());
-            else console.log("Table marked available successfully via fetch");
+            if (tableError) throw tableError;
 
-        } catch (error) {
+            console.log("Table marked available successfully via supabase client");
+
+        } catch (error: any) {
             console.error("Error in markTablePaid:", error);
-            // Revert optimistic update if needed (omitted for simplicity as partial failure is complex)
+            alert(`Failed to mark table paid: ${error.message}`);
+            // Revert optimistic update if needed (omitted for simplicity)
         }
     };
 
@@ -366,25 +345,17 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         setTables(prev => prev.map(t => t.id === tableId ? { ...t, status: 'available' } : t));
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/tables?id=eq.${tableId}`, {
-                method: 'PATCH',
-                headers: {
-                    'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-                    'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify({ status: 'available' })
-            });
+            const { error } = await supabase
+                .from('tables')
+                .update({ status: 'available' })
+                .eq('id', tableId);
 
-            if (!response.ok) {
-                console.error("Error resetting table status:", await response.text());
-                // Revert if needed
-            } else {
-                console.log("Table status reset successfully");
-            }
-        } catch (error) {
+            if (error) throw error;
+
+            console.log("Table status reset successfully");
+        } catch (error: any) {
             console.error("Error in resetTableStatus:", error);
+            alert(`Failed to reset table: ${error.message}`);
         }
     };
 
