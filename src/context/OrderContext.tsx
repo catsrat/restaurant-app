@@ -550,7 +550,35 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             if (suggestedItem) return { rule, suggestedItem };
             else console.log("Suggested item not found:", rule.suggested_menu_item_id);
         } else {
-            console.log("No rule matched.");
+            console.log("No database rule matched. Trying Auto-Discovery...");
+
+            // Auto-Discovery Heuristics
+            const categoryName = fullItem.category.toLowerCase();
+            let targetKeyword = '';
+            let message = '';
+
+            if (categoryName.includes('burger') || categoryName.includes('sandwich')) {
+                targetKeyword = 'fries';
+                message = `Complete your meal with some crispy Fries! 🍟`;
+            } else if (categoryName.includes('pizza') || categoryName.includes('pasta')) {
+                targetKeyword = 'cola'; // or drink
+                message = `Thirsty? Add a refreshing drink! 🥤`;
+            } else if (categoryName.includes('coffee') || categoryName.includes('tea')) {
+                targetKeyword = 'muffin'; // or pastry, cookie
+                message = `A sweet treat goes perfectly with your drink! 🧁`;
+            }
+
+            if (targetKeyword) {
+                // Find a matching item in the CURRENT restaurant's menu
+                const suggestedItem = menuItems.find(i => i.name.toLowerCase().includes(targetKeyword) && i.id !== addedItem.id);
+                if (suggestedItem) {
+                    console.log("Auto-Discovery matched:", suggestedItem.name);
+                    return {
+                        rule: { message },
+                        suggestedItem
+                    };
+                }
+            }
         }
         return null;
     };
