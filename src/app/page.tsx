@@ -23,11 +23,20 @@ export default function LandingPage() {
   useEffect(() => {
     async function fetchUserRestaurant() {
       if (user) {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('restaurants')
           .select('id')
           .eq('user_id', user.id)
           .single();
+
+        if (error) {
+          console.error("Error fetching restaurant:", error);
+          // If the error code indicates missing column (PGRST204 or similar, though Supabase might wrap it)
+          // We can't easily detect "missing column" from client without checking error details string.
+          // But for now, let's just log it.
+          return;
+        }
+
         if (data) {
           setUserRestaurantId(String(data.id));
           setExistingId(String(data.id)); // Auto-fill for convenience
