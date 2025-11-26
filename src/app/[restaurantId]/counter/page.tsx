@@ -140,22 +140,22 @@ function CounterContent() {
             ${billItems.map((item: any) => `
               <div class="item">
                 <span>${item.quantity}x ${item.name}</span>
-                <span>{format(item.price * item.quantity)}</span>
+                <span>${format(item.price * item.quantity)}</span>
               </div>
             `).join('')}
             <div class="total">
               <span>Subtotal</span>
-              <span>{format(total)}</span>
+              <span>${format(total)}</span>
             </div>
             ${discountAmount > 0 ? `
             <div class="item" style="color: red;">
               <span>Discount</span>
-              <span>-{format(Number(discountAmount))}</span>
+              <span>-${format(Number(discountAmount))}</span>
             </div>
             ` : ''}
             <div class="total" style="border-top: 2px solid #000; font-size: 1.2em;">
               <span>TOTAL</span>
-              <span>{format(finalTotal)}</span>
+              <span>${format(finalTotal)}</span>
             </div>
             <div style="text-align: center; margin-top: 20px;">Thank you for dining with us!<br>Please visit again.</div>
             <script>
@@ -374,22 +374,22 @@ function CounterContent() {
             ${billItems.map((item: any) => `
               <div class="item">
                 <span>${item.quantity}x ${item.name}</span>
-                <span>{format(item.price * item.quantity)}</span>
+                <span>${format(item.price * item.quantity)}</span>
               </div>
             `).join('')}
             <div class="total">
               <span>Subtotal</span>
-              <span>{format(total)}</span>
+              <span>${format(total)}</span>
             </div>
             ${discountAmount > 0 ? `
             <div class="item" style="color: red;">
               <span>Discount</span>
-              <span>-{format(Number(discountAmount))}</span>
+              <span>-${format(Number(discountAmount))}</span>
             </div>
             ` : ''}
             <div class="total" style="border-top: 2px solid #000; font-size: 1.2em;">
               <span>TOTAL</span>
-              <span>{format(finalTotal)}</span>
+              <span>${format(finalTotal)}</span>
             </div>
             <div style="text-align: center; margin-top: 20px;">Thank you!</div>
           </body>
