@@ -52,7 +52,8 @@ export default function LoginPage() {
                 if (restaurants && restaurants.length > 0) {
                     router.push(`/${restaurants[0].id}/counter`);
                 } else {
-                    // Create one? Or just stay here?
+                    // No restaurants found, redirect to creation
+                    alert("Login successful! Redirecting you to create your first restaurant.");
                     router.push('/');
                 }
             }

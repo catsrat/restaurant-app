@@ -9,15 +9,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Utensils, ChefHat, ArrowRight } from 'lucide-react';
 import { CURRENCIES, type CurrencyCode } from '@/lib/currency';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 
 export default function LandingPage() {
   const router = useRouter();
+  const { user, loading } = useAuth();
   const [restaurantName, setRestaurantName] = useState('');
   const [currency, setCurrency] = useState<CurrencyCode>('CZK');
   const [existingId, setExistingId] = useState('');
 
   const handleCreate = async () => {
     if (!restaurantName) return;
+
+    // If not logged in, redirect to login first? 
+    // Or allow public creation? 
+    // With RLS, we need to be logged in.
+    if (!user) {
+      router.push('/login?redirect=create');
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -48,9 +58,18 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col items-center justify-center p-4">
-      <div className="text-center mb-12 relative">
+      <div className="text-center mb-12 relative w-full max-w-4xl">
         <div className="absolute top-0 right-0">
-          <Button variant="ghost" onClick={() => router.push('/login')}>Login</Button>
+          {loading ? (
+            <span className="text-gray-400">Loading...</span>
+          ) : user ? (
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-gray-700">Hi, {user.email}</span>
+              {/* We could add a logout button here, but let's keep it simple */}
+            </div>
+          ) : (
+            <Button variant="ghost" onClick={() => router.push('/login')}>Login</Button>
+          )}
         </div>
         <div className="flex justify-center mb-4">
           <div className="bg-blue-600 p-4 rounded-full">
@@ -62,7 +81,7 @@ export default function LandingPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
-        <Card className="hover:shadow-lg transition-shadow">
+        <Card className="hover:shadow-lg transition-shadow border-blue-100">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ChefHat className="h-6 w-6 text-blue-600" />
@@ -93,8 +112,8 @@ export default function LandingPage() {
                 ))}
               </select>
             </div>
-            <Button className="w-full" onClick={handleCreate} disabled={!restaurantName}>
-              Create & Start <ArrowRight className="ml-2 h-4 w-4" />
+            <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={handleCreate} disabled={!restaurantName}>
+              {user ? 'Create & Start' : 'Login to Create'} <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </CardContent>
         </Card>
