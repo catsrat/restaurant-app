@@ -38,7 +38,7 @@ export async function POST(req: Request) {
 
         const userId = session.client_reference_id || session.metadata?.userId;
         const customerId = session.customer as string;
-        const endDate = new Date(subscription.current_period_end * 1000).toISOString();
+        const endDate = new Date((subscription as any).current_period_end * 1000).toISOString();
 
         if (userId) {
             // Update the restaurant/user record
