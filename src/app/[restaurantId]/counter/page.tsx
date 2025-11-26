@@ -140,22 +140,22 @@ function CounterContent() {
             ${billItems.map((item: any) => `
               <div class="item">
                 <span>${item.quantity}x ${item.name}</span>
-                <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                <span>{format(item.price * item.quantity)}</span>
               </div>
             `).join('')}
             <div class="total">
               <span>Subtotal</span>
-              <span>$${total.toFixed(2)}</span>
+              <span>{format(total)}</span>
             </div>
             ${discountAmount > 0 ? `
             <div class="item" style="color: red;">
               <span>Discount</span>
-              <span>-$${Number(discountAmount).toFixed(2)}</span>
+              <span>-{format(Number(discountAmount))}</span>
             </div>
             ` : ''}
             <div class="total" style="border-top: 2px solid #000; font-size: 1.2em;">
               <span>TOTAL</span>
-              <span>$${finalTotal.toFixed(2)}</span>
+              <span>{format(finalTotal)}</span>
             </div>
             <div style="text-align: center; margin-top: 20px;">Thank you for dining with us!<br>Please visit again.</div>
             <script>
@@ -374,22 +374,22 @@ function CounterContent() {
             ${billItems.map((item: any) => `
               <div class="item">
                 <span>${item.quantity}x ${item.name}</span>
-                <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                <span>{format(item.price * item.quantity)}</span>
               </div>
             `).join('')}
             <div class="total">
               <span>Subtotal</span>
-              <span>$${total.toFixed(2)}</span>
+              <span>{format(total)}</span>
             </div>
             ${discountAmount > 0 ? `
             <div class="item" style="color: red;">
               <span>Discount</span>
-              <span>-$${Number(discountAmount).toFixed(2)}</span>
+              <span>-{format(Number(discountAmount))}</span>
             </div>
             ` : ''}
             <div class="total" style="border-top: 2px solid #000; font-size: 1.2em;">
               <span>TOTAL</span>
-              <span>$${finalTotal.toFixed(2)}</span>
+              <span>{format(finalTotal)}</span>
             </div>
             <div style="text-align: center; margin-top: 20px;">Thank you!</div>
           </body>
@@ -447,7 +447,7 @@ function CounterContent() {
                      <td>${new Date(order.createdAt).toLocaleTimeString()}</td>
                      <td>${order.orderType === 'dine-in' ? `Table ${order.tableId}` : `Takeaway (${order.contactNumber})`}</td>
                      <td>${order.items.map((i: any) => `${i.quantity}x ${i.name}`).join(', ')}</td>
-                     <td>$${order.items.reduce((s: any, i: any) => s + i.price * i.quantity, 0).toFixed(2)}</td>
+                     <td>${format(order.items.reduce((s: any, i: any) => s + i.price * i.quantity, 0))}</td>
                    </tr>
                  `).join('')}
                </tbody>
@@ -455,7 +455,7 @@ function CounterContent() {
  
              <div class="summary">
                <div>Total Orders: ${totalOrders}</div>
-               <div>Total Revenue: $${totalRevenue.toFixed(2)}</div>
+               <div>Total Revenue: ${format(totalRevenue)}</div>
              </div>
            </body>
          </html>
