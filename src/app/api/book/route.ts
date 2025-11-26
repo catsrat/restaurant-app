@@ -11,7 +11,7 @@ export async function POST(req: Request) {
         }
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-        const { companyName, contactEmail, currency, billingCycle } = await req.json();
+        const { companyName, contactEmail, currency, billingCycle, userId } = await req.json();
 
         const origin = req.headers.get('origin') || 'http://localhost:3000';
 
@@ -54,7 +54,9 @@ export async function POST(req: Request) {
             customer_email: contactEmail,
             metadata: {
                 companyName,
+                userId, // Pass userId to webhook
             },
+            client_reference_id: userId, // Also good practice to set this
         });
 
         return NextResponse.json({ checkoutUrl: session.url });

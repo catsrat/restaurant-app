@@ -19,27 +19,26 @@ export default function LandingPage() {
   const [existingId, setExistingId] = useState('');
 
   const [userRestaurantId, setUserRestaurantId] = useState<string | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchUserRestaurant() {
       if (user) {
         const { data, error } = await supabase
           .from('restaurants')
-          .select('id')
+          .select('id, subscription_status')
           .eq('user_id', user.id)
           .single();
 
         if (error) {
           console.error("Error fetching restaurant:", error);
-          // If the error code indicates missing column (PGRST204 or similar, though Supabase might wrap it)
-          // We can't easily detect "missing column" from client without checking error details string.
-          // But for now, let's just log it.
           return;
         }
 
         if (data) {
           setUserRestaurantId(String(data.id));
-          setExistingId(String(data.id)); // Auto-fill for convenience
+          setExistingId(String(data.id));
+          setSubscriptionStatus(data.subscription_status);
         }
       }
     }
@@ -196,13 +195,23 @@ export default function LandingPage() {
                 </p>
               )}
               <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" onClick={() => router.push(`/${existingId}/counter`)} disabled={!existingId}>
-                  Admin
+                <Button
+                  variant="outline"
+                  onClick={() => router.push(`/${existingId}/counter`)}
+                  disabled={!existingId || subscriptionStatus !== 'active'}
+                  className={subscriptionStatus !== 'active' && existingId ? "opacity-50 cursor-not-allowed" : ""}
+                >
+                  {subscriptionStatus === 'active' ? 'Admin' : 'Subscribe First'}
                 </Button>
                 <Button variant="outline" onClick={() => router.push(`/${existingId}/kitchen`)} disabled={!existingId}>
                   Kitchen
                 </Button>
               </div>
+              {existingId && subscriptionStatus !== 'active' && (
+                <p className="text-xs text-red-500 mt-2">
+                  Subscription inactive. Please subscribe to access Admin Dashboard.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
