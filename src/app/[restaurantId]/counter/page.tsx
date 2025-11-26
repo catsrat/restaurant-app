@@ -391,7 +391,10 @@ function CounterContent() {
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
                     <p className="text-gray-500">Manage orders, tables, menu, and sales</p>
-                    {user && <p className="text-xs text-gray-400 mt-1">Logged in as: {user.email}</p>}
+                    <div className="flex flex-col gap-1 mt-1">
+                        {user && <p className="text-xs text-gray-400">Logged in as: {user.email}</p>}
+                        <p className="text-xs text-gray-400 font-mono">ID: {restaurantId}</p>
+                    </div>
                 </div>
                 <div className="flex flex-col w-full md:w-auto gap-4">
                     <div className="flex items-center gap-2 self-end md:self-auto">
