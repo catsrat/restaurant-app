@@ -27,6 +27,7 @@ export default function MenuPage() {
     const contactNumber = searchParams.get('contact') || undefined;
 
     const { cart, addToCart, removeFromCart, addOrder, menuItems, banners, categories } = useOrder();
+    const { format } = useCurrency();
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [showToast, setShowToast] = useState(false);
 
@@ -139,7 +140,7 @@ export default function MenuPage() {
                                             <CardDescription className="line-clamp-2 mt-1">{item.description}</CardDescription>
                                         </div>
                                         <span className="font-bold text-lg bg-green-50 text-green-700 px-2 py-1 rounded-md">
-                                            {useCurrency().format(item.price)}
+                                            {format(item.price)}
                                         </span>
                                     </div>
                                 </CardHeader>
