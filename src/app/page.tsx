@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useMemo } from 'react';
-import Link from 'next/link';
+
 
 // Landing page component — visual fixes and dynamic mockup currency conversion
 // - Hero mockup prices now follow the selected currency instead of hardcoded CZK
@@ -122,7 +122,7 @@ export default function LandingPricing() {
                 <div className="flex items-center gap-4">
                     <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm text-gray-600 hover:text-indigo-600">Features</a>
                     <a href="#book" onClick={(e) => { e.preventDefault(); document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm text-gray-600 hover:text-indigo-600">Pricing</a>
-                    <Link href="/portal" className="text-sm text-indigo-600 font-medium hover:text-indigo-800">Login</Link>
+
 
                     {/* Currency select: z-index & aria-label for accessibility */}
                     <div className="relative">
