@@ -16,7 +16,6 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryNav } from '@/components/CategoryNav';
 import { ItemModal } from '@/components/ItemModal';
-import { UpsellModal } from '@/components/UpsellModal';
 import { MenuItem } from '@/types';
 
 export default function MenuPage() {
@@ -232,27 +231,6 @@ export default function MenuPage() {
                 onClose={() => setSelectedItem(null)}
                 onAddToCart={handleAddToCart}
             />
-
-            {upsellItem && (
-                <UpsellModal
-                    isOpen={!!upsellItem}
-                    onClose={() => {
-                        setUpsellItem(null);
-                        setShowToast(true);
-                        setTimeout(() => setShowToast(false), 3000);
-                    }}
-                    onAdd={() => {
-                        if (upsellItem) {
-                            addToCart({ ...upsellItem, quantity: 1, status: 'pending', isUpsell: true });
-                            setUpsellItem(null);
-                            setShowToast(true);
-                            setTimeout(() => setShowToast(false), 3000);
-                        }
-                    }}
-                    suggestedItem={upsellItem}
-                    message={upsellMessage}
-                />
-            )}
         </div>
     );
 }
