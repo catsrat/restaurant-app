@@ -8,6 +8,7 @@ interface OrderContextType {
     orders: Order[];
     addOrder: (items: OrderItem[], orderType: OrderType, details: { tableId?: string, contactNumber?: string }) => Promise<Order>;
     updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
+    updateOrderItemStatus: (orderId: string, itemId: string, status: 'pending' | 'ready') => Promise<void>;
     cart: OrderItem[];
     addToCart: (item: OrderItem) => void;
     removeFromCart: (itemId: string) => void;
@@ -109,7 +110,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                     totalAmount: o.total_amount,
                     orderType: o.order_type, // Map snake_case to camelCase
                     createdAt: new Date(o.created_at),
-                    items: Array.isArray(o.items) ? o.items.map((i: any) => ({ ...i, id: String(i.menu_item_id) })) : [] // Map back to internal structure
+                    items: Array.isArray(o.items) ? o.items.map((i: any) => ({ ...i, id: String(i.id), status: i.status || 'pending' })) : [] // Map back to internal structure
                 }));
                 setOrders(parsedOrders);
             }
@@ -130,6 +131,10 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             })
             .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_items' }, () => {
                 console.log('Realtime Menu Update');
+                fetchData();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items' }, () => {
+                console.log('Realtime Order Items Update');
                 fetchData();
             })
             .subscribe((status) => {
@@ -173,7 +178,8 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             menu_item_id: item.id,
             name: item.name,
             price: item.price,
-            quantity: item.quantity
+            quantity: item.quantity,
+            status: 'pending'
         }));
 
         await supabase.from('order_items').insert(orderItems);
@@ -213,6 +219,79 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             // Revert on error
             setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'pending' } : o)); // Simple revert (imperfect if previous wasn't pending)
             alert(`Failed to update order status: ${error.message}`);
+        }
+    };
+
+    const updateOrderItemStatus = async (orderId: string, itemId: string, status: 'pending' | 'ready') => {
+        console.log(`Updating item ${itemId} in order ${orderId} to ${status}`);
+
+        // Optimistic update
+        setOrders(prev => prev.map(o => {
+            if (o.id === orderId) {
+                const updatedItems = o.items.map(i => i.id === itemId ? { ...i, status } : i);
+
+                // Auto-calculate parent status
+                const allReady = updatedItems.every(i => i.status === 'ready');
+                const someReady = updatedItems.some(i => i.status === 'ready');
+                let newOrderStatus = o.status;
+
+                if (allReady && o.status !== 'served' && o.status !== 'paid') {
+                    newOrderStatus = 'ready';
+                } else if (someReady && o.status === 'pending') {
+                    newOrderStatus = 'preparing';
+                } else if (!someReady && o.status === 'ready') {
+                    // If we uncheck everything, go back to preparing or pending?
+                    // Let's say preparing if it was ready.
+                    newOrderStatus = 'preparing';
+                }
+
+                return { ...o, items: updatedItems, status: newOrderStatus };
+            }
+            return o;
+        }));
+
+        try {
+            // 1. Update Item
+            const { error: itemError } = await supabase
+                .from('order_items')
+                .update({ status })
+                .eq('id', itemId);
+
+            if (itemError) throw itemError;
+
+            // 2. Check siblings to update parent order
+            // We need to fetch fresh items to be sure, or trust our optimistic logic.
+            // For robustness, let's fetch.
+            const { data: siblingItems, error: fetchError } = await supabase
+                .from('order_items')
+                .select('status')
+                .eq('order_id', orderId);
+
+            if (fetchError) throw fetchError;
+
+            if (siblingItems) {
+                const allReady = siblingItems.every((i: any) => i.status === 'ready');
+                const someReady = siblingItems.some((i: any) => i.status === 'ready');
+
+                // Fetch current order status to avoid overwriting 'served' or 'paid'
+                const { data: currentOrder } = await supabase.from('orders').select('status').eq('id', orderId).single();
+
+                if (currentOrder && currentOrder.status !== 'served' && currentOrder.status !== 'paid') {
+                    let newStatus: OrderStatus | null = null;
+
+                    if (allReady) newStatus = 'ready';
+                    else if (someReady) newStatus = 'preparing';
+
+                    if (newStatus && newStatus !== currentOrder.status) {
+                        await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
+                    }
+                }
+            }
+
+        } catch (error: any) {
+            console.error("Error updating item status:", error);
+            alert(`Failed to update item: ${error.message}`);
+            // Revert logic would go here (complex to revert parent status change)
         }
     };
 
@@ -413,6 +492,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             tables,
             addOrder,
             updateOrderStatus,
+            updateOrderItemStatus,
             cart,
             addToCart,
             removeFromCart,

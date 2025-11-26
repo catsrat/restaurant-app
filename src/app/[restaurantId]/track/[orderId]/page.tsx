@@ -211,7 +211,19 @@ export default function OrderTrackingPage() {
                                         {order.items.map((item: any, idx: number) => (
                                             <li key={idx} className="flex justify-between items-center border-b pb-3 last:border-0">
                                                 <div>
-                                                    <span className="font-medium">{item.quantity}x {item.name}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-medium">{item.quantity}x {item.name}</span>
+                                                        {item.status === 'ready' && (
+                                                            <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                                                                <CheckCircle2 className="h-3 w-3" /> Ready
+                                                            </span>
+                                                        )}
+                                                        {(item.status === 'pending' || !item.status) && (
+                                                            <span className="bg-orange-100 text-orange-800 text-xs px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                                                                <Clock className="h-3 w-3" /> Prep
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 <span className="font-semibold">{format(item.price * item.quantity)}</span>
                                             </li>

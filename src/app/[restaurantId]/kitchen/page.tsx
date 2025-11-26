@@ -18,7 +18,7 @@ export default function KitchenPage() {
 }
 
 function KitchenContent() {
-    const { orders, updateOrderStatus, tables } = useOrder();
+    const { orders, updateOrderStatus, updateOrderItemStatus, tables } = useOrder();
     const { signOut } = useAuth();
 
     // Notification system
@@ -171,19 +171,26 @@ function KitchenContent() {
                                 <CardContent className="py-6">
                                     <ul className="space-y-4">
                                         {group.flatMap(o => o.items).map((item, idx) => (
-                                            <li key={idx} className="flex justify-between items-center text-lg">
-                                                <span className="font-bold text-slate-200">{item.quantity}x</span>
-                                                <span className="flex-1 ml-4 text-slate-300">{item.name}</span>
+                                            <li key={`${o.id}-${item.id}-${idx}`} className="flex justify-between items-center text-lg p-2 hover:bg-slate-700/50 rounded cursor-pointer"
+                                                onClick={() => updateOrderItemStatus(o.id, item.id, item.status === 'ready' ? 'pending' : 'ready')}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-6 h-6 rounded border flex items-center justify-center transition-colors ${item.status === 'ready' ? 'bg-green-500 border-green-500' : 'border-slate-500'}`}>
+                                                        {item.status === 'ready' && <CheckCircle2 className="h-4 w-4 text-white" />}
+                                                    </div>
+                                                    <span className={`font-bold ${item.status === 'ready' ? 'text-green-400' : 'text-slate-200'}`}>{item.quantity}x</span>
+                                                    <span className={`flex-1 ${item.status === 'ready' ? 'text-slate-500 line-through' : 'text-slate-300'}`}>{item.name}</span>
+                                                </div>
                                             </li>
                                         ))}
                                     </ul>
                                 </CardContent>
                                 <CardFooter>
                                     <Button
-                                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-6 text-lg"
+                                        className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-6 text-lg"
                                         onClick={() => group.forEach(o => updateOrderStatus(o.id, 'ready'))}
                                     >
-                                        Mark Ready ({group.length > 1 ? 'All' : '1'})
+                                        Mark All Ready
                                     </Button>
                                 </CardFooter>
                             </Card>

@@ -29,6 +29,7 @@ export interface OrderItem {
     name: string;
     price: number;
     quantity: number;
+    status: 'pending' | 'ready';
 }
 
 export interface Order {
