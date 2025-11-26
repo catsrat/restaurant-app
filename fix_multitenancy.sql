@@ -7,6 +7,12 @@ DROP POLICY IF EXISTS "Enable update for authenticated users only" ON restaurant
 DROP POLICY IF EXISTS "Enable delete for authenticated users only" ON restaurants;
 DROP POLICY IF EXISTS "Public restaurants access" ON restaurants;
 
+-- Drop new policies if they exist (to make script idempotent)
+DROP POLICY IF EXISTS "Public can view restaurants" ON restaurants;
+DROP POLICY IF EXISTS "Authenticated users can create restaurants" ON restaurants;
+DROP POLICY IF EXISTS "Owners can update their restaurants" ON restaurants;
+DROP POLICY IF EXISTS "Owners can delete their restaurants" ON restaurants;
+
 -- 1. Public can view restaurants (needed for customers to see menu)
 CREATE POLICY "Public can view restaurants" ON restaurants FOR SELECT USING (true);
 
@@ -31,6 +37,8 @@ USING (auth.uid() = user_id);
 
 -- Menu Categories
 DROP POLICY IF EXISTS "Authenticated users can manage categories" ON menu_categories;
+DROP POLICY IF EXISTS "Owners can manage categories" ON menu_categories;
+
 CREATE POLICY "Owners can manage categories" ON menu_categories FOR ALL
 TO authenticated
 USING (
@@ -43,6 +51,8 @@ USING (
 
 -- Menu Items
 DROP POLICY IF EXISTS "Authenticated users can manage menu items" ON menu_items;
+DROP POLICY IF EXISTS "Owners can manage menu items" ON menu_items;
+
 CREATE POLICY "Owners can manage menu items" ON menu_items FOR ALL
 TO authenticated
 USING (
@@ -57,6 +67,8 @@ USING (
 DROP POLICY IF EXISTS "Authenticated users can insert tables" ON tables;
 DROP POLICY IF EXISTS "Authenticated users can update tables" ON tables;
 DROP POLICY IF EXISTS "Authenticated users can delete tables" ON tables;
+DROP POLICY IF EXISTS "Owners can manage tables" ON tables;
+
 -- Consolidate into one "manage" policy for owners
 CREATE POLICY "Owners can manage tables" ON tables FOR ALL
 TO authenticated
@@ -70,6 +82,8 @@ USING (
 
 -- Orders
 DROP POLICY IF EXISTS "Authenticated users can update orders" ON orders;
+DROP POLICY IF EXISTS "Owners can update orders" ON orders;
+
 CREATE POLICY "Owners can update orders" ON orders FOR UPDATE
 TO authenticated
 USING (
@@ -82,6 +96,8 @@ USING (
 
 -- Banners
 DROP POLICY IF EXISTS "Authenticated users can manage banners" ON restaurant_banners;
+DROP POLICY IF EXISTS "Owners can manage banners" ON restaurant_banners;
+
 CREATE POLICY "Owners can manage banners" ON restaurant_banners FOR ALL
 TO authenticated
 USING (

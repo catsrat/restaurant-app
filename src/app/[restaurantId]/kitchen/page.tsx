@@ -114,6 +114,9 @@ function KitchenContent() {
                     </div>
                 </div>
                 <div className="flex items-center gap-4 self-end md:self-auto">
+                    <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="bg-slate-800 hover:bg-slate-700">
+                        🔄 <span className="hidden sm:inline">Refresh</span>
+                    </Button>
                     <Button variant="outline" size="sm" onClick={testSound} className="bg-slate-800 hover:bg-slate-700">
                         🔔 <span className="hidden sm:inline">Test Sound</span>
                     </Button>
