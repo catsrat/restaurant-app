@@ -92,13 +92,79 @@ function CounterContent() {
     const receiptRef = useRef<HTMLDivElement>(null);
 
     const handlePrint = (tableName: string, groupOrders: typeof orders, totalAmount: number) => {
-        setPrintingData({ tableName, orders: groupOrders, totalAmount });
-        // Wait for state update and render
-        setTimeout(() => {
-            window.print();
-            // Optional: Clear printing data after print dialog closes (though browser behavior varies)
-            // setPrintingData(null); 
-        }, 100);
+        // Calculate totals including discount
+        const total = groupOrders.reduce((sum, order) => sum + order.items.reduce((s, i) => s + i.price * i.quantity, 0), 0);
+        const discountAmount = groupOrders.reduce((sum, order) => sum + (order.discount || 0), 0);
+        const finalTotal = total - discountAmount;
+
+        // Use the state-based approach which triggers a re-render and then prints
+        // This is often more reliable than window.open in some frameworks/browsers
+        setPrintingData({
+            tableName,
+            orders: groupOrders,
+            totalAmount: finalTotal // Pass the discounted total if needed, or handle in render
+        });
+
+        // We need to generate the HTML for the print window here if we want to stick to the window.open approach 
+        // BUT the user said "it stopped", implying a crash or failure.
+        // Let's try to be robust. If we use window.open, let's make sure we don't rely on external state.
+
+        // Actually, let's go back to the window.open approach but make it safer.
+        // The previous error might be due to `window.open` returning null (popup blocker).
+
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            alert("Please allow popups to print the bill.");
+            return;
+        }
+
+        const billItems = groupOrders.flatMap(o => o.items);
+
+        printWindow.document.write(`
+        <html>
+          <head>
+            <title>Bill - ${tableName}</title>
+            <style>
+              body { font-family: monospace; padding: 20px; }
+              .header { text-align: center; margin-bottom: 20px; }
+              .item { display: flex; justify-content: space-between; margin-bottom: 5px; }
+              .total { border-top: 1px dashed #000; margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between; font-weight: bold; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h2>Restaurant Name</h2>
+              <p>Date: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+              <p>${tableName}</p>
+            </div>
+            ${billItems.map((item: any) => `
+              <div class="item">
+                <span>${item.quantity}x ${item.name}</span>
+                <span>$${(item.price * item.quantity).toFixed(2)}</span>
+              </div>
+            `).join('')}
+            <div class="total">
+              <span>Subtotal</span>
+              <span>$${total.toFixed(2)}</span>
+            </div>
+            ${discountAmount > 0 ? `
+            <div class="item" style="color: red;">
+              <span>Discount</span>
+              <span>-$${Number(discountAmount).toFixed(2)}</span>
+            </div>
+            ` : ''}
+            <div class="total" style="border-top: 2px solid #000; font-size: 1.2em;">
+              <span>TOTAL</span>
+              <span>$${finalTotal.toFixed(2)}</span>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">Thank you for dining with us!<br>Please visit again.</div>
+            <script>
+                window.onload = function() { window.print(); }
+            </script>
+          </body>
+        </html>
+      `);
+        printWindow.document.close();
     };
 
     // Notification system
