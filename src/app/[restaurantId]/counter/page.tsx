@@ -285,6 +285,9 @@ function CounterContent() {
 
         const printWindow = window.open('', '_blank');
         if (printWindow) {
+            const discountAmount = order.discount || 0;
+            const finalTotal = total - discountAmount;
+
             printWindow.document.write(`
         <html>
           <head>
@@ -312,15 +315,15 @@ function CounterContent() {
               <span>Subtotal</span>
               <span>$${total.toFixed(2)}</span>
             </div>
-            ${order.discount > 0 ? `
+            ${discountAmount > 0 ? `
             <div class="item" style="color: red;">
               <span>Discount</span>
-              <span>-$${Number(order.discount).toFixed(2)}</span>
+              <span>-$${Number(discountAmount).toFixed(2)}</span>
             </div>
             ` : ''}
             <div class="total" style="border-top: 2px solid #000; font-size: 1.2em;">
               <span>TOTAL</span>
-              <span>$${(total - (order.discount || 0)).toFixed(2)}</span>
+              <span>$${finalTotal.toFixed(2)}</span>
             </div>
             <div style="text-align: center; margin-top: 20px;">Thank you!</div>
           </body>
@@ -521,17 +524,17 @@ function CounterContent() {
                                                 variant="outline"
                                                 className="flex-1 border-orange-400 text-orange-600 hover:bg-orange-50"
                                                 onClick={() => {
-                                                    const currentDiscount = orders[0]?.discount || 0;
-                                                    const discount = prompt("Enter discount amount:", currentDiscount.toString());
-                                                    if (discount !== null) {
-                                                        const numDiscount = parseFloat(discount);
-                                                        if (!isNaN(numDiscount) && numDiscount >= 0) {
-                                                            // Apply to the first order (or main order) of the table
+                                                    const percentage = prompt("Enter discount percentage (%):", "0");
+                                                    if (percentage !== null) {
+                                                        const numPercentage = parseFloat(percentage);
+                                                        if (!isNaN(numPercentage) && numPercentage >= 0 && numPercentage <= 100) {
                                                             if (orders[0]) {
-                                                                applyDiscount(orders[0].id, numDiscount);
+                                                                // Calculate amount based on total
+                                                                const discountAmount = (totalAmount * numPercentage) / 100;
+                                                                applyDiscount(orders[0].id, discountAmount);
                                                             }
                                                         } else {
-                                                            alert("Invalid discount amount");
+                                                            alert("Invalid percentage");
                                                         }
                                                     }
                                                 }}
