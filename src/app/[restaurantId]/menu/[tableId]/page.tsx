@@ -16,6 +16,7 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryNav } from '@/components/CategoryNav';
 import { ItemModal } from '@/components/ItemModal';
+import { UpsellModal } from '@/components/UpsellModal';
 import { MenuItem } from '@/types';
 
 export default function MenuPage() {
@@ -26,7 +27,7 @@ export default function MenuPage() {
     const orderType = (searchParams.get('type') as OrderType) || 'dine-in';
     const contactNumber = searchParams.get('contact') || undefined;
 
-    const { cart, addToCart, removeFromCart, addOrder, menuItems, banners, categories } = useOrder();
+    const { cart, addToCart, removeFromCart, addOrder, menuItems, banners, categories, checkUpsell } = useOrder();
     const { format } = useCurrency();
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [showToast, setShowToast] = useState(false);
@@ -35,6 +36,10 @@ export default function MenuPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('all');
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+
+    // Upsell State
+    const [upsellItem, setUpsellItem] = useState<MenuItem | null>(null);
+    const [upsellMessage, setUpsellMessage] = useState('');
 
     const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -54,8 +59,16 @@ export default function MenuPage() {
     const handleAddToCart = (item: OrderItem) => {
         addToCart(item);
         setSelectedItem(null); // Close modal
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 3000);
+
+        // Check for upsell
+        const upsell = checkUpsell(item);
+        if (upsell) {
+            setUpsellItem(upsell.suggestedItem);
+            setUpsellMessage(upsell.rule.message);
+        } else {
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+        }
     };
 
     const handlePlaceOrder = async () => {
@@ -218,6 +231,25 @@ export default function MenuPage() {
                 isOpen={!!selectedItem}
                 onClose={() => setSelectedItem(null)}
                 onAddToCart={handleAddToCart}
+            />
+
+            <UpsellModal
+                isOpen={!!upsellItem}
+                onClose={() => {
+                    setUpsellItem(null);
+                    setShowToast(true);
+                    setTimeout(() => setShowToast(false), 3000);
+                }}
+                onAdd={() => {
+                    if (upsellItem) {
+                        addToCart({ ...upsellItem, quantity: 1, status: 'pending' });
+                        setUpsellItem(null);
+                        setShowToast(true);
+                        setTimeout(() => setShowToast(false), 3000);
+                    }
+                }}
+                suggestedItem={upsellItem!}
+                message={upsellMessage}
             />
         </div>
     );

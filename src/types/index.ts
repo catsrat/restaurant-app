@@ -34,6 +34,16 @@ export interface OrderItem {
     selectedOptions?: Record<string, string | string[]>;
 }
 
+export interface UpsellRule {
+    id: string;
+    restaurant_id: string;
+    trigger_category_id?: string;
+    trigger_menu_item_id?: string;
+    suggested_menu_item_id: string;
+    message: string;
+    is_active: boolean;
+}
+
 export interface Order {
     id: string;
     restaurant_id: string;

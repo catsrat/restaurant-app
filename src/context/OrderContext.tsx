@@ -32,6 +32,8 @@ interface OrderContextType {
     categories: MenuCategory[];
     addCategory: (name: string) => Promise<void>;
     deleteCategory: (id: string) => Promise<void>;
+    // Upsell
+    checkUpsell: (addedItem: OrderItem) => { rule: any, suggestedItem: MenuItem } | null;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -493,6 +495,47 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         }
     };
 
+    // Upsell Logic
+    const [upsellRules, setUpsellRules] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (!restaurantId) return;
+        const fetchUpsells = async () => {
+            const { data, error } = await supabase
+                .from('upsell_rules')
+                .select('*')
+                .eq('restaurant_id', restaurantId)
+                .eq('is_active', true);
+            if (error) console.error("Error fetching upsell rules:", error);
+            if (data) setUpsellRules(data);
+        };
+        fetchUpsells();
+    }, [restaurantId]);
+
+    const checkUpsell = (addedItem: OrderItem): { rule: any, suggestedItem: MenuItem } | null => {
+        // Find the full menu item to get the category
+        const fullItem = menuItems.find(i => String(i.id) === String(addedItem.id));
+        if (!fullItem) return null;
+
+        // Find a matching rule
+        const rule = upsellRules.find(r => {
+            // Check specific item trigger
+            if (r.trigger_menu_item_id && String(r.trigger_menu_item_id) === String(addedItem.id)) return true;
+            // Check category trigger
+            if (r.trigger_category_id) {
+                const category = categories.find(c => String(c.id) === String(r.trigger_category_id));
+                if (category && fullItem.category === category.name) return true;
+            }
+            return false;
+        });
+
+        if (rule) {
+            const suggestedItem = menuItems.find(i => String(i.id) === String(rule.suggested_menu_item_id));
+            if (suggestedItem) return { rule, suggestedItem };
+        }
+        return null;
+    };
+
     return (
         <OrderContext.Provider value={{
             orders,
@@ -517,7 +560,8 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             deleteBanner,
             categories,
             addCategory,
-            deleteCategory
+            deleteCategory,
+            checkUpsell
         }}>
             {children}
         </OrderContext.Provider>
