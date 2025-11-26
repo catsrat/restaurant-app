@@ -513,25 +513,44 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
     }, [restaurantId]);
 
     const checkUpsell = (addedItem: OrderItem): { rule: any, suggestedItem: MenuItem } | null => {
+        console.log("Checking upsell for:", addedItem.name, "ID:", addedItem.id);
+
         // Find the full menu item to get the category
         const fullItem = menuItems.find(i => String(i.id) === String(addedItem.id));
-        if (!fullItem) return null;
+        if (!fullItem) {
+            console.log("Full item not found in menuItems");
+            return null;
+        }
+        console.log("Full item found:", fullItem.name, "Category:", fullItem.category);
 
         // Find a matching rule
         const rule = upsellRules.find(r => {
+            console.log("Checking rule:", r);
             // Check specific item trigger
-            if (r.trigger_menu_item_id && String(r.trigger_menu_item_id) === String(addedItem.id)) return true;
+            if (r.trigger_menu_item_id && String(r.trigger_menu_item_id) === String(addedItem.id)) {
+                console.log("Item trigger match!");
+                return true;
+            }
             // Check category trigger
             if (r.trigger_category_id) {
                 const category = categories.find(c => String(c.id) === String(r.trigger_category_id));
-                if (category && fullItem.category === category.name) return true;
+                console.log("Checking category trigger. Rule Cat ID:", r.trigger_category_id, "Found Cat:", category?.name);
+
+                if (category && fullItem.category === category.name) {
+                    console.log("Category match!");
+                    return true;
+                }
             }
             return false;
         });
 
         if (rule) {
+            console.log("Rule matched:", rule);
             const suggestedItem = menuItems.find(i => String(i.id) === String(rule.suggested_menu_item_id));
             if (suggestedItem) return { rule, suggestedItem };
+            else console.log("Suggested item not found:", rule.suggested_menu_item_id);
+        } else {
+            console.log("No rule matched.");
         }
         return null;
     };
