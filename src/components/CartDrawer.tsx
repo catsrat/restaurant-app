@@ -64,7 +64,7 @@ export function CartContent({ onClose, cart, onRemove, onAdd, onPlaceOrder, tota
                                     variant="outline"
                                     size="icon"
                                     className="h-8 w-8 text-gray-900 border-gray-300"
-                                    onClick={() => onAdd(item)}
+                                    onClick={() => onAdd({ ...item, quantity: 1 })}
                                 >
                                     <Plus className="h-3 w-3" />
                                 </Button>
