@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Utensils, QrCode, List, DollarSign, BarChart3, Trash2, Plus, BadgeCheck, Clock, CheckCircle2, ChefHat, Printer, Download, TrendingUp, Image as ImageIcon } from 'lucide-react';
+import { Utensils, QrCode, List, DollarSign, BarChart3, Trash2, Plus, BadgeCheck, Clock, CheckCircle2, ChefHat, Printer, Download, TrendingUp, Image as ImageIcon, LogOut } from 'lucide-react';
 import { Receipt } from '@/components/Receipt';
 import { cn } from '@/lib/utils';
 import AdminGuard from '@/components/AdminGuard';
@@ -16,6 +16,7 @@ import { MenuItem, OrderItem, OrderType } from '@/types';
 import QRCodeLib from 'qrcode';
 import { MenuGrid } from '@/components/MenuGrid';
 import { CartDrawer, CartContent } from '@/components/CartDrawer';
+import { useAuth } from '@/context/AuthContext';
 
 export default function CounterPage() {
     return (
@@ -29,6 +30,7 @@ function CounterContent() {
     const params = useParams();
     const restaurantId = params.restaurantId as string;
     const { orders, updateOrderStatus, menuItems, addMenuItem, deleteMenuItem, tables, addTable, deleteTable, markTablePaid, resetTableStatus, addOrder, banners, addBanner, deleteBanner, categories, addCategory, deleteCategory } = useOrder();
+    const { user, signOut } = useAuth();
     const { format } = useCurrency();
     const [activeTab, setActiveTab] = useState<'orders' | 'tables' | 'menu' | 'sales' | 'qrcodes' | 'analytics' | 'banners'>('orders');
 
@@ -389,6 +391,7 @@ function CounterContent() {
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
                     <p className="text-gray-500">Manage orders, tables, menu, and sales</p>
+                    {user && <p className="text-xs text-gray-400 mt-1">Logged in as: {user.email}</p>}
                 </div>
                 <div className="flex flex-col w-full md:w-auto gap-4">
                     <div className="flex items-center gap-2 self-end md:self-auto">
@@ -403,6 +406,9 @@ function CounterContent() {
                         </Button>
                         <Button variant="outline" size="sm" onClick={testSound} title="Test notification sound">
                             🔔 <span className="hidden sm:inline">Test Sound</span>
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={signOut} className="text-red-500 hover:bg-red-50">
+                            <LogOut className="h-4 w-4 mr-2" /> Logout
                         </Button>
                     </div>
                     <div className="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto no-scrollbar">

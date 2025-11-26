@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useOrder } from '@/context/OrderContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle2, ChefHat, Timer } from 'lucide-react';
+import { CheckCircle2, ChefHat, Timer, LogOut } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 import AdminGuard from '@/components/AdminGuard';
 
@@ -18,6 +19,7 @@ export default function KitchenPage() {
 
 function KitchenContent() {
     const { orders, updateOrderStatus, tables } = useOrder();
+    const { signOut } = useAuth();
 
     // Notification system
     const [lastKitchenCount, setLastKitchenCount] = useState(0);
@@ -114,6 +116,9 @@ function KitchenContent() {
                 <div className="flex items-center gap-4 self-end md:self-auto">
                     <Button variant="outline" size="sm" onClick={testSound} className="bg-slate-800 hover:bg-slate-700">
                         🔔 <span className="hidden sm:inline">Test Sound</span>
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={signOut} className="text-red-400 hover:bg-slate-800 hover:text-red-300">
+                        <LogOut className="h-4 w-4 mr-2" /> Logout
                     </Button>
                     <div className="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
                         <span className="font-bold text-xl text-orange-500">{kitchenOrders.length}</span> Active

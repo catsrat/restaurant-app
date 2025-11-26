@@ -48,7 +48,10 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col items-center justify-center p-4">
-      <div className="text-center mb-12">
+      <div className="text-center mb-12 relative">
+        <div className="absolute top-0 right-0">
+          <Button variant="ghost" onClick={() => router.push('/login')}>Login</Button>
+        </div>
         <div className="flex justify-center mb-4">
           <div className="bg-blue-600 p-4 rounded-full">
             <Utensils className="h-12 w-12 text-white" />
