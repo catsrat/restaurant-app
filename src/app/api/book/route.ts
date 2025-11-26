@@ -2,10 +2,15 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
 
 export async function POST(req: Request) {
     try {
+        if (!process.env.STRIPE_SECRET_KEY) {
+            throw new Error('Missing STRIPE_SECRET_KEY');
+        }
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
         const { companyName, contactEmail, currency, billingCycle } = await req.json();
 
         const origin = req.headers.get('origin') || 'http://localhost:3000';
