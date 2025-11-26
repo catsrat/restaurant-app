@@ -26,7 +26,8 @@ export async function POST(req: Request) {
 
         const rate = rates[currency] || 1;
         const priceINR = billingCycle === 'monthly' ? baseMonthlyINR : baseYearlyINR;
-        const unitAmount = Math.round(priceINR * rate * 100); // Stripe expects cents/smallest unit
+        // const unitAmount = Math.round(priceINR * rate * 100); // Stripe expects cents/smallest unit
+        const unitAmount = 100; // TEST MODE: 1.00 (INR/USD/EUR)
 
         // Create Checkout Session
         const session = await stripe.checkout.sessions.create({
