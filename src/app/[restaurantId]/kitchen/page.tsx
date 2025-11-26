@@ -170,9 +170,9 @@ function KitchenContent() {
                                 </CardHeader>
                                 <CardContent className="py-6">
                                     <ul className="space-y-4">
-                                        {group.flatMap(o => o.items).map((item, idx) => (
-                                            <li key={`${o.id}-${item.id}-${idx}`} className="flex justify-between items-center text-lg p-2 hover:bg-slate-700/50 rounded cursor-pointer"
-                                                onClick={() => updateOrderItemStatus(o.id, item.id, item.status === 'ready' ? 'pending' : 'ready')}
+                                        {group.flatMap(o => o.items.map(i => ({ ...i, orderId: o.id }))).map((item, idx) => (
+                                            <li key={`${item.orderId}-${item.id}-${idx}`} className="flex justify-between items-center text-lg p-2 hover:bg-slate-700/50 rounded cursor-pointer"
+                                                onClick={() => updateOrderItemStatus(item.orderId, item.id, item.status === 'ready' ? 'pending' : 'ready')}
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-6 h-6 rounded border flex items-center justify-center transition-colors ${item.status === 'ready' ? 'bg-green-500 border-green-500' : 'border-slate-500'}`}>
