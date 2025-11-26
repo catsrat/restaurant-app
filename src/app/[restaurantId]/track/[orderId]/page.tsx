@@ -38,7 +38,10 @@ export default function OrderTrackingPage() {
                 .from('orders')
                 .select(`
                     *,
-                    items: order_items(*)
+                    items: order_items(
+                        *,
+                        menu_item: menu_items(name)
+                    )
                 `)
                 .eq('id', orderId)
                 .single();
@@ -47,7 +50,11 @@ export default function OrderTrackingPage() {
                 const parsedOrder = {
                     ...data,
                     createdAt: new Date(data.created_at),
-                    items: data.items.map((i: any) => ({ ...i, id: i.menu_item_id }))
+                    items: data.items.map((i: any) => ({
+                        ...i,
+                        id: String(i.id),
+                        name: i.name || i.menu_item?.name || 'Unknown Item'
+                    }))
                 };
                 setFetchedOrder(parsedOrder);
             }

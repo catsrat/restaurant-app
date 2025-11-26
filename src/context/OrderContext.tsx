@@ -98,7 +98,10 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                 .from('orders')
                 .select(`
     *,
-    items: order_items(*)
+    items: order_items(
+        *,
+        menu_item: menu_items(name)
+    )
                 `)
                 .eq('restaurant_id', restaurantId)
                 .order('created_at', { ascending: true });
@@ -112,7 +115,12 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                     totalAmount: o.total_amount,
                     orderType: o.order_type, // Map snake_case to camelCase
                     createdAt: new Date(o.created_at),
-                    items: Array.isArray(o.items) ? o.items.map((i: any) => ({ ...i, id: String(i.id), status: i.status || 'pending' })) : [] // Map back to internal structure
+                    items: Array.isArray(o.items) ? o.items.map((i: any) => ({
+                        ...i,
+                        id: String(i.id),
+                        status: i.status || 'pending',
+                        name: i.name || i.menu_item?.name || 'Unknown Item'
+                    })) : [] // Map back to internal structure
                 }));
                 setOrders(parsedOrders);
             }
