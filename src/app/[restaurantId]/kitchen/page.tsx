@@ -179,7 +179,22 @@ function KitchenContent() {
                                                         {item.status === 'ready' && <CheckCircle2 className="h-4 w-4 text-white" />}
                                                     </div>
                                                     <span className={`font-bold ${item.status === 'ready' ? 'text-green-400' : 'text-slate-200'}`}>{item.quantity}x</span>
-                                                    <span className={`flex-1 ${item.status === 'ready' ? 'text-slate-500 line-through' : 'text-slate-300'}`}>{item.name}</span>
+                                                    <div className="flex-1">
+                                                        <span className={`block ${item.status === 'ready' ? 'text-slate-500 line-through' : 'text-slate-300'}`}>{item.name}</span>
+                                                        {item.selectedOptions && (
+                                                            <div className="text-sm text-slate-400 mt-1">
+                                                                {Object.entries(item.selectedOptions).map(([key, value]) => (
+                                                                    <div key={key}>
+                                                                        <span className="font-semibold text-slate-500">{key}: </span>
+                                                                        {Array.isArray(value) ? value.join(', ') : value}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        {item.notes && (
+                                                            <p className="text-sm text-yellow-500 mt-1 italic">Note: {item.notes}</p>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </li>
                                         ))}

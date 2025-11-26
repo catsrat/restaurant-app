@@ -35,7 +35,20 @@ export function CartContent({ onClose, cart, onRemove, onAdd, onPlaceOrder, tota
                         <div key={item.id} className="flex justify-between items-center border-b pb-4 last:border-0">
                             <div>
                                 <h3 className="font-bold text-gray-900">{item.name}</h3>
-                                <p className="text-sm text-gray-600 font-medium">{format(item.price)} x {item.quantity}</p>
+                                {item.selectedOptions && (
+                                    <div className="text-xs text-gray-500 mt-1">
+                                        {Object.entries(item.selectedOptions).map(([key, value]) => (
+                                            <div key={key}>
+                                                <span className="font-semibold">{key}: </span>
+                                                {Array.isArray(value) ? value.join(', ') : value}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {item.notes && (
+                                    <p className="text-xs text-orange-600 mt-1 italic">Note: {item.notes}</p>
+                                )}
+                                <p className="text-sm text-gray-600 font-medium mt-1">{format(item.price)} x {item.quantity}</p>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Button

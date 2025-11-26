@@ -224,6 +224,19 @@ export default function OrderTrackingPage() {
                                                             </span>
                                                         )}
                                                     </div>
+                                                    {item.selectedOptions && (
+                                                        <div className="text-xs text-gray-500 mt-1 ml-4">
+                                                            {Object.entries(item.selectedOptions).map(([key, value]) => (
+                                                                <div key={key}>
+                                                                    <span className="font-semibold">{key}: </span>
+                                                                    {Array.isArray(value) ? (value as string[]).join(', ') : value as string}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    {item.notes && (
+                                                        <p className="text-xs text-orange-600 mt-1 ml-4 italic">Note: {item.notes}</p>
+                                                    )}
                                                 </div>
                                                 <span className="font-semibold">{format(item.price * item.quantity)}</span>
                                             </li>
