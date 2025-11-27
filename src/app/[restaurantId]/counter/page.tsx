@@ -325,12 +325,19 @@ function CounterContent() {
     };
 
     // --- Sales Logic ---
-    const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+    // Helper to get local YYYY-MM-DD
+    const getLocalDate = (date: Date) => {
+        const offset = date.getTimezoneOffset();
+        const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+        return localDate.toISOString().split('T')[0];
+    };
+
+    const [selectedDate, setSelectedDate] = useState<string>(getLocalDate(new Date()));
 
     // Only consider PAID orders for sales
     const paidOrders = orders.filter(o => {
         if (o.status !== 'paid') return false;
-        const orderDate = new Date(o.createdAt).toISOString().split('T')[0];
+        const orderDate = getLocalDate(new Date(o.createdAt));
         return orderDate === selectedDate;
     });
 
