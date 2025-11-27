@@ -35,7 +35,7 @@ function CounterContent() {
     const restaurantId = params.restaurantId as string;
     const { orders, updateOrderStatus, menuItems, addMenuItem, deleteMenuItem, tables, addTable, deleteTable, markTablePaid, resetTableStatus, addOrder, banners, addBanner, deleteBanner, categories, addCategory, deleteCategory, applyDiscount, taxSettings, restaurantName } = useOrder();
     const { user, signOut } = useAuth();
-    const { format } = useCurrency();
+    const { format, currency } = useCurrency();
     const [activeTab, setActiveTab] = useState<'orders' | 'tables' | 'menu' | 'sales' | 'qrcodes' | 'analytics' | 'banners' | 'inventory' | 'settings'>('orders');
 
     // POS State
@@ -420,7 +420,7 @@ function CounterContent() {
                     </div>` : ''}
                     
                     ${taxRate > 0 ? (
-                    taxSettings.tax_name?.toUpperCase() === 'GST' ? `
+                    taxSettings.tax_name?.toUpperCase() === 'GST' && currency === 'INR' ? `
                             <div class="tax-row">
                                 <span>CGST (${taxRate / 2}%)</span>
                                 <span>${format(taxAmount / 2)}</span>

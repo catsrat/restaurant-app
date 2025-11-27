@@ -46,9 +46,7 @@ export function SettingsTab() {
                                 value={formData.tax_name}
                                 onChange={(e) => setFormData({ ...formData, tax_name: e.target.value })}
                             />
-                            <p className="text-xs text-gray-500">
-                                Tip: Set to "GST" for automatic CGST/SGST breakdown on bills.
-                            </p>
+                            Tip: Set to "GST" for automatic CGST/SGST breakdown on bills (INR only).
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="tax_rate">Tax Rate (%)</Label>
