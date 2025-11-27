@@ -79,10 +79,12 @@ function CounterContent() {
             return;
         }
 
-        await addOrder(posCart, posOrderType, {
+        const result = await addOrder(posCart, posOrderType, {
             tableId: posOrderType === 'dine-in' ? posTableId : undefined,
             contactNumber: posOrderType === 'takeaway' ? posContactNumber : undefined
         });
+
+        if (!result) return;
 
         setPosCart([]);
         setIsPOSOpen(false);
@@ -618,11 +620,11 @@ function CounterContent() {
                                             <Button
                                                 className="w-full bg-green-700 hover:bg-green-800"
                                                 onClick={() => {
-                                                    if (groupOrders[0].orderType === 'dine-in') {
+                                                    if (groupOrders[0].orderType === 'dine-in' && groupOrders[0].tableId && groupOrders[0].tableId !== 'null') {
                                                         // Pass the Table ID (UUID) not the name
-                                                        markTablePaid(groupOrders[0].tableId!);
+                                                        markTablePaid(groupOrders[0].tableId);
                                                     } else {
-                                                        // For takeaway, just mark all as paid
+                                                        // For takeaway or bugged orders (no table), just mark all as paid
                                                         groupOrders.forEach(o => updateOrderStatus(o.id, 'paid'));
                                                     }
                                                 }}

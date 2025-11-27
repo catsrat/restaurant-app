@@ -7,7 +7,7 @@ import { CurrencyCode } from '@/lib/currency';
 
 interface OrderContextType {
     orders: Order[];
-    addOrder: (items: OrderItem[], orderType: OrderType, details: { tableId?: string, contactNumber?: string }) => Promise<Order>;
+    addOrder: (items: OrderItem[], orderType: OrderType, details: { tableId?: string, contactNumber?: string }) => Promise<Order | null>;
     updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
     updateOrderItemStatus: (orderId: string, itemId: string, status: 'pending' | 'ready') => Promise<void>;
     cart: OrderItem[];
@@ -224,7 +224,17 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
 
     const addOrder = async (items: OrderItem[], orderType: OrderType, details: { tableId?: string, contactNumber?: string }) => {
         // 1. Create Order
-        const table = details.tableId ? tables.find(t => t.name === details.tableId) : null;
+        let table = null;
+        if (details.tableId) {
+            const searchName = details.tableId.trim().toLowerCase();
+            table = tables.find(t => t.name.toLowerCase() === searchName);
+
+            if (!table && orderType === 'dine-in') {
+                console.warn(`Table '${details.tableId}' not found. Available tables:`, tables.map(t => t.name));
+                alert(`Table '${details.tableId}' not found! Please check the table name.`);
+                return null; // Stop execution
+            }
+        }
 
         console.log("Creating order...", { items, orderType, details, tableId: table?.id });
 
