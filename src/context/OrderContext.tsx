@@ -309,19 +309,26 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         }
 
         // Apply all updates to DB and State
+        const updatePromises: any[] = [];
+
         for (const [id, newStock] of stockUpdates.entries()) {
             const original = ingredients.find(i => String(i.id) === id);
             if (original && original.current_stock !== newStock) {
-                // Update DB
-                await supabase
-                    .from('ingredients')
-                    .update({ current_stock: newStock })
-                    .eq('id', id);
+                // Update DB (Add to promises)
+                updatePromises.push(
+                    supabase
+                        .from('ingredients')
+                        .update({ current_stock: newStock })
+                        .eq('id', id)
+                );
 
-                // Update State
+                // Update State (Optimistic/Immediate)
                 setIngredients(prev => prev.map(i => String(i.id) === id ? { ...i, current_stock: newStock } : i));
             }
         }
+
+        // Wait for all DB updates to complete in parallel
+        await Promise.all(updatePromises);
 
         clearCart();
         return { ...order, items, createdAt: new Date(order.created_at) };
