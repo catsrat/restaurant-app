@@ -399,8 +399,17 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
     };
 
     const deleteMenuItem = async (id: string) => {
-        const { error } = await supabase.from('menu_items').delete().eq('id', id);
-        if (!error) {
+        // Soft delete: Mark as unavailable instead of hard deleting
+        // This prevents foreign key constraint errors with existing orders
+        const { error } = await supabase
+            .from('menu_items')
+            .update({ is_available: false })
+            .eq('id', id);
+
+        if (error) {
+            console.error("Error deleting menu item:", error);
+            alert("Failed to delete item. It might be linked to existing orders.");
+        } else {
             setMenuItems(prev => prev.filter(item => item.id !== id));
         }
     };
