@@ -402,7 +402,7 @@ function CounterContent() {
                         ${taxSettings?.tax_number ? `<p>Tax ID: ${taxSettings.tax_number}</p>` : ''}
                     </div>
                     <div class="divider"></div>
-                    ${billItems.map(item => `
+                    ${billItems.map((item: any) => `
                         <div class="item">
                             <span>${item.quantity}x ${item.name}</span>
                             <span>${format(item.price * item.quantity)}</span>
