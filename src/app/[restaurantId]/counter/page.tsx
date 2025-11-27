@@ -810,6 +810,9 @@ function CounterContent() {
                                         <p className="text-sm text-gray-500 line-clamp-1">{item.description}</p>
                                     </div>
                                     <div className="flex justify-end gap-2">
+                                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setEditingRecipeItem(item)} title="Manage Recipe">
+                                            <Utensils className="h-4 w-4" />
+                                        </Button>
                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => deleteMenuItem(item.id)}>
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
