@@ -1073,7 +1073,7 @@ function CounterContent() {
                                                 >
                                                     <option value="" disabled>Select a table</option>
                                                     {tables.map(table => (
-                                                        <option key={table.id} value={table.id}>
+                                                        <option key={table.id} value={table.name}>
                                                             {table.name} ({table.status})
                                                         </option>
                                                     ))}
