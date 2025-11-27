@@ -868,15 +868,22 @@ function CounterContent() {
                         <CardContent>
                             <div className="space-y-4">
                                 {paidOrders.slice().reverse().map(order => (
-                                    <div key={order.id} className="flex justify-between items-center border-b pb-4 last:border-0">
+                                    <div key={order.id} className="flex justify-between items-start border-b pb-4 last:border-0">
                                         <div>
                                             <div className="font-medium">
                                                 {order.orderType === 'dine-in'
                                                     ? (tables.find(t => t.id === String(order.tableId))?.name || `Table ${order.tableId}`)
                                                     : `Takeaway (${order.contactNumber})`}
                                             </div>
-                                            <div className="text-sm text-gray-500">
+                                            <div className="text-sm text-gray-500 mb-1">
                                                 {new Date(order.createdAt).toLocaleTimeString()}
+                                            </div>
+                                            <div className="text-sm text-gray-600">
+                                                {order.items.map((item, idx) => (
+                                                    <div key={idx}>
+                                                        {item.quantity}x {item.name}
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
                                         <div className="font-bold">
