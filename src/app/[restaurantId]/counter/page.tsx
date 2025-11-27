@@ -68,6 +68,8 @@ function CounterContent() {
         }, [] as OrderItem[]));
     };
 
+    const [isPosLoading, setIsPosLoading] = useState(false);
+
     const handlePlacePosOrder = async () => {
         if (posCart.length === 0) return;
         if (posOrderType === 'dine-in' && !posTableId) {
@@ -79,17 +81,25 @@ function CounterContent() {
             return;
         }
 
-        const result = await addOrder(posCart, posOrderType, {
-            tableId: posOrderType === 'dine-in' ? posTableId : undefined,
-            contactNumber: posOrderType === 'takeaway' ? posContactNumber : undefined
-        });
+        setIsPosLoading(true);
+        try {
+            const result = await addOrder(posCart, posOrderType, {
+                tableId: posOrderType === 'dine-in' ? posTableId : undefined,
+                contactNumber: posOrderType === 'takeaway' ? posContactNumber : undefined
+            });
 
-        if (!result) return;
+            if (!result) return;
 
-        setPosCart([]);
-        setIsPOSOpen(false);
-        setPosContactNumber('');
-        setPosTableId('');
+            setPosCart([]);
+            setIsPOSOpen(false);
+            setPosContactNumber('');
+            setPosTableId('');
+        } catch (error) {
+            console.error("POS Order Error:", error);
+            alert("Failed to place order. Please try again.");
+        } finally {
+            setIsPosLoading(false);
+        }
     };
 
     // Printing Logic
@@ -1114,6 +1124,7 @@ function CounterContent() {
                                         onAdd={(item) => handleAddToPosCart(item)}
                                         onPlaceOrder={handlePlacePosOrder}
                                         totalAmount={posCart.reduce((sum, item) => sum + item.price * item.quantity, 0)}
+                                        isLoading={isPosLoading}
                                     />
                                 </div>
                             </div>

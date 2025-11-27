@@ -279,37 +279,47 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             }
         }
 
-        // 4. Deduct Stock (Inventory Management)
-        console.log("Starting stock deduction for items:", items);
+        // 3. Deduct Inventory
+        // Use a local map to track stock changes within this transaction to avoid stale state issues
+        const stockUpdates = new Map<string, number>();
+
+        // Initialize map with current stock
+        ingredients.forEach(i => stockUpdates.set(String(i.id), i.current_stock));
+
         for (const item of items) {
-            // Use String() for robust comparison between string/number IDs
+            // Use String() for robust comparison
             const itemRecipe = recipes.filter(r => String(r.menu_item_id) === String(item.id));
-            console.log(`Recipe for item ${item.name} (ID: ${item.id}):`, itemRecipe);
 
-            for (const ingredient of itemRecipe) {
-                const totalDeduction = ingredient.quantity_required * item.quantity;
+            if (itemRecipe.length > 0) {
+                for (const ingredient of itemRecipe) {
+                    const quantityToDeduct = ingredient.quantity_required * item.quantity;
+                    const ingredientId = String(ingredient.ingredient_id);
 
-                const currentIngredient = ingredients.find(i => String(i.id) === String(ingredient.ingredient_id));
+                    const currentStock = stockUpdates.get(ingredientId);
 
-                if (currentIngredient) {
-                    const newStock = currentIngredient.current_stock - totalDeduction;
-                    console.log(`Deducting ${totalDeduction} from ${currentIngredient.name}. New Stock: ${newStock}`);
-
-                    // Update DB
-                    await supabase
-                        .from('ingredients')
-                        .update({ current_stock: newStock })
-                        .eq('id', ingredient.ingredient_id);
-
-                    // Update Local State immediately to reflect change
-                    setIngredients(prev => prev.map(i =>
-                        String(i.id) === String(ingredient.ingredient_id)
-                            ? { ...i, current_stock: newStock }
-                            : i
-                    ));
-                } else {
-                    console.warn(`Ingredient ${ingredient.ingredient_id} not found in local state`);
+                    if (currentStock !== undefined) {
+                        const newStock = currentStock - quantityToDeduct;
+                        stockUpdates.set(ingredientId, newStock);
+                        console.log(`Deducting ${quantityToDeduct} from ingredient ${ingredientId}. New Stock: ${newStock}`);
+                    } else {
+                        console.warn(`Ingredient ${ingredientId} not found in local stock map.`);
+                    }
                 }
+            }
+        }
+
+        // Apply all updates to DB and State
+        for (const [id, newStock] of stockUpdates.entries()) {
+            const original = ingredients.find(i => String(i.id) === id);
+            if (original && original.current_stock !== newStock) {
+                // Update DB
+                await supabase
+                    .from('ingredients')
+                    .update({ current_stock: newStock })
+                    .eq('id', id);
+
+                // Update State
+                setIngredients(prev => prev.map(i => String(i.id) === id ? { ...i, current_stock: newStock } : i));
             }
         }
 

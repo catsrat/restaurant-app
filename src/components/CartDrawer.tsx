@@ -13,9 +13,10 @@ interface CartDrawerProps {
     onPlaceOrder: () => void;
     totalAmount: number;
     children?: React.ReactNode; // For extra inputs like Table Selection in POS
+    isLoading?: boolean;
 }
 
-export function CartContent({ onClose, cart, onRemove, onAdd, onPlaceOrder, totalAmount, children }: Omit<CartDrawerProps, 'isOpen'>) {
+export function CartContent({ onClose, cart, onRemove, onAdd, onPlaceOrder, totalAmount, children, isLoading }: Omit<CartDrawerProps, 'isOpen'>) {
     const { format } = useCurrency();
 
     return (
@@ -84,17 +85,17 @@ export function CartContent({ onClose, cart, onRemove, onAdd, onPlaceOrder, tota
                 <Button
                     className="w-full bg-gray-900 text-white font-bold text-lg py-6 hover:bg-gray-800"
                     size="lg"
-                    disabled={cart.length === 0}
+                    disabled={cart.length === 0 || isLoading}
                     onClick={onPlaceOrder}
                 >
-                    Place Order
+                    {isLoading ? 'Placing Order...' : 'Place Order'}
                 </Button>
             </div>
         </div>
     );
 }
 
-export function CartDrawer({ isOpen, onClose, cart, onRemove, onAdd, onPlaceOrder, totalAmount, children }: CartDrawerProps) {
+export function CartDrawer({ isOpen, onClose, cart, onRemove, onAdd, onPlaceOrder, totalAmount, children, isLoading }: CartDrawerProps) {
     if (!isOpen) return null;
 
     return (
@@ -107,6 +108,7 @@ export function CartDrawer({ isOpen, onClose, cart, onRemove, onAdd, onPlaceOrde
                     onAdd={onAdd}
                     onPlaceOrder={onPlaceOrder}
                     totalAmount={totalAmount}
+                    isLoading={isLoading}
                 >
                     {children}
                 </CartContent>
