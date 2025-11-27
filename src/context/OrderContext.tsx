@@ -120,7 +120,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                 .order('name');
 
             if (ingredientError) console.error("Error fetching ingredients:", ingredientError);
-            if (ingredientData) setIngredients(ingredientData.map((i: any) => ({ ...i, created_at: new Date(i.created_at) })));
+            if (ingredientData) setIngredients(ingredientData.map((i: any) => ({ ...i, id: String(i.id), created_at: new Date(i.created_at) })));
 
             // Fetch Recipes
             const { data: recipeData, error: recipeError } = await supabase
@@ -128,7 +128,13 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                 .select('*');
 
             if (recipeError) console.error("Error fetching recipes:", recipeError);
-            if (recipeData) setRecipes(recipeData.map((r: any) => ({ ...r, created_at: new Date(r.created_at) })));
+            if (recipeData) setRecipes(recipeData.map((r: any) => ({
+                ...r,
+                id: String(r.id),
+                menu_item_id: String(r.menu_item_id),
+                ingredient_id: String(r.ingredient_id),
+                created_at: new Date(r.created_at)
+            })));
 
 
 
@@ -736,7 +742,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             return;
         }
 
-        setIngredients(prev => [...prev, { ...data, created_at: new Date(data.created_at) }]);
+        setIngredients(prev => [...prev, { ...data, id: String(data.id), created_at: new Date(data.created_at) }]);
     };
 
     const updateIngredient = async (id: string, updates: Partial<Ingredient>) => {
