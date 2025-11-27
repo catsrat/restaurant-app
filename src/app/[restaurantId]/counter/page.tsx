@@ -846,7 +846,7 @@ function CounterContent() {
                         </Card>
                         <Card>
                             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-gray-500">Average Order Value</CardTitle></CardHeader>
-                            <CardContent><div className="text-2xl font-bold">${totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(2) : '0.00'}</div></CardContent>
+                            <CardContent><div className="text-2xl font-bold">{format(totalOrders > 0 ? totalRevenue / totalOrders : 0)}</div></CardContent>
                         </Card>
                     </div>
 
@@ -867,7 +867,7 @@ function CounterContent() {
                                             </div>
                                         </div>
                                         <div className="font-bold">
-                                            ${order.items.reduce((s, i) => s + i.price * i.quantity, 0).toFixed(2)}
+                                            {format(order.items.reduce((s: any, i: any) => s + i.price * i.quantity, 0))}
                                         </div>
                                     </div>
                                 ))}
@@ -1209,7 +1209,7 @@ function AnalyticsTab({ orders }: { orders: Order[] }) {
                             <BarChart data={activeHourlyData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="hourLabel" />
-                                <YAxis tickFormatter={(value) => `$${value}`} />
+                                <YAxis tickFormatter={(value) => format(value)} />
                                 <Tooltip formatter={(value: number) => format(value)} />
                                 <Bar dataKey="sales" fill="#8884d8" radius={[4, 4, 0, 0]} />
                             </BarChart>
