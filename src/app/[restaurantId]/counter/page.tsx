@@ -111,6 +111,7 @@ function CounterContent() {
         // Calculate totals including discount
         const total = groupOrders.reduce((sum, order) => sum + order.items.reduce((s, i) => s + i.price * i.quantity, 0), 0);
         const discountAmount = groupOrders.reduce((sum, order) => sum + (order.discount || 0), 0);
+        const finalTotal = total - discountAmount;
         // Calculate Tax
         const taxRate = taxSettings?.tax_rate || 0;
         const taxAmount = (finalTotal) * (taxRate / 100); // Tax on discounted amount
