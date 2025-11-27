@@ -125,11 +125,54 @@ export default function LandingPricing() {
         }
     };
 
+    const faqJsonLd = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "How does the QR menu work?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Guests scan the QR code on their table to view the menu. They can place orders directly from their phone, which are sent instantly to your kitchen display."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Do I need to buy special hardware?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "No! Order QR works on any device with a browser. You can use existing tablets, laptops, or phones for the kitchen display and admin dashboard."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can I customize the menu?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, you can easily add items, upload photos, set prices, and organize categories from the admin dashboard. Changes update instantly."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is there a free trial?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, we offer a 14-day free trial with full access to all features. No credit card is required to start."
+                }
+            }
+        ]
+    };
+
     return (
         <div className="font-sans text-gray-800">
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
             />
             {/* NAV */}
             <nav className="max-w-6xl mx-auto flex items-center justify-between py-6 px-6">
@@ -208,6 +251,29 @@ export default function LandingPricing() {
                         <Card title="POS Printing" desc="80mm thermal receipt printing" />
                         <Card title="Analytics" desc="Daily revenue & popular items" />
                         <Card title="Multi-currency" desc="Set currency per restaurant" />
+                    </div>
+                </section>
+
+                {/* FAQ Section */}
+                <section className="max-w-4xl mx-auto px-6 py-16">
+                    <h2 className="text-3xl font-bold text-center mb-10">Frequently Asked Questions</h2>
+                    <div className="space-y-6">
+                        <FAQItem
+                            question="How does the QR menu work?"
+                            answer="Guests scan the QR code on their table to view the menu. They can place orders directly from their phone, which are sent instantly to your kitchen display."
+                        />
+                        <FAQItem
+                            question="Do I need to buy special hardware?"
+                            answer="No! Order QR works on any device with a browser. You can use existing tablets, laptops, or phones for the kitchen display and admin dashboard."
+                        />
+                        <FAQItem
+                            question="Can I customize the menu?"
+                            answer="Yes, you can easily add items, upload photos, set prices, and organize categories from the admin dashboard. Changes update instantly."
+                        />
+                        <FAQItem
+                            question="Is there a free trial?"
+                            answer="Yes, we offer a 14-day free trial with full access to all features. No credit card is required to start."
+                        />
                     </div>
                 </section>
 
@@ -328,6 +394,22 @@ function Input({ label, type = 'text', value, onChange, placeholder }: { label: 
         <div>
             <label className="block text-sm font-medium text-gray-700">{label}</label>
             <input type={type} value={value} onChange={onChange} placeholder={placeholder} className="mt-1 block w-full border rounded px-3 py-2 text-sm" />
+        </div>
+    );
+}
+
+function FAQItem({ question, answer }: { question: string, answer: string }) {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <div className="border-b pb-4 last:border-0">
+            <button
+                className="flex justify-between items-center w-full text-left font-semibold text-lg py-2 focus:outline-none"
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                {question}
+                <span className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`}>▼</span>
+            </button>
+            {isOpen && <p className="mt-2 text-gray-600 leading-relaxed">{answer}</p>}
         </div>
     );
 }
