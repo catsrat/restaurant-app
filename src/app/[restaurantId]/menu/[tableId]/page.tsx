@@ -73,6 +73,9 @@ export default function MenuPage() {
     const handlePlaceOrder = async () => {
         if (cart.length === 0) return;
         const newOrder = await addOrder(cart, orderType, { tableId: orderType === 'dine-in' ? tableId : undefined, contactNumber });
+
+        if (!newOrder) return;
+
         setIsCartOpen(false);
         // Redirect to order tracking page
         router.push(`/${params.restaurantId}/track/${newOrder.id}`);
