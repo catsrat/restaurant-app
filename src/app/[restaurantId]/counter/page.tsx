@@ -111,14 +111,17 @@ function CounterContent() {
         // Calculate totals including discount
         const total = groupOrders.reduce((sum, order) => sum + order.items.reduce((s, i) => s + i.price * i.quantity, 0), 0);
         const discountAmount = groupOrders.reduce((sum, order) => sum + (order.discount || 0), 0);
-        const finalTotal = total - discountAmount;
+        // Calculate Tax
+        const taxRate = taxSettings?.tax_rate || 0;
+        const taxAmount = (finalTotal) * (taxRate / 100); // Tax on discounted amount
+        const grandTotal = finalTotal + taxAmount;
 
         // Use the state-based approach which triggers a re-render and then prints
         // This is often more reliable than window.open in some frameworks/browsers
         setPrintingData({
             tableName,
             orders: groupOrders,
-            totalAmount: finalTotal // Pass the discounted total if needed, or handle in render
+            totalAmount: grandTotal
         });
 
         // We need to generate the HTML for the print window here if we want to stick to the window.open approach 
@@ -145,13 +148,15 @@ function CounterContent() {
               .header { text-align: center; margin-bottom: 20px; }
               .item { display: flex; justify-content: space-between; margin-bottom: 5px; }
               .total { border-top: 1px dashed #000; margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between; font-weight: bold; }
+              .tax-row { display: flex; justify-content: space-between; font-size: 0.9em; color: #555; margin-bottom: 2px; }
             </style>
           </head>
           <body>
             <div class="header">
-              <h2>Restaurant Name</h2>
+              <h2>${restaurantName}</h2>
               <p>Date: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
               <p>${tableName}</p>
+              ${taxSettings?.tax_number ? `<p>Tax ID: ${taxSettings.tax_number}</p>` : ''}
             </div>
             ${billItems.map((item: any) => `
               <div class="item">
@@ -169,9 +174,28 @@ function CounterContent() {
               <span>-${format(Number(discountAmount))}</span>
             </div>
             ` : ''}
+
+            ${taxRate > 0 ? (
+                taxSettings.tax_name?.toUpperCase() === 'GST' && currency === 'INR' ? `
+                        <div class="tax-row">
+                            <span>CGST (${taxRate / 2}%)</span>
+                            <span>${format(taxAmount / 2)}</span>
+                        </div>
+                        <div class="tax-row">
+                            <span>SGST (${taxRate / 2}%)</span>
+                            <span>${format(taxAmount / 2)}</span>
+                        </div>
+                    ` : `
+                        <div class="tax-row">
+                            <span>${taxSettings.tax_name || 'Tax'} (${taxRate}%)</span>
+                            <span>${format(taxAmount)}</span>
+                        </div>
+                    `
+            ) : ''}
+
             <div class="total" style="border-top: 2px solid #000; font-size: 1.2em;">
               <span>TOTAL</span>
-              <span>${format(finalTotal)}</span>
+              <span>${format(grandTotal)}</span>
             </div>
             <div style="text-align: center; margin-top: 20px;">Thank you for dining with us!<br>Please visit again.</div>
             <script>
