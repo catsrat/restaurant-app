@@ -280,11 +280,24 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         }
 
         // 3. Deduct Inventory
-        // Use a local map to track stock changes within this transaction to avoid stale state issues
+        // Fetch FRESH ingredients from DB to ensure we have the absolute latest stock values
+        // This prevents stale state issues if multiple orders are placed or if local state is lagging
+        const { data: freshIngredients, error: fetchError } = await supabase
+            .from('ingredients')
+            .select('*')
+            .in('id', ingredients.map(i => i.id)); // Optimization: only fetch needed? Or just fetch all.
+
+        if (fetchError || !freshIngredients) {
+            console.error("Failed to fetch fresh ingredients for deduction:", fetchError);
+            // Fallback to local state if fetch fails, but warn
+        }
+
+        // Use a local map to track stock changes within this transaction
         const stockUpdates = new Map<string, number>();
 
-        // Initialize map with current stock
-        ingredients.forEach(i => stockUpdates.set(String(i.id), i.current_stock));
+        // Initialize map with FRESH stock (or local if fetch failed)
+        const sourceIngredients = freshIngredients || ingredients;
+        sourceIngredients.forEach(i => stockUpdates.set(String(i.id), i.current_stock));
 
         for (const item of items) {
             // Use String() for robust comparison
