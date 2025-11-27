@@ -264,24 +264,20 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         }
 
         // 4. Deduct Stock (Inventory Management)
-        // We do this asynchronously and don't block the order if it fails (for now), 
-        // but ideally we should check stock before placing order.
-        // Since we are allowing negative stock, we just deduct.
-        const stockUpdates = [];
+        console.log("Starting stock deduction for items:", items);
         for (const item of items) {
-            const itemRecipe = recipes.filter(r => r.menu_item_id === item.id);
+            // Use String() for robust comparison between string/number IDs
+            const itemRecipe = recipes.filter(r => String(r.menu_item_id) === String(item.id));
+            console.log(`Recipe for item ${item.name} (ID: ${item.id}):`, itemRecipe);
+
             for (const ingredient of itemRecipe) {
                 const totalDeduction = ingredient.quantity_required * item.quantity;
-                // We need to update the ingredient stock.
-                // Since we might have multiple items using the same ingredient, we should aggregate?
-                // For simplicity, we'll just fire updates. Supabase handles concurrency reasonably well for simple decrements if we use rpc or just update.
-                // But here we are calculating new value based on local state which might be stale.
-                // Better approach: RPC call to decrement. But we don't have one.
-                // We will use the current local stock as base.
 
-                const currentIngredient = ingredients.find(i => i.id === ingredient.ingredient_id);
+                const currentIngredient = ingredients.find(i => String(i.id) === String(ingredient.ingredient_id));
+
                 if (currentIngredient) {
                     const newStock = currentIngredient.current_stock - totalDeduction;
+                    console.log(`Deducting ${totalDeduction} from ${currentIngredient.name}. New Stock: ${newStock}`);
 
                     // Update DB
                     await supabase
@@ -291,10 +287,12 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
 
                     // Update Local State immediately to reflect change
                     setIngredients(prev => prev.map(i =>
-                        i.id === ingredient.ingredient_id
+                        String(i.id) === String(ingredient.ingredient_id)
                             ? { ...i, current_stock: newStock }
                             : i
                     ));
+                } else {
+                    console.warn(`Ingredient ${ingredient.ingredient_id} not found in local state`);
                 }
             }
         }
