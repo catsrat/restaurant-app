@@ -48,6 +48,15 @@ interface OrderContextType {
     recipes: MenuItemIngredient[];
     updateRecipe: (menuItemId: string, ingredients: { ingredientId: string, quantity: number }[]) => Promise<void>;
     getRecipeForMenuItem: (menuItemId: string) => MenuItemIngredient[];
+    taxSettings: TaxSettings;
+    updateTaxSettings: (settings: Partial<TaxSettings>) => Promise<void>;
+    restaurantName: string;
+}
+
+export interface TaxSettings {
+    tax_name: string;
+    tax_rate: number;
+    tax_number?: string;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -78,16 +87,22 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             if (menuError) console.error("Error fetching menu items:", menuError);
             if (menuData) setMenuItems(menuData);
 
-            // Fetch Restaurant Details (Currency)
+            // Fetch Restaurant Details (Currency and Tax)
             const { data: restaurantData, error: restaurantError } = await supabase
                 .from('restaurants')
-                .select('currency')
+                .select('name, currency, tax_name, tax_rate, tax_number')
                 .eq('id', restaurantId)
                 .single();
 
             if (restaurantError) console.error("Error fetching restaurant details:", restaurantError);
-            if (restaurantData && restaurantData.currency) {
-                setCurrency(restaurantData.currency as CurrencyCode);
+            if (restaurantData) {
+                setRestaurantName(restaurantData.name || 'My Restaurant');
+                setCurrency(restaurantData.currency || 'USD');
+                setTaxSettings({
+                    tax_name: restaurantData.tax_name || 'Tax',
+                    tax_rate: restaurantData.tax_rate || 0,
+                    tax_number: restaurantData.tax_number
+                });
             }
 
             // Fetch Tables
@@ -858,6 +873,29 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         return recipes.filter(r => r.menu_item_id === menuItemId);
     };
 
+    const [restaurantName, setRestaurantName] = useState('My Restaurant');
+
+    // Tax Settings
+    const [taxSettings, setTaxSettings] = useState<TaxSettings>({
+        tax_name: 'Tax',
+        tax_rate: 0
+    });
+
+    const updateTaxSettings = async (settings: Partial<TaxSettings>) => {
+        // Optimistic update
+        setTaxSettings(prev => ({ ...prev, ...settings }));
+
+        const { error } = await supabase
+            .from('restaurants')
+            .update(settings)
+            .eq('id', restaurantId);
+
+        if (error) {
+            console.error("Error updating tax settings:", error);
+            // Revert? For now just log
+        }
+    };
+
     return (
         <OrderContext.Provider value={{
             orders,
@@ -892,7 +930,10 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             deleteIngredient,
             recipes,
             updateRecipe,
-            getRecipeForMenuItem
+            getRecipeForMenuItem,
+            taxSettings,
+            updateTaxSettings,
+            restaurantName
         }}>
             {children}
         </OrderContext.Provider>

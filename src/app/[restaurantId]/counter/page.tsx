@@ -19,6 +19,7 @@ import { CartDrawer, CartContent } from '@/components/CartDrawer';
 import { useAuth } from '@/context/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { InventoryTab } from './InventoryTab';
+import { SettingsTab } from './SettingsTab';
 import { RecipeEditor } from './RecipeEditor';
 
 export default function CounterPage() {
@@ -32,10 +33,10 @@ export default function CounterPage() {
 function CounterContent() {
     const params = useParams();
     const restaurantId = params.restaurantId as string;
-    const { orders, updateOrderStatus, menuItems, addMenuItem, deleteMenuItem, tables, addTable, deleteTable, markTablePaid, resetTableStatus, addOrder, banners, addBanner, deleteBanner, categories, addCategory, deleteCategory, applyDiscount } = useOrder();
+    const { orders, updateOrderStatus, menuItems, addMenuItem, deleteMenuItem, tables, addTable, deleteTable, markTablePaid, resetTableStatus, addOrder, banners, addBanner, deleteBanner, categories, addCategory, deleteCategory, applyDiscount, taxSettings, restaurantName } = useOrder();
     const { user, signOut } = useAuth();
     const { format } = useCurrency();
-    const [activeTab, setActiveTab] = useState<'orders' | 'tables' | 'menu' | 'sales' | 'qrcodes' | 'analytics' | 'banners' | 'inventory'>('orders');
+    const [activeTab, setActiveTab] = useState<'orders' | 'tables' | 'menu' | 'sales' | 'qrcodes' | 'analytics' | 'banners' | 'inventory' | 'settings'>('orders');
 
     // POS State
     const [isPOSOpen, setIsPOSOpen] = useState(false);
@@ -360,7 +361,7 @@ function CounterContent() {
 
         // Generate Bill (Aggregate if table)
         let billItems = order.items;
-        let total = order.items.reduce((s: number, i: any) => s + i.price * i.quantity, 0);
+        let subtotal = order.items.reduce((s: number, i: any) => s + i.price * i.quantity, 0);
 
         if (order.orderType === 'dine-in') {
             // Find all other served/ready orders for this table to include in bill?
@@ -368,59 +369,87 @@ function CounterContent() {
             // So we should find ALL unpaid orders for this table.
             const tableOrders = orders.filter(o => o.tableId === order.tableId && o.status !== 'paid');
             billItems = tableOrders.flatMap(o => o.items);
-            total = billItems.reduce((s: any, i: any) => s + i.price * i.quantity, 0);
+            subtotal = billItems.reduce((s: any, i: any) => s + i.price * i.quantity, 0);
         }
 
-        const printWindow = window.open('', '_blank');
-        if (printWindow) {
-            const discountAmount = order.discount || 0;
-            const finalTotal = total - discountAmount;
+        const discountAmount = order.discount || 0;
 
+        // Calculate Tax
+        const taxRate = taxSettings?.tax_rate || 0;
+        const taxAmount = (subtotal - discountAmount) * (taxRate / 100);
+        const total = subtotal - discountAmount + taxAmount;
+
+        const printWindow = window.open('', '', 'width=300,height=600');
+        if (printWindow) {
             printWindow.document.write(`
-        <html>
-          <head>
-            <title>Bill - ${order.orderType === 'dine-in' ? `Table ${order.tableId}` : 'Takeaway'}</title>
-            <style>
-              body { font-family: monospace; padding: 20px; }
-              .header { text-align: center; margin-bottom: 20px; }
-              .item { display: flex; justify-content: space-between; margin-bottom: 5px; }
-              .total { border-top: 1px dashed #000; margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between; font-weight: bold; }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <h2>Restaurant Name</h2>
-              <p>Date: ${new Date().toLocaleDateString()}</p>
-              <p>${order.orderType === 'dine-in' ? `Table ${order.tableId}` : `Takeaway #${order.contactNumber}`}</p>
-            </div>
-            ${billItems.map((item: any) => `
-              <div class="item">
-                <span>${item.quantity}x ${item.name}</span>
-                <span>${format(item.price * item.quantity)}</span>
-              </div>
-            `).join('')}
-            <div class="total">
-              <span>Subtotal</span>
-              <span>${format(total)}</span>
-            </div>
-            ${discountAmount > 0 ? `
-            <div class="item" style="color: red;">
-              <span>Discount</span>
-              <span>-${format(Number(discountAmount))}</span>
-            </div>
-            ` : ''}
-            <div class="total" style="border-top: 2px solid #000; font-size: 1.2em;">
-              <span>TOTAL</span>
-              <span>${format(finalTotal)}</span>
-            </div>
-            <div style="text-align: center; margin-top: 20px;">Thank you!</div>
-          </body>
-        </html>
-      `);
+                <html>
+                <head>
+                    <title>Bill #${order.id}</title>
+                    <style>
+                        body { font-family: 'Courier New', monospace; font-size: 12px; width: 280px; margin: 0 auto; padding: 10px; }
+                        .header { text-align: center; margin-bottom: 20px; }
+                        .item { display: flex; justify-content: space-between; margin-bottom: 5px; }
+                        .total { border-top: 1px dashed #000; margin-top: 10px; padding-top: 10px; font-weight: bold; }
+                        .divider { border-top: 1px dashed #000; margin: 10px 0; }
+                        .tax-row { display: flex; justify-content: space-between; font-size: 11px; color: #555; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>${restaurantName}</h2>
+                        <p>Order #${order.id}</p>
+                        <p>${new Date().toLocaleString()}</p>
+                        ${taxSettings?.tax_number ? `<p>Tax ID: ${taxSettings.tax_number}</p>` : ''}
+                    </div>
+                    <div class="divider"></div>
+                    ${billItems.map(item => `
+                        <div class="item">
+                            <span>${item.quantity}x ${item.name}</span>
+                            <span>${format(item.price * item.quantity)}</span>
+                        </div>
+                    `).join('')}
+                    <div class="divider"></div>
+                    <div class="item">
+                        <span>Subtotal</span>
+                        <span>${format(subtotal)}</span>
+                    </div>
+                    ${discountAmount > 0 ? `
+                    <div class="item" style="color: red;">
+                        <span>Discount</span>
+                        <span>-${format(discountAmount)}</span>
+                    </div>` : ''}
+                    
+                    ${taxRate > 0 ? (
+                    taxSettings.tax_name?.toUpperCase() === 'GST' ? `
+                            <div class="tax-row">
+                                <span>CGST (${taxRate / 2}%)</span>
+                                <span>${format(taxAmount / 2)}</span>
+                            </div>
+                            <div class="tax-row">
+                                <span>SGST (${taxRate / 2}%)</span>
+                                <span>${format(taxAmount / 2)}</span>
+                            </div>
+                        ` : `
+                            <div class="tax-row">
+                                <span>${taxSettings.tax_name || 'Tax'} (${taxRate}%)</span>
+                                <span>${format(taxAmount)}</span>
+                            </div>
+                        `
+                ) : ''}
+
+                    <div class="total item">
+                        <span>Total</span>
+                        <span>${format(total)}</span>
+                    </div>
+                    <div class="header" style="margin-top: 20px;">
+                        <p>Thank you for dining with us!</p>
+                    </div>
+                </body>
+                </html>
+            `);
             printWindow.document.close();
             printWindow.print();
         }
-
         // Mark as paid and free table
         if (order.orderType === 'dine-in' && order.tableId) {
             markTablePaid(order.tableId);
@@ -540,6 +569,9 @@ function CounterContent() {
                         </Button>
                         <Button variant={activeTab === 'inventory' ? 'default' : 'outline'} onClick={() => setActiveTab('inventory')} className="whitespace-nowrap">
                             <Package className="h-4 w-4 mr-2" /> Inventory
+                        </Button>
+                        <Button variant={activeTab === 'settings' ? 'default' : 'outline'} onClick={() => setActiveTab('settings')} className="whitespace-nowrap">
+                            <Settings className="h-4 w-4 mr-2" /> Settings
                         </Button>
                     </div>
                 </div>
@@ -1025,6 +1057,10 @@ function CounterContent() {
 
             {activeTab === 'inventory' && (
                 <InventoryTab />
+            )}
+
+            {activeTab === 'settings' && (
+                <SettingsTab />
             )}
 
             {editingRecipeItem && (
