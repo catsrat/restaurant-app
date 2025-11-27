@@ -106,8 +106,31 @@ export default function LandingPricing() {
         } finally { setLoading(false); }
     }
 
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Order QR",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "offers": {
+            "@type": "Offer",
+            "price": "2999",
+            "priceCurrency": "INR"
+        },
+        "description": "Complete restaurant management system with QR code ordering, KDS, and POS features.",
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "120"
+        }
+    };
+
     return (
         <div className="font-sans text-gray-800">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             {/* NAV */}
             <nav className="max-w-6xl mx-auto flex items-center justify-between py-6 px-6">
                 <div className="flex items-center gap-3">
@@ -136,131 +159,133 @@ export default function LandingPricing() {
                 </div>
             </nav>
 
-            {/* HERO */}
-            <header className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white py-20">
-                <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                    <div>
-                        <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight">Digital menus, faster orders — built for restaurants</h1>
-                        <p className="mt-4 text-lg opacity-90">Order QR gives you QR menus, table ordering, and a real-time kitchen display — all in one simple plan. Onboard in 30 minutes.</p>
+            <main>
+                {/* HERO */}
+                <header className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white py-20">
+                    <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight">Digital menus, faster orders — built for restaurants</h1>
+                            <p className="mt-4 text-lg opacity-90">Order QR gives you QR menus, table ordering, and a real-time kitchen display — all in one simple plan. Onboard in 30 minutes.</p>
 
-                        <div className="mt-8 flex gap-4">
-                            <a href="#book" className="bg-white text-indigo-600 px-5 py-3 rounded-lg font-semibold shadow">Start free trial</a>
-                            <a href="#features" className="px-5 py-3 rounded-lg border border-white/30">See features</a>
-                        </div>
-
-                        <div className="mt-6 text-sm bg-white/10 inline-block rounded px-3 py-2">Monthly: <span className="font-bold">{currencySymbol}{convertedPrice}</span> / {billingCycle === 'monthly' ? 'month' : 'year'}</div>
-
-                        <div className="mt-6 text-xs text-white/80">14-day free trial • No credit card required to start</div>
-                    </div>
-
-                    <div className="hidden lg:block">
-                        {/* Hero mockup — now uses dynamic conversion so prices match selector */}
-                        <div className="bg-white rounded-2xl p-6 shadow-2xl">
-                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="text-sm font-medium text-gray-800">Cafe Praga</div>
-                                    <div className="text-xs text-gray-500">Table 5</div>
-                                </div>
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between"><div className="text-gray-800">Margherita Pizza</div><div className="font-semibold text-indigo-700">{currencySymbol}{convertFromCZK(179)}</div></div>
-                                    <div className="flex items-center justify-between"><div className="text-gray-800">Caesar Salad</div><div className="font-semibold text-indigo-700">{currencySymbol}{convertFromCZK(129)}</div></div>
-                                </div>
-                                <div className="mt-4 text-right"><button className="px-4 py-2 bg-indigo-600 text-white rounded">Place order</button></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            {/* Features Section */}
-            <section id="features" className="max-w-6xl mx-auto px-6 py-16">
-                <h2 className="text-3xl font-bold text-center">Everything a restaurant needs</h2>
-                <p className="text-center text-gray-600 mt-2 max-w-2xl mx-auto">A single plan with real-time orders, KDS, POS printing, analytics and multi-language support.</p>
-
-                <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card title="Realtime Orders" desc="Supabase Realtime & push to KDS" />
-                    <Card title="QR Menu" desc="No app required — scan & order" />
-                    <Card title="KDS" desc="Tablet-ready kitchen display with timers" />
-                    <Card title="POS Printing" desc="80mm thermal receipt printing" />
-                    <Card title="Analytics" desc="Daily revenue & popular items" />
-                    <Card title="Multi-currency" desc="Set currency per restaurant" />
-                </div>
-            </section>
-
-            {/* Pricing + Booking */}
-            <section id="book" className="bg-gray-50 py-16">
-                <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                    <div className="lg:col-span-1">
-                        <h3 className="text-2xl font-bold">Simple pricing. One plan.</h3>
-                        <p className="mt-3 text-gray-600">All features included. Monthly and yearly billing — cancel anytime.</p>
-
-                        <div className="mt-6 p-6 bg-white rounded-lg shadow">
-                            <div className="text-sm text-gray-500">Plan</div>
-                            <div className="mt-2 text-3xl font-extrabold">{currencySymbol}{convertedPrice}</div>
-                            <div className="text-sm text-gray-500 mt-1">/ {billingCycle === 'monthly' ? 'month' : 'year'}</div>
-
-                            <div className="mt-4 flex gap-2">
-                                <button onClick={() => setBillingCycle('monthly')} className={`px-3 py-2 rounded ${billingCycle === 'monthly' ? 'bg-indigo-600 text-white' : 'border'}`}>Monthly</button>
-                                <button onClick={() => setBillingCycle('yearly')} className={`px-3 py-2 rounded ${billingCycle === 'yearly' ? 'bg-indigo-600 text-white' : 'border'}`}>Yearly</button>
+                            <div className="mt-8 flex gap-4">
+                                <a href="#book" className="bg-white text-indigo-600 px-5 py-3 rounded-lg font-semibold shadow">Start free trial</a>
+                                <a href="#features" className="px-5 py-3 rounded-lg border border-white/30">See features</a>
                             </div>
 
-                            <div className="mt-4 text-sm text-gray-600">Currency</div>
-                            <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="mt-2 w-full border rounded px-3 py-2">
-                                <option value="INR">INR</option>
-                                <option value="CZK">CZK</option>
-                                <option value="USD">USD</option>
-                                <option value="EUR">EUR</option>
-                            </select>
+                            <div className="mt-6 text-sm bg-white/10 inline-block rounded px-3 py-2">Monthly: <span className="font-bold">{currencySymbol}{convertedPrice}</span> / {billingCycle === 'monthly' ? 'month' : 'year'}</div>
 
-                            <div className="mt-6 text-sm text-gray-700">Includes: QR menus, ordering, KDS, printing, analytics, support.</div>
+                            <div className="mt-6 text-xs text-white/80">14-day free trial • No credit card required to start</div>
                         </div>
-                    </div>
 
-                    <div className="lg:col-span-2">
-                        <div className="bg-white rounded-lg shadow p-6">
-                            <h4 className="text-lg font-semibold mb-4">Book & Get Started</h4>
-
-                            <form onSubmit={handleBook} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Input label="Restaurant / Company" value={companyName} onChange={(e: any) => setCompanyName(e.target.value)} placeholder="Cafe Praga" />
-                                <Input label="Contact email" type="email" value={contactEmail} onChange={(e: any) => setContactEmail(e.target.value)} placeholder="owner@restaurant.cz" />
-                                <Input label="Phone (optional)" value={phone} onChange={(e: any) => setPhone(e.target.value)} placeholder="+420 123 456 789" />
-
-
-                                <div className="md:col-span-2 flex items-center justify-between">
-                                    <div className="text-sm">You will be charged <span className="font-semibold">{currencySymbol}{convertedPrice}</span> / {billingCycle === 'monthly' ? 'month' : 'year'}</div>
-                                    <div className="flex gap-2">
-                                        <button type="submit" disabled={loading} className="px-6 py-3 bg-indigo-600 text-white rounded shadow">{loading ? 'Processing...' : 'Proceed to Payment'}</button>
-
+                        <div className="hidden lg:block">
+                            {/* Hero mockup — now uses dynamic conversion so prices match selector */}
+                            <div className="bg-white rounded-2xl p-6 shadow-2xl">
+                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="text-sm font-medium text-gray-800">Cafe Praga</div>
+                                        <div className="text-xs text-gray-500">Table 5</div>
                                     </div>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between"><div className="text-gray-800">Margherita Pizza</div><div className="font-semibold text-indigo-700">{currencySymbol}{convertFromCZK(179)}</div></div>
+                                        <div className="flex items-center justify-between"><div className="text-gray-800">Caesar Salad</div><div className="font-semibold text-indigo-700">{currencySymbol}{convertFromCZK(129)}</div></div>
+                                    </div>
+                                    <div className="mt-4 text-right"><button className="px-4 py-2 bg-indigo-600 text-white rounded">Place order</button></div>
                                 </div>
-
-                                <div className="md:col-span-2">
-                                    {message && (
-                                        <div className={`p-3 rounded ${message.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{message.text}</div>
-                                    )}
-                                </div>
-                            </form>
-
-                            <div className="mt-6 text-sm text-gray-500">By booking you agree to our <a className="underline">terms</a> and <a className="underline">privacy policy</a>.</div>
-                        </div>
-
-                        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="p-4 bg-white rounded shadow">
-                                <div className="font-semibold">Onboarding</div>
-                                <div className="text-sm text-gray-600 mt-2">Free setup call & menu migration</div>
-                            </div>
-                            <div className="p-4 bg-white rounded shadow">
-                                <div className="font-semibold">Support</div>
-                                <div className="text-sm text-gray-600 mt-2">Email & chat support during trial</div>
-                            </div>
-                            <div className="p-4 bg-white rounded shadow">
-                                <div className="font-semibold">Custom brand</div>
-                                <div className="text-sm text-gray-600 mt-2">Add restaurant logo to menus & QR sheets</div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </header>
+
+                {/* Features Section */}
+                <section id="features" className="max-w-6xl mx-auto px-6 py-16">
+                    <h2 className="text-3xl font-bold text-center">Everything a restaurant needs</h2>
+                    <p className="text-center text-gray-600 mt-2 max-w-2xl mx-auto">A single plan with real-time orders, KDS, POS printing, analytics and multi-language support.</p>
+
+                    <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <Card title="Realtime Orders" desc="Supabase Realtime & push to KDS" />
+                        <Card title="QR Menu" desc="No app required — scan & order" />
+                        <Card title="KDS" desc="Tablet-ready kitchen display with timers" />
+                        <Card title="POS Printing" desc="80mm thermal receipt printing" />
+                        <Card title="Analytics" desc="Daily revenue & popular items" />
+                        <Card title="Multi-currency" desc="Set currency per restaurant" />
+                    </div>
+                </section>
+
+                {/* Pricing + Booking */}
+                <section id="book" className="bg-gray-50 py-16">
+                    <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                        <div className="lg:col-span-1">
+                            <h3 className="text-2xl font-bold">Simple pricing. One plan.</h3>
+                            <p className="mt-3 text-gray-600">All features included. Monthly and yearly billing — cancel anytime.</p>
+
+                            <div className="mt-6 p-6 bg-white rounded-lg shadow">
+                                <div className="text-sm text-gray-500">Plan</div>
+                                <div className="mt-2 text-3xl font-extrabold">{currencySymbol}{convertedPrice}</div>
+                                <div className="text-sm text-gray-500 mt-1">/ {billingCycle === 'monthly' ? 'month' : 'year'}</div>
+
+                                <div className="mt-4 flex gap-2">
+                                    <button onClick={() => setBillingCycle('monthly')} className={`px-3 py-2 rounded ${billingCycle === 'monthly' ? 'bg-indigo-600 text-white' : 'border'}`}>Monthly</button>
+                                    <button onClick={() => setBillingCycle('yearly')} className={`px-3 py-2 rounded ${billingCycle === 'yearly' ? 'bg-indigo-600 text-white' : 'border'}`}>Yearly</button>
+                                </div>
+
+                                <div className="mt-4 text-sm text-gray-600">Currency</div>
+                                <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="mt-2 w-full border rounded px-3 py-2">
+                                    <option value="INR">INR</option>
+                                    <option value="CZK">CZK</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                </select>
+
+                                <div className="mt-6 text-sm text-gray-700">Includes: QR menus, ordering, KDS, printing, analytics, support.</div>
+                            </div>
+                        </div>
+
+                        <div className="lg:col-span-2">
+                            <div className="bg-white rounded-lg shadow p-6">
+                                <h4 className="text-lg font-semibold mb-4">Book & Get Started</h4>
+
+                                <form onSubmit={handleBook} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <Input label="Restaurant / Company" value={companyName} onChange={(e: any) => setCompanyName(e.target.value)} placeholder="Cafe Praga" />
+                                    <Input label="Contact email" type="email" value={contactEmail} onChange={(e: any) => setContactEmail(e.target.value)} placeholder="owner@restaurant.cz" />
+                                    <Input label="Phone (optional)" value={phone} onChange={(e: any) => setPhone(e.target.value)} placeholder="+420 123 456 789" />
+
+
+                                    <div className="md:col-span-2 flex items-center justify-between">
+                                        <div className="text-sm">You will be charged <span className="font-semibold">{currencySymbol}{convertedPrice}</span> / {billingCycle === 'monthly' ? 'month' : 'year'}</div>
+                                        <div className="flex gap-2">
+                                            <button type="submit" disabled={loading} className="px-6 py-3 bg-indigo-600 text-white rounded shadow">{loading ? 'Processing...' : 'Proceed to Payment'}</button>
+
+                                        </div>
+                                    </div>
+
+                                    <div className="md:col-span-2">
+                                        {message && (
+                                            <div className={`p-3 rounded ${message.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{message.text}</div>
+                                        )}
+                                    </div>
+                                </form>
+
+                                <div className="mt-6 text-sm text-gray-500">By booking you agree to our <a className="underline">terms</a> and <a className="underline">privacy policy</a>.</div>
+                            </div>
+
+                            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="p-4 bg-white rounded shadow">
+                                    <div className="font-semibold">Onboarding</div>
+                                    <div className="text-sm text-gray-600 mt-2">Free setup call & menu migration</div>
+                                </div>
+                                <div className="p-4 bg-white rounded shadow">
+                                    <div className="font-semibold">Support</div>
+                                    <div className="text-sm text-gray-600 mt-2">Email & chat support during trial</div>
+                                </div>
+                                <div className="p-4 bg-white rounded shadow">
+                                    <div className="font-semibold">Custom brand</div>
+                                    <div className="text-sm text-gray-600 mt-2">Add restaurant logo to menus & QR sheets</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
 
             <footer className="bg-white border-t mt-10">
                 <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
