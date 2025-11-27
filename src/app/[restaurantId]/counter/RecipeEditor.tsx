@@ -46,7 +46,16 @@ export function RecipeEditor({ menuItem, isOpen, onClose }: RecipeEditorProps) {
     };
 
     const handleSave = async () => {
-        await updateRecipe(menuItem.id, localIngredients);
+        let finalIngredients = [...localIngredients];
+
+        // UX Improvement: If user has pending input but forgot to click +, add it automatically
+        if (selectedIngredientId && quantity > 0) {
+            if (!finalIngredients.some(i => i.ingredientId === selectedIngredientId)) {
+                finalIngredients.push({ ingredientId: selectedIngredientId, quantity });
+            }
+        }
+
+        await updateRecipe(menuItem.id, finalIngredients);
         onClose();
     };
 
