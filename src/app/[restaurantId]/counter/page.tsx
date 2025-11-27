@@ -860,7 +860,9 @@ function CounterContent() {
                                     <div key={order.id} className="flex justify-between items-center border-b pb-4 last:border-0">
                                         <div>
                                             <div className="font-medium">
-                                                {order.orderType === 'dine-in' ? `Table ${order.tableId}` : `Takeaway (${order.contactNumber})`}
+                                                {order.orderType === 'dine-in'
+                                                    ? (tables.find(t => t.id === String(order.tableId))?.name || `Table ${order.tableId}`)
+                                                    : `Takeaway (${order.contactNumber})`}
                                             </div>
                                             <div className="text-sm text-gray-500">
                                                 {new Date(order.createdAt).toLocaleTimeString()}
@@ -916,7 +918,7 @@ function CounterContent() {
             )}
 
             {activeTab === 'analytics' && (
-                <AnalyticsTab orders={orders} />
+                <AnalyticsTab orders={orders} tables={tables} />
             )}
 
             {activeTab === 'banners' && (
@@ -1079,9 +1081,8 @@ function CounterContent() {
                             </div>
                         </div>
                     </div>
-                )
-            }
-        </div >
+                )}
+        </div>
     );
 }
 
@@ -1143,7 +1144,7 @@ function QRCodeCard({ tableName, restaurantId, isTakeaway = false }: { tableName
     );
 }
 
-function AnalyticsTab({ orders }: { orders: Order[] }) {
+function AnalyticsTab({ orders, tables }: { orders: Order[], tables: Table[] }) {
     const { format } = useCurrency();
 
     // Filter for paid orders only
