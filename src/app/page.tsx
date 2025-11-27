@@ -69,13 +69,8 @@ export default function LandingPricing() {
         return Math.round(priceINR * rate).toLocaleString();
     }, [currency, billingCycle, rates]);
 
-    // Helper: convert an amount expressed in CZK into the currently selected currency.
-    // We store rates as relative to INR, so to convert CZK -> target:
-    // amount_in_INR = amountCZK / rates['CZK']
-    // amount_in_target = amount_in_INR * rates[target]
-    function convertFromCZK(amountCZK: number) {
-        const rateCZK = rates['CZK'] || 1;
-        const amountINR = amountCZK / rateCZK; // convert CZK -> INR
+    // Helper: convert an amount expressed in INR into the currently selected currency.
+    function convertFromINR(amountINR: number) {
         const targetRate = rates[currency] || 1; // 1 INR -> target
         const converted = amountINR * targetRate;
         // for display, round appropriately
@@ -229,8 +224,8 @@ export default function LandingPricing() {
                                         <div className="text-xs text-gray-500">Table 5</div>
                                     </div>
                                     <div className="space-y-3">
-                                        <div className="flex items-center justify-between"><div className="text-gray-800">Margherita Pizza</div><div className="font-semibold text-indigo-700">{currencySymbol}{convertFromCZK(179)}</div></div>
-                                        <div className="flex items-center justify-between"><div className="text-gray-800">Caesar Salad</div><div className="font-semibold text-indigo-700">{currencySymbol}{convertFromCZK(129)}</div></div>
+                                        <div className="flex items-center justify-between"><div className="text-gray-800">Margherita Pizza</div><div className="font-semibold text-indigo-700">{currencySymbol}{convertFromINR(599)}</div></div>
+                                        <div className="flex items-center justify-between"><div className="text-gray-800">Caesar Salad</div><div className="font-semibold text-indigo-700">{currencySymbol}{convertFromINR(399)}</div></div>
                                     </div>
                                     <div className="mt-4 text-right"><button className="px-4 py-2 bg-indigo-600 text-white rounded">Place order</button></div>
                                 </div>

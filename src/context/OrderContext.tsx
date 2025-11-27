@@ -68,7 +68,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
     const [tables, setTables] = useState<Table[]>([]);
     const [banners, setBanners] = useState<Banner[]>([]);
     const [categories, setCategories] = useState<MenuCategory[]>([]);
-    const [currency, setCurrency] = useState<CurrencyCode>('CZK');
+    const [currency, setCurrency] = useState<CurrencyCode>('INR');
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [recipes, setRecipes] = useState<MenuItemIngredient[]>([]);
 
@@ -97,7 +97,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             if (restaurantError) console.error("Error fetching restaurant details:", restaurantError);
             if (restaurantData) {
                 setRestaurantName(restaurantData.name || 'My Restaurant');
-                setCurrency(restaurantData.currency || 'USD');
+                setCurrency(restaurantData.currency || 'INR');
                 setTaxSettings({
                     tax_name: restaurantData.tax_name || 'Tax',
                     tax_rate: restaurantData.tax_rate || 0,

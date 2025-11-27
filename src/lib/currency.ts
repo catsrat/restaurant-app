@@ -9,7 +9,7 @@ export const CURRENCIES = {
 
 export type CurrencyCode = keyof typeof CURRENCIES;
 
-export function formatPrice(amount: number, currencyCode: CurrencyCode = 'CZK'): string {
+export function formatPrice(amount: number, currencyCode: CurrencyCode = 'INR'): string {
     const currency = CURRENCIES[currencyCode];
     // For CZK and INR, symbol goes after the number
     if (currencyCode === 'CZK' || currencyCode === 'INR') {

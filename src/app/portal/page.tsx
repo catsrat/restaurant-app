@@ -15,7 +15,7 @@ export default function LandingPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
   const [restaurantName, setRestaurantName] = useState('');
-  const [currency, setCurrency] = useState<CurrencyCode>('CZK');
+  const [currency, setCurrency] = useState<CurrencyCode>('INR');
   const [existingId, setExistingId] = useState('');
 
   const [userRestaurantId, setUserRestaurantId] = useState<string | null>(null);
