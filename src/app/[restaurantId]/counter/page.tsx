@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Utensils, QrCode, List, DollarSign, BarChart3, Trash2, Plus, BadgeCheck, Clock, CheckCircle2, ChefHat, Printer, Download, TrendingUp, Image as ImageIcon, LogOut } from 'lucide-react';
+import { Utensils, QrCode, List, DollarSign, BarChart3, Trash2, Plus, BadgeCheck, Clock, CheckCircle2, ChefHat, Printer, Download, TrendingUp, Image as ImageIcon, LogOut, Package } from 'lucide-react';
 import { Receipt } from '@/components/Receipt';
 import { cn } from '@/lib/utils';
 import AdminGuard from '@/components/AdminGuard';
@@ -18,6 +18,8 @@ import { MenuGrid } from '@/components/MenuGrid';
 import { CartDrawer, CartContent } from '@/components/CartDrawer';
 import { useAuth } from '@/context/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { InventoryTab } from './InventoryTab';
+import { RecipeEditor } from './RecipeEditor';
 
 export default function CounterPage() {
     return (
@@ -33,7 +35,7 @@ function CounterContent() {
     const { orders, updateOrderStatus, menuItems, addMenuItem, deleteMenuItem, tables, addTable, deleteTable, markTablePaid, resetTableStatus, addOrder, banners, addBanner, deleteBanner, categories, addCategory, deleteCategory, applyDiscount } = useOrder();
     const { user, signOut } = useAuth();
     const { format } = useCurrency();
-    const [activeTab, setActiveTab] = useState<'orders' | 'tables' | 'menu' | 'sales' | 'qrcodes' | 'analytics' | 'banners'>('orders');
+    const [activeTab, setActiveTab] = useState<'orders' | 'tables' | 'menu' | 'sales' | 'qrcodes' | 'analytics' | 'banners' | 'inventory'>('orders');
 
     // POS State
     const [isPOSOpen, setIsPOSOpen] = useState(false);
@@ -41,6 +43,7 @@ function CounterContent() {
     const [posOrderType, setPosOrderType] = useState<OrderType>('dine-in');
     const [posTableId, setPosTableId] = useState<string>('');
     const [posContactNumber, setPosContactNumber] = useState<string>('');
+    const [editingRecipeItem, setEditingRecipeItem] = useState<MenuItem | null>(null);
 
     const handleAddToPosCart = (item: MenuItem | OrderItem) => {
         setPosCart(prev => {
@@ -516,6 +519,9 @@ function CounterContent() {
                         <Button variant={activeTab === 'banners' ? 'default' : 'outline'} onClick={() => setActiveTab('banners')} className="whitespace-nowrap">
                             <ImageIcon className="h-4 w-4 mr-2" /> Banners
                         </Button>
+                        <Button variant={activeTab === 'inventory' ? 'default' : 'outline'} onClick={() => setActiveTab('inventory')} className="whitespace-nowrap">
+                            <Package className="h-4 w-4 mr-2" /> Inventory
+                        </Button>
                     </div>
                 </div>
             </header>
@@ -987,6 +993,19 @@ function CounterContent() {
                     </div>
                 </div>
             )}
+
+            {activeTab === 'inventory' && (
+                <InventoryTab />
+            )}
+
+            {editingRecipeItem && (
+                <RecipeEditor
+                    menuItem={editingRecipeItem}
+                    isOpen={!!editingRecipeItem}
+                    onClose={() => setEditingRecipeItem(null)}
+                />
+            )}
+
             {/* Hidden Receipt Component for Printing */}
             {printingData && (
                 <div className="hidden print:block">

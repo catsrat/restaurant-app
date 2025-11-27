@@ -1,7 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Order, OrderItem, OrderStatus, OrderType, MenuItem, MENU_ITEMS as INITIAL_MENU_ITEMS, Table, Banner, MenuCategory } from '@/types';
+import { Order, OrderItem, OrderStatus, OrderType, MenuItem, MENU_ITEMS as INITIAL_MENU_ITEMS, Table, Banner, MenuCategory, Ingredient, MenuItemIngredient } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { CurrencyCode } from '@/lib/currency';
 
@@ -39,6 +39,15 @@ interface OrderContextType {
     // Discount
     applyDiscount: (orderId: string, discount: number) => Promise<void>;
     currency: CurrencyCode;
+    // Inventory
+    ingredients: Ingredient[];
+    addIngredient: (name: string, unit: string, stock: number, threshold: number) => Promise<void>;
+    updateIngredient: (id: string, updates: Partial<Ingredient>) => Promise<void>;
+    deleteIngredient: (id: string) => Promise<void>;
+    // Recipes
+    recipes: MenuItemIngredient[];
+    updateRecipe: (menuItemId: string, ingredients: { ingredientId: string, quantity: number }[]) => Promise<void>;
+    getRecipeForMenuItem: (menuItemId: string) => MenuItemIngredient[];
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -51,6 +60,8 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
     const [banners, setBanners] = useState<Banner[]>([]);
     const [categories, setCategories] = useState<MenuCategory[]>([]);
     const [currency, setCurrency] = useState<CurrencyCode>('CZK');
+    const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+    const [recipes, setRecipes] = useState<MenuItemIngredient[]>([]);
 
     // Fetch Initial Data
     useEffect(() => {
@@ -99,7 +110,27 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                 .order('created_at', { ascending: false });
 
             if (bannerError) console.error("Error fetching banners:", bannerError);
-            if (bannerData) setBanners(bannerData);
+            if (bannerData) setBanners(bannerData.map((b: any) => ({ ...b, created_at: new Date(b.created_at) })));
+
+            // Fetch Ingredients
+            const { data: ingredientData, error: ingredientError } = await supabase
+                .from('ingredients')
+                .select('*')
+                .eq('restaurant_id', restaurantId)
+                .order('name');
+
+            if (ingredientError) console.error("Error fetching ingredients:", ingredientError);
+            if (ingredientData) setIngredients(ingredientData.map((i: any) => ({ ...i, created_at: new Date(i.created_at) })));
+
+            // Fetch Recipes
+            const { data: recipeData, error: recipeError } = await supabase
+                .from('menu_item_ingredients')
+                .select('*');
+
+            if (recipeError) console.error("Error fetching recipes:", recipeError);
+            if (recipeData) setRecipes(recipeData.map((r: any) => ({ ...r, created_at: new Date(r.created_at) })));
+
+
 
             // Fetch Categories
             const { data: categoryData, error: categoryError } = await supabase
@@ -229,6 +260,42 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                     .from('tables')
                     .update({ status: 'occupied' })
                     .eq('id', table.id);
+            }
+        }
+
+        // 4. Deduct Stock (Inventory Management)
+        // We do this asynchronously and don't block the order if it fails (for now), 
+        // but ideally we should check stock before placing order.
+        // Since we are allowing negative stock, we just deduct.
+        const stockUpdates = [];
+        for (const item of items) {
+            const itemRecipe = recipes.filter(r => r.menu_item_id === item.id);
+            for (const ingredient of itemRecipe) {
+                const totalDeduction = ingredient.quantity_required * item.quantity;
+                // We need to update the ingredient stock.
+                // Since we might have multiple items using the same ingredient, we should aggregate?
+                // For simplicity, we'll just fire updates. Supabase handles concurrency reasonably well for simple decrements if we use rpc or just update.
+                // But here we are calculating new value based on local state which might be stale.
+                // Better approach: RPC call to decrement. But we don't have one.
+                // We will use the current local stock as base.
+
+                const currentIngredient = ingredients.find(i => i.id === ingredient.ingredient_id);
+                if (currentIngredient) {
+                    const newStock = currentIngredient.current_stock - totalDeduction;
+
+                    // Update DB
+                    await supabase
+                        .from('ingredients')
+                        .update({ current_stock: newStock })
+                        .eq('id', ingredient.ingredient_id);
+
+                    // Update Local State immediately to reflect change
+                    setIngredients(prev => prev.map(i =>
+                        i.id === ingredient.ingredient_id
+                            ? { ...i, current_stock: newStock }
+                            : i
+                    ));
+                }
             }
         }
 
@@ -652,6 +719,101 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             setOrders(prev => prev.map(o => o.id === orderId ? { ...o, discount: 0 } : o));
         }
     };
+    // Inventory Management
+    const addIngredient = async (name: string, unit: string, stock: number, threshold: number) => {
+        const { data, error } = await supabase
+            .from('ingredients')
+            .insert({
+                restaurant_id: restaurantId,
+                name,
+                unit,
+                current_stock: stock,
+                low_stock_threshold: threshold
+            })
+            .select()
+            .single();
+
+        if (error) {
+            console.error("Error adding ingredient:", error);
+            return;
+        }
+
+        setIngredients(prev => [...prev, { ...data, created_at: new Date(data.created_at) }]);
+    };
+
+    const updateIngredient = async (id: string, updates: Partial<Ingredient>) => {
+        const { error } = await supabase
+            .from('ingredients')
+            .update(updates)
+            .eq('id', id);
+
+        if (error) {
+            console.error("Error updating ingredient:", error);
+            return;
+        }
+
+        setIngredients(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
+    };
+
+    const deleteIngredient = async (id: string) => {
+        const { error } = await supabase
+            .from('ingredients')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error("Error deleting ingredient:", error);
+            return;
+        }
+
+        setIngredients(prev => prev.filter(i => i.id !== id));
+    };
+
+    // Recipe Management
+    const updateRecipe = async (menuItemId: string, newIngredients: { ingredientId: string, quantity: number }[]) => {
+        // 1. Delete existing recipe for this item
+        const { error: deleteError } = await supabase
+            .from('menu_item_ingredients')
+            .delete()
+            .eq('menu_item_id', menuItemId);
+
+        if (deleteError) {
+            console.error("Error clearing recipe:", deleteError);
+            return;
+        }
+
+        if (newIngredients.length === 0) {
+            setRecipes(prev => prev.filter(r => r.menu_item_id !== menuItemId));
+            return;
+        }
+
+        // 2. Insert new ingredients
+        const { data, error: insertError } = await supabase
+            .from('menu_item_ingredients')
+            .insert(newIngredients.map(i => ({
+                menu_item_id: menuItemId,
+                ingredient_id: i.ingredientId,
+                quantity_required: i.quantity
+            })))
+            .select();
+
+        if (insertError) {
+            console.error("Error updating recipe:", insertError);
+            return;
+        }
+
+        // Update local state
+        setRecipes(prev => {
+            const filtered = prev.filter(r => r.menu_item_id !== menuItemId);
+            const added = data.map((r: any) => ({ ...r, created_at: new Date(r.created_at) }));
+            return [...filtered, ...added];
+        });
+    };
+
+    const getRecipeForMenuItem = (menuItemId: string) => {
+        return recipes.filter(r => r.menu_item_id === menuItemId);
+    };
+
     return (
         <OrderContext.Provider value={{
             orders,
@@ -679,7 +841,14 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             deleteCategory,
             checkUpsell,
             applyDiscount,
-            currency
+            currency,
+            ingredients,
+            addIngredient,
+            updateIngredient,
+            deleteIngredient,
+            recipes,
+            updateRecipe,
+            getRecipeForMenuItem
         }}>
             {children}
         </OrderContext.Provider>

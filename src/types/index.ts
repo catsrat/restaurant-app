@@ -129,3 +129,21 @@ export const MENU_ITEMS: MenuItem[] = [
         image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y29sYXxlbnwwfHwwfHx8MA%3D%3D'
     }
 ];
+
+export interface Ingredient {
+    id: string;
+    restaurant_id: string;
+    name: string;
+    unit: string;
+    current_stock: number;
+    low_stock_threshold: number;
+    created_at: Date;
+}
+
+export interface MenuItemIngredient {
+    id: string;
+    menu_item_id: string;
+    ingredient_id: string;
+    quantity_required: number;
+    created_at: Date;
+}
