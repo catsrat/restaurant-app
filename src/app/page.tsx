@@ -326,7 +326,7 @@ export default function LandingPricing() {
                                     </div>
                                 </form>
 
-                                <div className="mt-6 text-sm text-gray-500">By booking you agree to our <a className="underline">terms</a> and <a className="underline">privacy policy</a>.</div>
+                                <div className="mt-6 text-sm text-gray-500">By booking you agree to our <a href="/terms" className="underline hover:text-indigo-600">terms</a> and <a href="/privacy" className="underline hover:text-indigo-600">privacy policy</a>.</div>
                             </div>
 
                             <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -352,9 +352,9 @@ export default function LandingPricing() {
                 <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="text-sm text-gray-600">© {new Date().getFullYear()} Order QR. Vercel + Supabase</div>
                     <div className="flex items-center gap-4 text-sm">
-                        <a className="text-gray-600">Privacy</a>
-                        <a className="text-gray-600">Terms</a>
-                        <a className="text-gray-600">Contact</a>
+                        <a href="/privacy" className="text-gray-600 hover:text-indigo-600">Privacy</a>
+                        <a href="/terms" className="text-gray-600 hover:text-indigo-600">Terms</a>
+                        <a href="mailto:support@orderqr.in" className="text-gray-600 hover:text-indigo-600">Contact</a>
                     </div>
                 </div>
             </footer>
