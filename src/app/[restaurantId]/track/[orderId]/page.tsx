@@ -114,11 +114,11 @@ export default function OrderTrackingPage() {
     }
 
     const statusSteps = [
-        { key: 'pending', label: 'Order Received', icon: CheckCircle2, color: 'blue' },
-        { key: 'preparing', label: 'Preparing', icon: ChefHat, color: 'orange' },
-        { key: 'ready', label: 'Ready', icon: Utensils, color: 'green' },
-        { key: 'served', label: 'Served', icon: CheckCircle2, color: 'gray' },
-        { key: 'paid', label: 'Payment Done', icon: DollarSign, color: 'green' },
+        { key: 'pending', label: 'Order Received', icon: CheckCircle2, activeClass: 'bg-blue-600 text-white' },
+        { key: 'preparing', label: 'Preparing', icon: ChefHat, activeClass: 'bg-orange-600 text-white' },
+        { key: 'ready', label: 'Ready', icon: Utensils, activeClass: 'bg-green-600 text-white' },
+        { key: 'served', label: 'Served', icon: CheckCircle2, activeClass: 'bg-gray-600 text-white' },
+        { key: 'paid', label: 'Payment Done', icon: DollarSign, activeClass: 'bg-green-600 text-white' },
     ];
 
     return (
@@ -187,7 +187,7 @@ export default function OrderTrackingPage() {
                                                 <div className={cn(
                                                     "w-12 h-12 rounded-full flex items-center justify-center transition-all",
                                                     isCompleted
-                                                        ? `bg-${step.color}-600 text-white`
+                                                        ? step.activeClass
                                                         : "bg-gray-200 text-gray-400",
                                                     isCurrent && "ring-4 ring-blue-200 animate-pulse"
                                                 )}>
