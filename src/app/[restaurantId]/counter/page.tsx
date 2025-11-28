@@ -33,7 +33,7 @@ export default function CounterPage() {
 function CounterContent() {
     const params = useParams();
     const restaurantId = params.restaurantId as string;
-    const { orders, updateOrderStatus, menuItems, addMenuItem, deleteMenuItem, tables, addTable, deleteTable, markTablePaid, resetTableStatus, addOrder, banners, addBanner, deleteBanner, categories, addCategory, deleteCategory, applyDiscount, taxSettings, restaurantName } = useOrder();
+    const { orders, updateOrderStatus, menuItems, addMenuItem, deleteMenuItem, tables, addTable, deleteTable, markTablePaid, resetTableStatus, addOrder, banners, addBanner, deleteBanner, categories, addCategory, deleteCategory, applyDiscount, taxSettings, restaurantName, isLoading } = useOrder();
     const { user, signOut } = useAuth();
     const { format, currency } = useCurrency();
     const [activeTab, setActiveTab] = useState<'orders' | 'tables' | 'menu' | 'sales' | 'qrcodes' | 'analytics' | 'banners' | 'inventory' | 'settings'>('orders');
@@ -604,7 +604,12 @@ function CounterContent() {
 
             {activeTab === 'orders' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {Object.keys(ordersByTable).length === 0 ? (
+                    {isLoading ? (
+                        <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-400">
+                            <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+                            <p className="text-xl">Loading orders...</p>
+                        </div>
+                    ) : Object.keys(ordersByTable).length === 0 ? (
                         <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-400">
                             <Utensils className="h-16 w-16 mb-4 opacity-20" />
                             <p className="text-xl">No active orders</p>
@@ -872,7 +877,12 @@ function CounterContent() {
                     </Card>
 
                     <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {menuItems.map(item => (
+                        {isLoading ? (
+                            <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-400">
+                                <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+                                <p className="text-xl">Loading menu items...</p>
+                            </div>
+                        ) : menuItems.map(item => (
                             <Card key={item.id} className="flex flex-row overflow-hidden h-32">
                                 <div className="w-32 h-full bg-gray-200 shrink-0">
                                     <img src={item.image_url || item.image} alt={item.name} className="w-full h-full object-cover" />

@@ -51,6 +51,7 @@ interface OrderContextType {
     taxSettings: TaxSettings;
     updateTaxSettings: (settings: Partial<TaxSettings>) => Promise<void>;
     restaurantName: string;
+    isLoading: boolean;
 }
 
 export interface TaxSettings {
@@ -71,6 +72,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
     const [currency, setCurrency] = useState<CurrencyCode>('INR');
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [recipes, setRecipes] = useState<MenuItemIngredient[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Fetch Initial Data
     useEffect(() => {
@@ -200,6 +202,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                 }));
                 setOrders(parsedOrders);
             }
+            setIsLoading(false);
         };
 
         fetchData();
@@ -933,7 +936,8 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             getRecipeForMenuItem,
             taxSettings,
             updateTaxSettings,
-            restaurantName
+            restaurantName,
+            isLoading
         }}>
             {children}
         </OrderContext.Provider>

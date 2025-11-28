@@ -27,7 +27,7 @@ export default function MenuPage() {
     const orderType = (searchParams.get('type') as OrderType) || 'dine-in';
     const contactNumber = searchParams.get('contact') || undefined;
 
-    const { cart, addToCart, removeFromCart, addOrder, menuItems, banners, categories, checkUpsell } = useOrder();
+    const { cart, addToCart, removeFromCart, addOrder, menuItems, banners, categories, checkUpsell, isLoading } = useOrder();
     const { format } = useCurrency();
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [showToast, setShowToast] = useState(false);
@@ -115,87 +115,94 @@ export default function MenuPage() {
                 </div>
             </header>
 
-            <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-                {/* Banners Carousel */}
-                {banners.length > 0 && (
-                    <div className="w-full overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory flex gap-4">
-                        {banners.map(banner => (
-                            <div key={banner.id} className="snap-center shrink-0 w-[85vw] md:w-[400px] aspect-video rounded-xl overflow-hidden shadow-md relative">
-                                <img
-                                    src={banner.image_url}
-                                    alt={banner.title || 'Offer'}
-                                    className="w-full h-full object-cover"
-                                />
-                                {banner.title && (
-                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
-                                        <h3 className="text-white font-bold text-lg">{banner.title}</h3>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {/* Smart Menu Controls */}
-                <div className="space-y-4 sticky top-[72px] z-10 bg-gray-50 pt-2 pb-4 -mx-4 px-4 shadow-sm">
-                    <SearchBar value={searchQuery} onChange={setSearchQuery} />
-                    <CategoryNav
-                        categories={categories}
-                        activeCategory={activeCategory}
-                        onSelect={setActiveCategory}
-                    />
+            {isLoading ? (
+                <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+                    <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                    <p className="text-gray-500 font-medium animate-pulse">Loading menu...</p>
                 </div>
-
-                {/* Filtered Menu Grid */}
-                {filteredItems.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredItems.map((item) => (
-                            <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleItemClick(item)}>
-                                <div className="aspect-video w-full overflow-hidden relative">
+            ) : (
+                <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+                    {/* Banners Carousel */}
+                    {banners.length > 0 && (
+                        <div className="w-full overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory flex gap-4">
+                            {banners.map(banner => (
+                                <div key={banner.id} className="snap-center shrink-0 w-[85vw] md:w-[400px] aspect-video rounded-xl overflow-hidden shadow-md relative">
                                     <img
-                                        src={item.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
-                                        alt={item.name}
-                                        className="w-full h-full object-cover transition-transform hover:scale-105"
+                                        src={banner.image_url}
+                                        alt={banner.title || 'Offer'}
+                                        className="w-full h-full object-cover"
                                     />
-                                    {!item.is_available && (
-                                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                            <span className="text-white font-bold px-4 py-2 border-2 border-white rounded-md uppercase tracking-wider">Sold Out</span>
+                                    {banner.title && (
+                                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
+                                            <h3 className="text-white font-bold text-lg">{banner.title}</h3>
                                         </div>
                                     )}
                                 </div>
-                                <CardHeader className="pb-2">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <CardTitle className="text-lg">{item.name}</CardTitle>
-                                            <CardDescription className="line-clamp-2 mt-1">{item.description}</CardDescription>
-                                        </div>
-                                        <span className="font-bold text-lg bg-green-50 text-green-700 px-2 py-1 rounded-md">
-                                            {format(item.price)}
-                                        </span>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Smart Menu Controls */}
+                    <div className="space-y-4 sticky top-[72px] z-10 bg-gray-50 pt-2 pb-4 -mx-4 px-4 shadow-sm">
+                        <SearchBar value={searchQuery} onChange={setSearchQuery} />
+                        <CategoryNav
+                            categories={categories}
+                            activeCategory={activeCategory}
+                            onSelect={setActiveCategory}
+                        />
+                    </div>
+
+                    {/* Filtered Menu Grid */}
+                    {filteredItems.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredItems.map((item) => (
+                                <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleItemClick(item)}>
+                                    <div className="aspect-video w-full overflow-hidden relative">
+                                        <img
+                                            src={item.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
+                                            alt={item.name}
+                                            className="w-full h-full object-cover transition-transform hover:scale-105"
+                                        />
+                                        {!item.is_available && (
+                                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                                <span className="text-white font-bold px-4 py-2 border-2 border-white rounded-md uppercase tracking-wider">Sold Out</span>
+                                            </div>
+                                        )}
                                     </div>
-                                </CardHeader>
-                                <CardFooter>
-                                    <Button
-                                        className="w-full font-bold"
-                                        disabled={!item.is_available}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleItemClick(item);
-                                        }}
-                                    >
-                                        <Plus className="h-4 w-4 mr-2" /> Add
-                                    </Button>
-                                </CardFooter>
-                            </Card>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-12 text-gray-500">
-                        <p className="text-lg">No items found matching your search.</p>
-                        <Button variant="link" onClick={() => { setSearchQuery(''); setActiveCategory('all'); }}>Clear Filters</Button>
-                    </div>
-                )}
-            </main>
+                                    <CardHeader className="pb-2">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <CardTitle className="text-lg">{item.name}</CardTitle>
+                                                <CardDescription className="line-clamp-2 mt-1">{item.description}</CardDescription>
+                                            </div>
+                                            <span className="font-bold text-lg bg-green-50 text-green-700 px-2 py-1 rounded-md">
+                                                {format(item.price)}
+                                            </span>
+                                        </div>
+                                    </CardHeader>
+                                    <CardFooter>
+                                        <Button
+                                            className="w-full font-bold"
+                                            disabled={!item.is_available}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleItemClick(item);
+                                            }}
+                                        >
+                                            <Plus className="h-4 w-4 mr-2" /> Add
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12 text-gray-500">
+                            <p className="text-lg">No items found matching your search.</p>
+                            <Button variant="link" onClick={() => { setSearchQuery(''); setActiveCategory('all'); }}>Clear Filters</Button>
+                        </div>
+                    )}
+                </main>
+            )}
 
             {/* Add to Cart Toast Overlay */}
             {showToast && (
