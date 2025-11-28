@@ -1,27 +1,28 @@
-
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { supabase } from '@/lib/supabase'; // NOTE: This needs to be a SERVICE ROLE client for backend updates
+import { createClient } from '@supabase/supabase-js';
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2024-11-20.acacia', // Suppress type error if needed or update package
+    apiVersion: '2024-11-20.acacia',
 } as any);
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(req: Request) {
     const body = await req.text();
-    const headerList = headers(); // In Next 13/14 headers() is synchronous, in 15 it might be async.
-    // Assuming Next 14 based on usage context, but if it errors, we treat it as sync for now or check version.
-    // The error says "Property 'get' does not exist on type 'Promise<ReadonlyHeaders>'", implying Next 15 or latest types.
-    const signature = (await headerList).get('stripe-signature') as string;
+
+    // Next.js 15 headers() is async
+    const headerList = await headers();
+    const signature = headerList.get('stripe-signature') as string;
 
     let event: Stripe.Event;
 
     try {
         if (!webhookSecret) throw new Error('Missing STRIPE_WEBHOOK_SECRET');
+        if (!signature) throw new Error('Missing stripe-signature header');
+
         event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err: any) {
         console.error(`Webhook signature verification failed: ${err.message}`);
@@ -51,10 +52,14 @@ export async function POST(req: Request) {
             // For now, let's assume we can use a direct fetch or create a local client if we had the key.
             // BUT, since we are in a server route, we can use the secret key if we have it in env.
 
-            const { createClient } = require('@supabase/supabase-js');
+            if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+                console.error('Missing SUPABASE_SERVICE_ROLE_KEY');
+                return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+            }
+
             const supabaseAdmin = createClient(
                 process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                process.env.SUPABASE_SERVICE_ROLE_KEY!
+                process.env.SUPABASE_SERVICE_ROLE_KEY
             );
 
             const { error } = await supabaseAdmin
