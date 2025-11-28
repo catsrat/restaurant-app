@@ -254,9 +254,12 @@ export default function OrderTrackingPage() {
                                             </li>
                                         ))}
                                     </ul>
-                                    <div className="mt-4 pt-4 border-t flex justify-between items-center text-lg font-bold">
-                                        <span>Total</span>
-                                        <span>{format(order.items.reduce((sum: number, i: any) => sum + i.price * i.quantity, 0))}</span>
+                                    <div className="mt-4 pt-4 border-t">
+                                        <div className="flex justify-between items-center text-lg font-bold">
+                                            <span>Total</span>
+                                            <span>{format(order.items.reduce((sum: number, i: any) => sum + i.price * i.quantity, 0))}</span>
+                                        </div>
+                                        <div className="text-right text-xs text-gray-500 mt-1">* excluding GST</div>
                                     </div>
                                 </CardContent>
                             </Card>
