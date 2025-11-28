@@ -30,6 +30,7 @@ export default function MenuPage() {
     const { format } = useCurrency();
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [showToast, setShowToast] = useState(false);
+    const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
     // Smart Menu State
     const [searchQuery, setSearchQuery] = useState('');
@@ -72,13 +73,23 @@ export default function MenuPage() {
 
     const handlePlaceOrder = async () => {
         if (cart.length === 0) return;
-        const newOrder = await addOrder(cart, orderType, { tableId: orderType === 'dine-in' ? tableId : undefined, contactNumber });
 
-        if (!newOrder) return;
+        setIsPlacingOrder(true);
+        try {
+            const newOrder = await addOrder(cart, orderType, { tableId: orderType === 'dine-in' ? tableId : undefined, contactNumber });
 
-        setIsCartOpen(false);
-        // Redirect to order tracking page
-        router.push(`/${params.restaurantId}/track/${newOrder.id}`);
+            if (!newOrder) {
+                setIsPlacingOrder(false);
+                return;
+            }
+
+            setIsCartOpen(false);
+            // Redirect to order tracking page
+            router.push(`/${params.restaurantId}/track/${newOrder.id}`);
+        } catch (error) {
+            console.error("Error placing order:", error);
+            setIsPlacingOrder(false);
+        }
     };
 
     return (
@@ -210,6 +221,7 @@ export default function MenuPage() {
                 onAdd={(item) => addToCart(item)}
                 onPlaceOrder={handlePlaceOrder}
                 totalAmount={totalAmount}
+                isLoading={isPlacingOrder}
             >
                 {orderType === 'takeaway' && (
                     <div className="space-y-2 mb-4">

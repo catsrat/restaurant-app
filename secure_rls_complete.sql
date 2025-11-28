@@ -32,16 +32,30 @@ DROP POLICY IF EXISTS "Owners can manage categories" ON menu_categories;
 -- Orders
 DROP POLICY IF EXISTS "Public orders access" ON orders;
 DROP POLICY IF EXISTS "Owners can update orders" ON orders;
+DROP POLICY IF EXISTS "Public can create orders" ON orders;
+DROP POLICY IF EXISTS "Public can view orders" ON orders;
+
+-- Order Items
 DROP POLICY IF EXISTS "Public order_items access" ON order_items;
+DROP POLICY IF EXISTS "Public can create order items" ON order_items;
+DROP POLICY IF EXISTS "Public can view order items" ON order_items;
+DROP POLICY IF EXISTS "Owners can update order items" ON order_items;
 
 -- Banners
 DROP POLICY IF EXISTS "Public banners are viewable by everyone" ON restaurant_banners;
 DROP POLICY IF EXISTS "Owners can manage their banners" ON restaurant_banners;
 DROP POLICY IF EXISTS "Owners can manage banners" ON restaurant_banners;
+DROP POLICY IF EXISTS "Public can view banners" ON restaurant_banners;
 
 -- Ingredients & Recipes (If any existed)
 DROP POLICY IF EXISTS "Public ingredients access" ON ingredients;
 DROP POLICY IF EXISTS "Public recipes access" ON menu_item_ingredients;
+DROP POLICY IF EXISTS "Owners can manage ingredients" ON ingredients;
+DROP POLICY IF EXISTS "Owners can manage recipes" ON menu_item_ingredients;
+
+-- Upsell Rules
+DROP POLICY IF EXISTS "Public can view upsell rules" ON upsell_rules;
+DROP POLICY IF EXISTS "Owners can manage upsell rules" ON upsell_rules;
 
 
 -- 3. Enable RLS on all tables (Safety check)
