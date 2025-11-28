@@ -183,6 +183,7 @@ export default function LandingPricing() {
                 <div className="flex items-center gap-4">
                     <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm text-gray-600 hover:text-indigo-600">Features</a>
                     <a href="#book" onClick={(e) => { e.preventDefault(); document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm text-gray-600 hover:text-indigo-600">Pricing</a>
+                    <a href="#contact" onClick={(e) => { e.preventDefault(); document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm text-gray-600 hover:text-indigo-600">Contact</a>
 
 
                     {/* Currency select: z-index & aria-label for accessibility */}
@@ -347,6 +348,24 @@ export default function LandingPricing() {
                     </div>
                 </section>
             </main>
+
+            {/* Contact Section */}
+            <section id="contact" className="bg-white py-16 border-t">
+                <div className="max-w-4xl mx-auto px-6 text-center">
+                    <h2 className="text-3xl font-bold mb-6">Contact Us</h2>
+                    <p className="text-gray-600 mb-8 text-lg">Have questions? We're here to help.</p>
+
+                    <div className="inline-flex items-center gap-3 bg-indigo-50 px-6 py-4 rounded-lg border border-indigo-100">
+                        <div className="bg-indigo-600 text-white p-2 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
+                        </div>
+                        <div className="text-left">
+                            <div className="text-sm text-gray-500 font-medium">Email Support</div>
+                            <a href="mailto:support@orderqr.in" className="text-xl font-bold text-indigo-700 hover:underline">support@orderqr.in</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <footer className="bg-white border-t mt-10">
                 <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
