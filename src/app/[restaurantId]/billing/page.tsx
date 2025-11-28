@@ -14,10 +14,15 @@ export default function BillingPage() {
     const router = useRouter();
 
     const handleSubscribe = () => {
-        // In a real app, this would redirect to Stripe Checkout
-        // For now, we'll just show an alert or redirect to a contact form
-        window.location.href = 'https://buy.stripe.com/test_...'; // Replace with actual Stripe link or logic
-        alert("Redirecting to payment gateway...");
+        // TODO: Replace this with your actual Stripe Payment Link
+        // You can get this from your Stripe Dashboard -> Payment Links
+        const STRIPE_LINK = '';
+
+        if (STRIPE_LINK) {
+            window.location.href = STRIPE_LINK;
+        } else {
+            alert("Payment Integration Required: You need to add your Stripe Payment Link in src/app/[restaurantId]/billing/page.tsx");
+        }
     };
 
     const handleLogout = async () => {
