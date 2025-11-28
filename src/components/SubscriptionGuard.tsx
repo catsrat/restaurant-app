@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useOrder } from '@/context/OrderContext';
 import { Loader2, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 export default function SubscriptionGuard({ children }: { children: React.ReactNode }) {
     const { subscriptionStatus, subscriptionEndDate, isLoading } = useOrder();
     const router = useRouter();
+    const params = useParams();
+    const restaurantId = params.restaurantId as string;
 
     useEffect(() => {
         if (isLoading) return;
@@ -25,11 +27,15 @@ export default function SubscriptionGuard({ children }: { children: React.ReactN
             }
 
             // 3. Otherwise (inactive, past_due, or expired trial), redirect
-            router.push('/billing');
+            if (restaurantId) {
+                router.push(`/${restaurantId}/billing`);
+            } else {
+                router.push('/'); // Fallback if no restaurant ID
+            }
         };
 
         checkSubscription();
-    }, [subscriptionStatus, subscriptionEndDate, isLoading, router]);
+    }, [subscriptionStatus, subscriptionEndDate, isLoading, router, restaurantId]);
 
     if (isLoading) {
         return (
