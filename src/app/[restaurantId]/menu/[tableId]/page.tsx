@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 
 import { MenuGrid } from '@/components/MenuGrid';
 import { CartDrawer } from '@/components/CartDrawer';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryNav } from '@/components/CategoryNav';
@@ -71,8 +72,11 @@ export default function MenuPage() {
         }
     };
 
+    const isOnline = useNetworkStatus();
+
     const handlePlaceOrder = async () => {
         if (cart.length === 0) return;
+        if (!isOnline) return; // Prevent offline orders
 
         setIsPlacingOrder(true);
         try {
@@ -221,7 +225,7 @@ export default function MenuPage() {
                 onAdd={(item) => addToCart(item)}
                 onPlaceOrder={handlePlaceOrder}
                 totalAmount={totalAmount}
-                isLoading={isPlacingOrder}
+                isLoading={isPlacingOrder || !isOnline}
             >
                 {orderType === 'takeaway' && (
                     <div className="space-y-2 mb-4">
