@@ -9,19 +9,38 @@ import { Lock, CreditCard, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function BillingPage() {
-    const { subscriptionStatus, subscriptionEndDate, isLoading } = useOrder();
-    const { signOut } = useAuth();
+    const { subscriptionStatus, subscriptionEndDate, isLoading, restaurantName } = useOrder();
+    const { signOut, user } = useAuth();
     const router = useRouter();
 
-    const handleSubscribe = () => {
-        // TODO: Replace this with your actual Stripe Payment Link
-        // You can get this from your Stripe Dashboard -> Payment Links
-        const STRIPE_LINK = '';
+    const handleSubscribe = async () => {
+        try {
+            if (!user || !user.email) {
+                alert("Please log in first.");
+                return;
+            }
 
-        if (STRIPE_LINK) {
-            window.location.href = STRIPE_LINK;
-        } else {
-            alert("Payment Integration Required: You need to add your Stripe Payment Link in src/app/[restaurantId]/billing/page.tsx");
+            const res = await fetch('/api/book', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    companyName: restaurantName || 'My Restaurant',
+                    contactEmail: user.email,
+                    currency: 'INR', // Defaulting to INR as per current logic, or fetch from context
+                    billingCycle: 'monthly', // Default to monthly
+                    userId: user.id
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.checkoutUrl) {
+                window.location.href = data.checkoutUrl;
+            } else {
+                alert("Failed to initiate payment. Please try again.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("An error occurred. Please try again.");
         }
     };
 
