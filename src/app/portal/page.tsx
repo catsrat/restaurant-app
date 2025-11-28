@@ -82,6 +82,34 @@ export default function LandingPage() {
     }
   };
 
+  const handleSubscribe = async () => {
+    if (!user || !user.email) return;
+
+    try {
+      const res = await fetch('/api/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyName: 'My Restaurant', // We could fetch the actual name if needed
+          contactEmail: user.email,
+          currency: 'INR',
+          billingCycle: 'monthly',
+          userId: user.id
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        alert("Failed to initiate payment. Please try again.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred. Please try again.");
+    }
+  };
+
   const handleVisit = () => {
     if (!existingId) return;
     router.push(`/${existingId}/menu/Table1`); // Default to Table 1 for demo
@@ -197,9 +225,9 @@ export default function LandingPage() {
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   variant="outline"
-                  onClick={() => router.push(`/${existingId}/counter`)}
-                  disabled={!existingId || subscriptionStatus !== 'active'}
-                  className={subscriptionStatus !== 'active' && existingId ? "opacity-50 cursor-not-allowed" : ""}
+                  onClick={subscriptionStatus === 'active' ? () => router.push(`/${existingId}/counter`) : handleSubscribe}
+                  disabled={!existingId}
+                  className={subscriptionStatus !== 'active' && existingId ? "bg-indigo-600 text-white hover:bg-indigo-700" : ""}
                 >
                   {subscriptionStatus === 'active' ? 'Admin' : 'Subscribe First'}
                 </Button>
