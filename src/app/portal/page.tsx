@@ -231,13 +231,18 @@ export default function LandingPage() {
                 >
                   {subscriptionStatus === 'active' ? 'Admin' : 'Subscribe First'}
                 </Button>
-                <Button variant="outline" onClick={() => router.push(`/${existingId}/kitchen`)} disabled={!existingId}>
-                  Kitchen
+                <Button
+                  variant="outline"
+                  onClick={subscriptionStatus === 'active' ? () => router.push(`/${existingId}/kitchen`) : handleSubscribe}
+                  disabled={!existingId}
+                  className={subscriptionStatus !== 'active' && existingId ? "bg-indigo-600 text-white hover:bg-indigo-700" : ""}
+                >
+                  {subscriptionStatus === 'active' ? 'Kitchen' : 'Subscribe First'}
                 </Button>
               </div>
               {existingId && subscriptionStatus !== 'active' && (
                 <p className="text-xs text-red-500 mt-2">
-                  Subscription inactive. Please subscribe to access Admin Dashboard.
+                  Subscription inactive. Please subscribe to access Admin Dashboard and Kitchen.
                 </p>
               )}
             </div>
