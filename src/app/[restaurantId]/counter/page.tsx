@@ -22,10 +22,14 @@ import { InventoryTab } from './InventoryTab';
 import { SettingsTab } from './SettingsTab';
 import { RecipeEditor } from './RecipeEditor';
 
+import SubscriptionGuard from '@/components/SubscriptionGuard';
+
 export default function CounterPage() {
     return (
         <AdminGuard>
-            <CounterContent />
+            <SubscriptionGuard>
+                <CounterContent />
+            </SubscriptionGuard>
         </AdminGuard>
     );
 }

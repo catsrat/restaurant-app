@@ -52,6 +52,8 @@ interface OrderContextType {
     updateTaxSettings: (settings: Partial<TaxSettings>) => Promise<void>;
     restaurantName: string;
     isLoading: boolean;
+    subscriptionStatus: string;
+    subscriptionEndDate: Date | null;
 }
 
 export interface TaxSettings {
@@ -73,6 +75,8 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [recipes, setRecipes] = useState<MenuItemIngredient[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [subscriptionStatus, setSubscriptionStatus] = useState<string>('inactive');
+    const [subscriptionEndDate, setSubscriptionEndDate] = useState<Date | null>(null);
 
     // Fetch Initial Data
     useEffect(() => {
@@ -89,10 +93,10 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             if (menuError) console.error("Error fetching menu items:", menuError);
             if (menuData) setMenuItems(menuData);
 
-            // Fetch Restaurant Details (Currency and Tax)
+            // Fetch Restaurant Details (Currency, Tax, Subscription)
             const { data: restaurantData, error: restaurantError } = await supabase
                 .from('restaurants')
-                .select('name, currency, tax_name, tax_rate, tax_number')
+                .select('name, currency, tax_name, tax_rate, tax_number, subscription_status, subscription_end_date')
                 .eq('id', restaurantId)
                 .single();
 
@@ -105,6 +109,8 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                     tax_rate: restaurantData.tax_rate || 0,
                     tax_number: restaurantData.tax_number
                 });
+                setSubscriptionStatus(restaurantData.subscription_status || 'inactive');
+                setSubscriptionEndDate(restaurantData.subscription_end_date ? new Date(restaurantData.subscription_end_date) : null);
             }
 
             // Fetch Tables
@@ -937,7 +943,9 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             taxSettings,
             updateTaxSettings,
             restaurantName,
-            isLoading
+            isLoading,
+            subscriptionStatus,
+            subscriptionEndDate
         }}>
             {children}
         </OrderContext.Provider>
