@@ -403,6 +403,11 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         console.log('[Inventory] Fresh ingredients fetched:', freshIngredients.length, freshIngredients.map(i => `${i.name}: ${i.current_stock}`));
         console.log('[Inventory] Fresh recipes fetched:', freshRecipes.length);
 
+        // DEBUG: Show alert on mobile to diagnose issue
+        if (typeof window !== 'undefined' && window.navigator.userAgent.includes('Mobile')) {
+            alert(`DEBUG:\nIngredients: ${freshIngredients.length}\nRecipes: ${freshRecipes.length}\nItems: ${items.length}`);
+        }
+
         // Use a local map to track stock changes within this transaction
         const stockUpdates = new Map<string, number>();
 
