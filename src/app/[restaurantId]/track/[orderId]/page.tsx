@@ -103,6 +103,47 @@ export default function OrderTrackingPage() {
         };
     }, [orderId]);
 
+    // Subscribe to order status changes (for "Mark All Ready" button)
+    useEffect(() => {
+        if (!orderId) return;
+
+        const channel = supabase
+            .channel(`order_${orderId}_status`)
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'orders',
+                filter: `id=eq.${orderId}`
+            }, (payload) => {
+                console.log('Customer Tracking - Order Status Update:', payload);
+                if (payload.new) {
+                    setFetchedOrder((prev: any) => {
+                        if (!prev) return prev;
+                        // If order is marked as 'ready', mark all items as ready too
+                        if (payload.new.status === 'ready') {
+                            return {
+                                ...prev,
+                                status: payload.new.status,
+                                items: prev.items.map((item: any) => ({
+                                    ...item,
+                                    status: 'ready'
+                                }))
+                            };
+                        }
+                        return {
+                            ...prev,
+                            status: payload.new.status
+                        };
+                    });
+                }
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [orderId]);
+
     const currentOrder = fetchedOrder;
 
     // Get all orders for this table (if dine-in) or this contact (if takeaway)
