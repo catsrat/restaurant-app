@@ -476,7 +476,10 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         }
 
         // Wait for all DB updates to complete in parallel
-        await Promise.all(updatePromises);
+        const results = await Promise.all(updatePromises);
+
+        // DEBUG: Show deduction results
+        alert(`DEDUCTION COMPLETE:\nUpdates attempted: ${updatePromises.length}\nStock map size: ${stockUpdates.size}`);
 
         clearCart();
         return { ...order, items, createdAt: new Date(order.created_at) };
