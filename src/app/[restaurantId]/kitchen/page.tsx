@@ -130,7 +130,7 @@ function KitchenContent() {
                 </div>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {kitchenOrders.length === 0 ? (
                     <div className="col-span-full flex flex-col items-center justify-center py-32 text-slate-600">
                         <div className="w-24 h-24 rounded-full bg-slate-900 flex items-center justify-center mb-6 border border-slate-800">

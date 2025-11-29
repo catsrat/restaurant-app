@@ -574,7 +574,7 @@ function CounterContent() {
                             <LogOut className="h-4 w-4 mr-2" /> Logout
                         </Button>
                     </div>
-                    <div className="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto no-scrollbar">
+                    <div className="flex gap-2 flex-wrap pb-2 w-full md:w-auto justify-start">
                         <Button variant={activeTab === 'orders' ? 'default' : 'outline'} onClick={() => setActiveTab('orders')} className="whitespace-nowrap">
                             <Utensils className="h-4 w-4 mr-2" /> Orders
                         </Button>
