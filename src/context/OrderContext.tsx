@@ -395,6 +395,9 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             console.error('[Inventory] Failed to fetch recipes:', recipesError);
         }
 
+        // DEBUG: Show what was fetched
+        alert(`FETCH RESULTS:\nIngredients: ${freshIngredients?.length || 0}\nRecipes: ${freshRecipes?.length || 0}\nErrors: Ing=${!!ingredientsError}, Rec=${!!recipesError}`);
+
         if (!freshIngredients || !freshRecipes || freshIngredients.length === 0 || freshRecipes.length === 0) {
             console.warn('[Inventory] No ingredients or recipes found. Skipping inventory deduction.');
             clearCart();
