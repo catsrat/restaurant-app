@@ -859,13 +859,16 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         }
 
         // 2. Insert new ingredients
+        const insertPayload = newIngredients.map(i => ({
+            menu_item_id: menuItemId,
+            ingredient_id: i.ingredientId,
+            quantity_required: i.quantity
+        }));
+        console.log("[OrderContext] Inserting recipe ingredients:", insertPayload);
+
         const { data, error: insertError } = await supabase
             .from('menu_item_ingredients')
-            .insert(newIngredients.map(i => ({
-                menu_item_id: menuItemId,
-                ingredient_id: i.ingredientId,
-                quantity_required: i.quantity
-            })))
+            .insert(insertPayload)
             .select();
 
         if (insertError) {

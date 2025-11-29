@@ -55,6 +55,7 @@ export function RecipeEditor({ menuItem, isOpen, onClose }: RecipeEditorProps) {
             }
         }
 
+        console.log("[RecipeEditor] Saving recipe for item:", menuItem.name, "Ingredients:", finalIngredients);
         await updateRecipe(menuItem.id, finalIngredients);
         onClose();
     };
