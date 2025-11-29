@@ -385,8 +385,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
 
         const { data: freshRecipes, error: recipesError } = await supabase
             .from('menu_item_ingredients')
-            .select('*')
-            .eq('restaurant_id', restaurantId);
+            .select('*');
 
         if (ingredientsError) {
             console.error('[Inventory] Failed to fetch ingredients:', ingredientsError);
