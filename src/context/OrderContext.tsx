@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Order, OrderItem, OrderStatus, OrderType, MenuItem, MENU_ITEMS as INITIAL_MENU_ITEMS, Table, Banner, MenuCategory, Ingredient, MenuItemIngredient } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { CurrencyCode } from '@/lib/currency';
@@ -54,6 +54,7 @@ interface OrderContextType {
     isLoading: boolean;
     subscriptionStatus: string;
     subscriptionEndDate: Date | null;
+    refreshData: () => Promise<void>;
 }
 
 export interface TaxSettings {
@@ -74,147 +75,147 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
     const [currency, setCurrency] = useState<CurrencyCode>('INR');
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [recipes, setRecipes] = useState<MenuItemIngredient[]>([]);
+    const [taxSettings, setTaxSettings] = useState<TaxSettings>({ tax_name: 'Tax', tax_rate: 0 });
+    const [restaurantName, setRestaurantName] = useState<string>('My Restaurant');
     const [isLoading, setIsLoading] = useState(true);
     const [subscriptionStatus, setSubscriptionStatus] = useState<string>('inactive');
     const [subscriptionEndDate, setSubscriptionEndDate] = useState<Date | null>(null);
 
     // Fetch Initial Data
-    useEffect(() => {
+    const fetchData = useCallback(async () => {
         if (!restaurantId) return;
 
-        const fetchData = async () => {
-            // Fetch Menu
-            const { data: menuData, error: menuError } = await supabase
-                .from('menu_items')
-                .select('*')
-                .eq('restaurant_id', restaurantId)
-                .eq('is_available', true);
+        // Fetch Menu
+        const { data: menuData, error: menuError } = await supabase
+            .from('menu_items')
+            .select('*')
+            .eq('restaurant_id', restaurantId)
+            .eq('is_available', true);
 
-            if (menuError) console.error("Error fetching menu items:", menuError);
-            if (menuData) setMenuItems(menuData.map((m: any) => ({ ...m, id: String(m.id) })));
+        if (menuError) console.error("Error fetching menu items:", menuError);
+        if (menuData) setMenuItems(menuData.map((m: any) => ({ ...m, id: String(m.id) })));
 
-            // Fetch Restaurant Details (Currency, Tax, Subscription)
-            const { data: restaurantData, error: restaurantError } = await supabase
-                .from('restaurants')
-                .select('name, currency, tax_name, tax_rate, tax_number, subscription_status, subscription_end_date')
-                .eq('id', restaurantId)
-                .single();
+        // Fetch Restaurant Details (Currency, Tax, Subscription)
+        const { data: restaurantData, error: restaurantError } = await supabase
+            .from('restaurants')
+            .select('name, currency, tax_name, tax_rate, tax_number, subscription_status, subscription_end_date')
+            .eq('id', restaurantId)
+            .single();
 
-            if (restaurantError) console.error("Error fetching restaurant details:", restaurantError);
-            if (restaurantData) {
-                setRestaurantName(restaurantData.name || 'My Restaurant');
-                setCurrency(restaurantData.currency || 'INR');
-                setTaxSettings({
-                    tax_name: restaurantData.tax_name || 'Tax',
-                    tax_rate: restaurantData.tax_rate || 0,
-                    tax_number: restaurantData.tax_number
-                });
-                setSubscriptionStatus(restaurantData.subscription_status || 'inactive');
-                setSubscriptionEndDate(restaurantData.subscription_end_date ? new Date(restaurantData.subscription_end_date) : null);
-            }
+        if (restaurantError) console.error("Error fetching restaurant details:", restaurantError);
+        if (restaurantData) {
+            setRestaurantName(restaurantData.name || 'My Restaurant');
+            setCurrency(restaurantData.currency || 'INR');
+            setTaxSettings({
+                tax_name: restaurantData.tax_name || 'Tax',
+                tax_rate: restaurantData.tax_rate || 0,
+                tax_number: restaurantData.tax_number
+            });
+            setSubscriptionStatus(restaurantData.subscription_status || 'inactive');
+            setSubscriptionEndDate(restaurantData.subscription_end_date ? new Date(restaurantData.subscription_end_date) : null);
+        }
 
-            // Fetch Tables
-            const { data: tableData, error: tableError } = await supabase
-                .from('tables')
-                .select('*')
-                .eq('restaurant_id', restaurantId);
+        // Fetch Tables
+        const { data: tableData, error: tableError } = await supabase
+            .from('tables')
+            .select('*')
+            .eq('restaurant_id', restaurantId);
 
-            if (tableError) console.error("Error fetching tables:", tableError);
-            if (tableData) {
-                setTables(tableData.map((t: any) => ({ ...t, id: String(t.id) })));
-            }
+        if (tableError) console.error("Error fetching tables:", tableError);
+        if (tableData) {
+            setTables(tableData.map((t: any) => ({ ...t, id: String(t.id) })));
+        }
 
-            // Fetch Banners
-            const { data: bannerData, error: bannerError } = await supabase
-                .from('restaurant_banners')
-                .select('*')
-                .eq('restaurant_id', restaurantId)
-                .eq('is_active', true)
-                .order('created_at', { ascending: false });
+        // Fetch Banners
+        const { data: bannerData, error: bannerError } = await supabase
+            .from('restaurant_banners')
+            .select('*')
+            .eq('restaurant_id', restaurantId)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false });
 
-            if (bannerError) console.error("Error fetching banners:", bannerError);
-            if (bannerData) setBanners(bannerData.map((b: any) => ({ ...b, created_at: new Date(b.created_at) })));
+        if (bannerError) console.error("Error fetching banners:", bannerError);
+        if (bannerData) setBanners(bannerData.map((b: any) => ({ ...b, created_at: new Date(b.created_at) })));
 
-            // Fetch Ingredients
-            const { data: ingredientData, error: ingredientError } = await supabase
-                .from('ingredients')
-                .select('*')
-                .eq('restaurant_id', restaurantId)
-                .order('name');
+        // Fetch Ingredients
+        const { data: ingredientData, error: ingredientError } = await supabase
+            .from('ingredients')
+            .select('*')
+            .eq('restaurant_id', restaurantId)
+            .order('name');
 
-            if (ingredientError) console.error("Error fetching ingredients:", ingredientError);
-            if (ingredientData) setIngredients(ingredientData.map((i: any) => ({ ...i, id: String(i.id), created_at: new Date(i.created_at) })));
+        if (ingredientError) console.error("Error fetching ingredients:", ingredientError);
+        if (ingredientData) setIngredients(ingredientData.map((i: any) => ({ ...i, id: String(i.id), created_at: new Date(i.created_at) })));
 
-            // Fetch Recipes
-            const { data: recipeData, error: recipeError } = await supabase
-                .from('menu_item_ingredients')
-                .select('*');
+        // Fetch Recipes
+        const { data: recipeData, error: recipeError } = await supabase
+            .from('menu_item_ingredients')
+            .select('*');
 
-            if (recipeError) console.error("Error fetching recipes:", recipeError);
-            if (recipeData) setRecipes(recipeData.map((r: any) => ({
-                ...r,
-                id: String(r.id),
-                menu_item_id: String(r.menu_item_id),
-                ingredient_id: String(r.ingredient_id),
-                created_at: new Date(r.created_at)
-            })));
+        if (recipeError) console.error("Error fetching recipes:", recipeError);
+        if (recipeData) setRecipes(recipeData.map((r: any) => ({
+            ...r,
+            id: String(r.id),
+            menu_item_id: String(r.menu_item_id),
+            ingredient_id: String(r.ingredient_id),
+            created_at: new Date(r.created_at)
+        })));
 
+        // Fetch Categories
+        const { data: categoryData, error: categoryError } = await supabase
+            .from('menu_categories')
+            .select('*')
+            .eq('restaurant_id', restaurantId)
+            .order('display_order', { ascending: true });
 
+        if (categoryError) console.error("Error fetching categories:", categoryError);
+        if (categoryData) setCategories(categoryData);
 
-            // Fetch Categories
-            const { data: categoryData, error: categoryError } = await supabase
-                .from('menu_categories')
-                .select('*')
-                .eq('restaurant_id', restaurantId)
-                .order('display_order', { ascending: true });
-
-            if (categoryError) console.error("Error fetching categories:", categoryError);
-            if (categoryData) setCategories(categoryData);
-
-            // Fetch Orders (Active only for performance)
-            const { data: orderData, error: orderError } = await supabase
-                .from('orders')
-                .select(`
+        // Fetch Orders (Active only for performance)
+        const { data: orderData, error: orderError } = await supabase
+            .from('orders')
+            .select(`
     *,
     items: order_items(
         *,
         menu_item: menu_items(name)
     )
                 `)
-                .eq('restaurant_id', restaurantId)
-                .order('created_at', { ascending: true });
+            .eq('restaurant_id', restaurantId)
+            .order('created_at', { ascending: true });
 
-            if (orderError) console.error("Error fetching orders:", orderError);
-            if (orderData) {
-                const parsedOrders = orderData.map((o: any) => ({
-                    ...o,
-                    id: String(o.id), // Ensure ID is string
-                    tableId: String(o.table_id), // Ensure tableId is string
-                    totalAmount: o.total_amount,
-                    discount: o.discount || 0,
-                    orderType: o.order_type, // Map snake_case to camelCase
-                    createdAt: new Date(o.created_at),
-                    items: (Array.isArray(o.items) ? o.items : []).map((i: any) => {
-                        const menuItemName = Array.isArray(i.menu_item)
-                            ? i.menu_item[0]?.name
-                            : i.menu_item?.name;
+        if (orderError) console.error("Error fetching orders:", orderError);
+        if (orderData) {
+            const parsedOrders = orderData.map((o: any) => ({
+                ...o,
+                id: String(o.id), // Ensure ID is string
+                tableId: String(o.table_id), // Ensure tableId is string
+                totalAmount: o.total_amount,
+                discount: o.discount || 0,
+                orderType: o.order_type, // Map snake_case to camelCase
+                createdAt: new Date(o.created_at),
+                items: (Array.isArray(o.items) ? o.items : []).map((i: any) => {
+                    const menuItemName = Array.isArray(i.menu_item)
+                        ? i.menu_item[0]?.name
+                        : i.menu_item?.name;
 
-                        return {
-                            id: i.menu_item_id,
-                            name: menuItemName || i.name || 'Unknown Item',
-                            price: i.price,
-                            quantity: i.quantity,
-                            notes: i.notes,
-                            selectedOptions: i.selected_options,
-                            status: i.status || 'pending' // Ensure status is included
-                        };
-                    })
-                }));
-                setOrders(parsedOrders);
-            }
-            setIsLoading(false);
-        };
+                    return {
+                        id: i.menu_item_id,
+                        name: menuItemName || i.name || 'Unknown Item',
+                        price: i.price,
+                        quantity: i.quantity,
+                        notes: i.notes,
+                        selectedOptions: i.selected_options,
+                        status: i.status || 'pending' // Ensure status is included
+                    };
+                })
+            }));
+            setOrders(parsedOrders);
+        }
+        setIsLoading(false);
+    }, [restaurantId]);
 
+    useEffect(() => {
         fetchData();
 
         // Realtime Subscriptions
@@ -263,7 +264,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             supabase.removeChannel(channel);
             clearInterval(pollInterval);
         };
-    }, [restaurantId]);
+    }, [fetchData, restaurantId]);
 
     const addOrder = async (items: OrderItem[], orderType: OrderType, details: { tableId?: string, contactNumber?: string }) => {
         // 1. Create Order
@@ -487,6 +488,8 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                 const allReady = siblingItems.every((i: any) => i.status === 'ready');
                 const someReady = siblingItems.some((i: any) => i.status === 'ready');
 
+                console.log(`[Status Update] Order ${orderId} siblings:`, siblingItems.map((i: any) => i.status), `All Ready: ${allReady}`);
+
                 // Fetch current order status to avoid overwriting 'served' or 'paid'
                 const { data: currentOrder } = await supabase.from('orders').select('status').eq('id', orderId).single();
 
@@ -497,6 +500,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                     else if (someReady) newStatus = 'preparing';
 
                     if (newStatus && newStatus !== currentOrder.status) {
+                        console.log(`[Status Update] Updating Order ${orderId} status to ${newStatus}`);
                         await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
                     }
                 }
@@ -933,13 +937,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         return recipes.filter(r => String(r.menu_item_id) === String(menuItemId));
     };
 
-    const [restaurantName, setRestaurantName] = useState('My Restaurant');
-
-    // Tax Settings
-    const [taxSettings, setTaxSettings] = useState<TaxSettings>({
-        tax_name: 'Tax',
-        tax_rate: 0
-    });
+    // Tax Settings (State declared above)
 
     const updateTaxSettings = async (settings: Partial<TaxSettings>) => {
         // Optimistic update
@@ -996,7 +994,8 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             restaurantName,
             isLoading,
             subscriptionStatus,
-            subscriptionEndDate
+            subscriptionEndDate,
+            refreshData: fetchData
         }}>
             {children}
         </OrderContext.Provider>
