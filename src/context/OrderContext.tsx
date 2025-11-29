@@ -396,7 +396,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         }
 
         // DEBUG: Show what was fetched
-        alert(`FETCH RESULTS:\nIngredients: ${freshIngredients?.length || 0}\nRecipes: ${freshRecipes?.length || 0}\nErrors: Ing=${!!ingredientsError}, Rec=${!!recipesError}`);
+        alert(`FETCH RESULTS:\nIngredients: ${freshIngredients?.length || 0}\nRecipes: ${freshRecipes?.length || 0}\nRecipe Error: ${recipesError?.message || 'none'}`);
 
         if (!freshIngredients || !freshRecipes || freshIngredients.length === 0 || freshRecipes.length === 0) {
             console.warn('[Inventory] No ingredients or recipes found. Skipping inventory deduction.');
