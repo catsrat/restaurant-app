@@ -299,7 +299,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
     }, [fetchData, restaurantId]);
 
     const addOrder = async (items: OrderItem[], orderType: OrderType, details: { tableId?: string, contactNumber?: string }) => {
-        alert(`DEBUG: addOrder called with ${items.length} items`);
+
         console.log('[addOrder] Starting order creation');
         console.log('[addOrder] Ingredients available:', ingredients.length, ingredients.map(i => `${i.name}: ${i.current_stock}`));
         console.log('[addOrder] Recipes available:', recipes.length);
@@ -394,8 +394,6 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             console.error('[Inventory] Failed to fetch recipes:', recipesError);
         }
 
-        // DEBUG: Show what was fetched
-        alert(`FETCH RESULTS:\nIngredients: ${freshIngredients?.length || 0}\nRecipes: ${freshRecipes?.length || 0}\nRecipe Error: ${recipesError?.message || 'none'}`);
 
         if (!freshIngredients || !freshRecipes || freshIngredients.length === 0 || freshRecipes.length === 0) {
             console.warn('[Inventory] No ingredients or recipes found. Skipping inventory deduction.');
@@ -405,9 +403,6 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
 
         console.log('[Inventory] Fresh ingredients fetched:', freshIngredients.length, freshIngredients.map(i => `${i.name}: ${i.current_stock}`));
         console.log('[Inventory] Fresh recipes fetched:', freshRecipes.length);
-
-        // DEBUG: Always show alert to diagnose issue
-        alert(`DEBUG Inventory:\nIngredients: ${freshIngredients.length}\nRecipes: ${freshRecipes.length}\nItems to order: ${items.length}`);
 
         // Use a local map to track stock changes within this transaction
         const stockUpdates = new Map<string, number>();
@@ -477,9 +472,6 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
 
         // Wait for all DB updates to complete in parallel
         const results = await Promise.all(updatePromises);
-
-        // DEBUG: Show deduction results
-        alert(`DEDUCTION COMPLETE:\nUpdates attempted: ${updatePromises.length}\nStock map size: ${stockUpdates.size}`);
 
         clearCart();
         return { ...order, items, createdAt: new Date(order.created_at) };
