@@ -232,6 +232,14 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                 console.log('Realtime Order Items Update');
                 fetchData();
             })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'ingredients' }, () => {
+                console.log('Realtime Ingredients Update');
+                fetchData();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_item_ingredients' }, () => {
+                console.log('Realtime Recipes Update');
+                fetchData();
+            })
             .subscribe((status) => {
                 console.log(`Realtime subscription status for restaurant ${restaurantId}:`, status);
                 if (status === 'SUBSCRIBED') {
