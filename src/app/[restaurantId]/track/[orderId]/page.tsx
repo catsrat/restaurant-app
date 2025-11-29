@@ -69,6 +69,40 @@ export default function OrderTrackingPage() {
         fetchOrder();
     }, [orderId, orders]);
 
+    // Subscribe to realtime updates for order items
+    useEffect(() => {
+        if (!orderId) return;
+
+        const channel = supabase
+            .channel(`order_${orderId}_items`)
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'order_items',
+                filter: `order_id=eq.${orderId}`
+            }, (payload) => {
+                console.log('Customer Tracking - Item Update:', payload);
+                if (payload.new) {
+                    setFetchedOrder((prev: any) => {
+                        if (!prev) return prev;
+                        return {
+                            ...prev,
+                            items: prev.items.map((item: any) =>
+                                String(item.id) === String(payload.new.id)
+                                    ? { ...item, status: payload.new.status }
+                                    : item
+                            )
+                        };
+                    });
+                }
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [orderId]);
+
     const currentOrder = fetchedOrder;
 
     // Get all orders for this table (if dine-in) or this contact (if takeaway)
