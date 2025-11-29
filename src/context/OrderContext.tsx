@@ -513,14 +513,19 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             // For robustness, let's fetch.
             const { data: siblingItems, error: fetchError } = await supabase
                 .from('order_items')
-                .select('status')
+                .select('id, status')
                 .eq('order_id', orderId);
 
             if (fetchError) throw fetchError;
 
             if (siblingItems) {
-                const allReady = siblingItems.every((i: any) => i.status === 'ready');
-                const someReady = siblingItems.some((i: any) => i.status === 'ready');
+                // Force the updated item's status in the check to handle potential read-after-write lag
+                const effectiveSiblings = siblingItems.map((i: any) =>
+                    i.id === itemId ? { ...i, status: status } : i
+                );
+
+                const allReady = effectiveSiblings.every((i: any) => i.status === 'ready');
+                const someReady = effectiveSiblings.some((i: any) => i.status === 'ready');
 
                 console.log(`[Status Update] Order ${orderId} siblings:`, siblingItems.map((i: any) => i.status), `All Ready: ${allReady}`);
 
