@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Order, OrderItem, OrderStatus, OrderType, MenuItem, MENU_ITEMS as INITIAL_MENU_ITEMS, Table, Banner, MenuCategory, Ingredient, MenuItemIngredient } from '@/types';
+import { useAuth } from '@/context/AuthContext'; // Import useAuth
 import { supabase } from '@/lib/supabase';
 import { CurrencyCode } from '@/lib/currency';
 
@@ -81,6 +82,8 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
     const [subscriptionStatus, setSubscriptionStatus] = useState<string>('inactive');
     const [subscriptionEndDate, setSubscriptionEndDate] = useState<Date | null>(null);
 
+    const { user } = useAuth(); // Get current user
+
     // Fetch Initial Data
     const fetchData = useCallback(async () => {
         if (!restaurantId) return;
@@ -98,7 +101,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         // Fetch Restaurant Details (Currency, Tax, Subscription)
         const { data: restaurantData, error: restaurantError } = await supabase
             .from('restaurants')
-            .select('name, currency, tax_name, tax_rate, tax_number, subscription_status, subscription_end_date')
+            .select('name, currency, tax_name, tax_rate, tax_number, subscription_status, subscription_end_date, user_id')
             .eq('id', restaurantId)
             .single();
 
@@ -113,6 +116,24 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             });
             setSubscriptionStatus(restaurantData.subscription_status || 'inactive');
             setSubscriptionEndDate(restaurantData.subscription_end_date ? new Date(restaurantData.subscription_end_date) : null);
+
+            // OWNERSHIP CHECK
+            if (user && restaurantData.user_id && user.id !== restaurantData.user_id) {
+                console.error(`❌ OWNERSHIP MISMATCH! User ${user.id} does not own Restaurant ${restaurantId} (Owner: ${restaurantData.user_id})`);
+                // alert(`⚠️ Critical Error: You do not have permission to manage this restaurant.\n\nUser ID: ${user.id}\nOwner ID: ${restaurantData.user_id}\n\nPlease contact support or run the RLS fix script.`);
+            } else if (user && !restaurantData.user_id) {
+                console.warn(`⚠️ Restaurant has NO owner. Attempting to claim...`);
+                const { error: claimError } = await supabase
+                    .from('restaurants')
+                    .update({ user_id: user.id })
+                    .eq('id', restaurantId);
+
+                if (claimError) console.error("Failed to claim restaurant:", claimError);
+                else {
+                    console.log("✅ Restaurant claimed successfully!");
+                    alert("Restaurant ownership claimed! You can now manage orders.");
+                }
+            }
         }
 
         // Fetch Tables
