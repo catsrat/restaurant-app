@@ -331,9 +331,13 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         const sourceIngredients = freshIngredients || ingredients;
         sourceIngredients.forEach(i => stockUpdates.set(String(i.id), i.current_stock));
 
+        console.log("[Inventory] Starting deduction. Items:", items.map(i => ({ id: i.id, name: i.name, qty: i.quantity })));
+        console.log("[Inventory] Available Recipes:", recipes.length, recipes.slice(0, 3)); // Log first 3 to check structure
+
         for (const item of items) {
             // Use String() for robust comparison
             const itemRecipe = recipes.filter(r => String(r.menu_item_id) === String(item.id));
+            console.log(`[Inventory] Looking for recipe for item ${item.id} (${item.name}). Found ingredients:`, itemRecipe.length);
 
             if (itemRecipe.length > 0) {
                 for (const ingredient of itemRecipe) {
@@ -352,7 +356,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                     }
                 }
             } else {
-                console.log(`[Inventory] No recipe found for item ${item.name} (ID: ${item.id})`);
+                console.warn(`[Inventory] No recipe found for item ${item.name} (ID: ${item.id}). Recipe IDs available:`, recipes.map(r => r.menu_item_id));
             }
         }
 
