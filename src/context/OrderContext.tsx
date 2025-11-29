@@ -337,11 +337,14 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                     if (currentStock !== undefined) {
                         const newStock = currentStock - quantityToDeduct;
                         stockUpdates.set(ingredientId, newStock);
-                        console.log(`Deducting ${quantityToDeduct} from ingredient ${ingredientId}. New Stock: ${newStock}`);
+                        const ingredientName = ingredients.find(i => String(i.id) === ingredientId)?.name || 'Unknown';
+                        console.log(`[Inventory] Deducting ${quantityToDeduct} from ingredient ${ingredientId} (${ingredientName}). Old: ${currentStock}, New: ${newStock}`);
                     } else {
-                        console.warn(`Ingredient ${ingredientId} not found in local stock map.`);
+                        console.warn(`[Inventory] Ingredient ${ingredientId} NOT FOUND in local stock map. Available keys:`, Array.from(stockUpdates.keys()));
                     }
                 }
+            } else {
+                console.log(`[Inventory] No recipe found for item ${item.name} (ID: ${item.id})`);
             }
         }
 
