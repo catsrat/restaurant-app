@@ -281,6 +281,11 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
 
         console.log("Creating order...", { items, orderType, details, tableId: table?.id });
 
+        if (items.length === 0) {
+            console.error("addOrder called with empty items!");
+            throw new Error("Cannot place an empty order.");
+        }
+
         const { data: order, error } = await supabase
             .from('orders')
             .insert({
@@ -309,7 +314,14 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             is_upsell: item.isUpsell || false // FIXME: Uncomment after migration is applied
         }));
 
-        await supabase.from('order_items').insert(orderItems);
+        const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
+
+        if (itemsError) {
+            console.error("Error inserting order items:", itemsError);
+            // Optional: Delete the order if items fail?
+            // await supabase.from('orders').delete().eq('id', order.id);
+            throw itemsError;
+        }
 
         // 3. Update Table Status if needed
         if (orderType === 'dine-in' && details.tableId) {
