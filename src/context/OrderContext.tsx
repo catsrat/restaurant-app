@@ -373,35 +373,48 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         }
 
         // 3. Deduct Inventory
-        // Fetch FRESH ingredients from DB
-        let freshIngredients: Ingredient[] | null = null;
-        if (ingredients.length > 0) {
-            const { data, error: fetchError } = await supabase
-                .from('ingredients')
-                .select('*')
-                .in('id', ingredients.map(i => i.id));
+        // ALWAYS fetch FRESH ingredients and recipes from DB (don't rely on context state)
+        // This ensures mobile browsers that don't load the full context still deduct inventory
+        console.log('[Inventory] Fetching fresh ingredients and recipes from database...');
 
-            if (fetchError) {
-                console.error("Failed to fetch fresh ingredients:", fetchError);
-            } else {
-                freshIngredients = data;
-                console.log("[Inventory] Fresh ingredients fetched:", freshIngredients?.map(i => `${i.name}: ${i.current_stock}`));
-            }
+        const { data: freshIngredients, error: ingredientsError } = await supabase
+            .from('ingredients')
+            .select('*')
+            .eq('restaurant_id', restaurantId);
+
+        const { data: freshRecipes, error: recipesError } = await supabase
+            .from('menu_item_ingredients')
+            .select('*')
+            .eq('restaurant_id', restaurantId);
+
+        if (ingredientsError) {
+            console.error('[Inventory] Failed to fetch ingredients:', ingredientsError);
         }
+        if (recipesError) {
+            console.error('[Inventory] Failed to fetch recipes:', recipesError);
+        }
+
+        if (!freshIngredients || !freshRecipes || freshIngredients.length === 0 || freshRecipes.length === 0) {
+            console.warn('[Inventory] No ingredients or recipes found. Skipping inventory deduction.');
+            clearCart();
+            return { ...order, items, createdAt: new Date(order.created_at) };
+        }
+
+        console.log('[Inventory] Fresh ingredients fetched:', freshIngredients.length, freshIngredients.map(i => `${i.name}: ${i.current_stock}`));
+        console.log('[Inventory] Fresh recipes fetched:', freshRecipes.length);
 
         // Use a local map to track stock changes within this transaction
         const stockUpdates = new Map<string, number>();
 
-        // Initialize map with FRESH stock (or local if fetch failed)
-        const sourceIngredients = freshIngredients || ingredients;
-        sourceIngredients.forEach(i => stockUpdates.set(String(i.id), i.current_stock));
+        // Initialize map with FRESH stock
+        freshIngredients.forEach(i => stockUpdates.set(String(i.id), i.current_stock));
 
         console.log("[Inventory] Starting deduction. Items:", items.map(i => ({ id: i.id, name: i.name, qty: i.quantity })));
-        console.log("[Inventory] Available Recipes:", recipes.length, recipes.slice(0, 3)); // Log first 3 to check structure
+        console.log("[Inventory] Available Recipes:", freshRecipes.length, freshRecipes.slice(0, 3)); // Log first 3 to check structure
 
         for (const item of items) {
             // Use String() for robust comparison
-            const itemRecipe = recipes.filter(r => String(r.menu_item_id) === String(item.id));
+            const itemRecipe = freshRecipes.filter(r => String(r.menu_item_id) === String(item.id));
             console.log(`[Inventory] Looking for recipe for item ${item.id} (${item.name}). Found ingredients:`, itemRecipe.length);
 
             if (itemRecipe.length > 0) {
@@ -414,14 +427,14 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                     if (currentStock !== undefined) {
                         const newStock = currentStock - quantityToDeduct;
                         stockUpdates.set(ingredientId, newStock);
-                        const ingredientName = ingredients.find(i => String(i.id) === ingredientId)?.name || 'Unknown';
+                        const ingredientName = freshIngredients.find(i => String(i.id) === ingredientId)?.name || 'Unknown';
                         console.log(`[Inventory] Deducting ${quantityToDeduct} from ingredient ${ingredientId} (${ingredientName}). Old: ${currentStock}, New: ${newStock}`);
                     } else {
                         console.warn(`[Inventory] Ingredient ${ingredientId} NOT FOUND in local stock map. Available keys:`, Array.from(stockUpdates.keys()));
                     }
                 }
             } else {
-                console.warn(`[Inventory] No recipe found for item ${item.name} (ID: ${item.id}). Recipe IDs available:`, recipes.map(r => r.menu_item_id));
+                console.warn(`[Inventory] No recipe found for item ${item.name} (ID: ${item.id}). Recipe IDs available:`, freshRecipes.map(r => r.menu_item_id));
             }
         }
 
@@ -429,7 +442,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         const updatePromises: any[] = [];
 
         for (const [id, newStock] of stockUpdates.entries()) {
-            const original = ingredients.find(i => String(i.id) === id);
+            const original = freshIngredients.find(i => String(i.id) === id);
             if (original && original.current_stock !== newStock) {
                 const deductAmount = original.current_stock - newStock;
 
