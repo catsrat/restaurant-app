@@ -9,11 +9,11 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "Order QR | Restaurant Management System & Digital Menu",
+    default: "Order QR | OQ Ordering & QR Ordering Software",
     template: "%s | Order QR"
   },
-  description: "The complete restaurant operating system. QR code menus, table ordering, kitchen display system (KDS), and POS printing. Boost your restaurant efficiency today.",
-  keywords: ["restaurant management system", "qr code menu", "digital menu", "kitchen display system", "KDS", "restaurant pos", "order qr", "table ordering system"],
+  description: "The best QR ordering software for restaurants. Order QR (OQ Ordering) offers digital menus, table ordering, KDS, and POS printing in one simple platform.",
+  keywords: ["restaurant management system", "qr code menu", "digital menu", "kitchen display system", "KDS", "restaurant pos", "order qr", "table ordering system", "oq ordering", "qr ordering software", "online ordering system"],
   authors: [{ name: "Order QR Team" }],
   creator: "Order QR",
   publisher: "Order QR",
@@ -23,8 +23,8 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "Order QR | Restaurant Management System",
-    description: "Streamline your restaurant with our all-in-one QR ordering and management platform.",
+    title: "Order QR | OQ Ordering & QR Ordering Software",
+    description: "Streamline your restaurant with Order QR - the top-rated QR ordering software and OQ ordering system.",
     url: "https://www.orderqr.in",
     siteName: "Order QR",
     locale: "en_US",
@@ -32,8 +32,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Order QR | Restaurant Management System",
-    description: "Streamline your restaurant with our all-in-one QR ordering and management platform.",
+    title: "Order QR | OQ Ordering & QR Ordering Software",
+    description: "Streamline your restaurant with Order QR - the top-rated QR ordering software and OQ ordering system.",
   },
   robots: {
     index: true,

@@ -203,8 +203,8 @@ export default function LandingPricing() {
                 <header className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white py-20">
                     <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                         <div>
-                            <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight">Digital menus, faster orders — built for restaurants</h1>
-                            <p className="mt-4 text-lg opacity-90">Order QR gives you QR menus, table ordering, and a real-time kitchen display — all in one simple plan. Onboard in 30 minutes.</p>
+                            <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight">OQ Ordering: The Best QR Ordering Software</h1>
+                            <p className="mt-4 text-lg opacity-90">Order QR (OQ Ordering) gives you QR menus, table ordering, and a real-time kitchen display — all in one simple plan. Onboard in 30 minutes.</p>
 
                             <div className="mt-8 flex gap-4">
                                 <a href="#book" className="bg-white text-indigo-600 px-5 py-3 rounded-lg font-semibold shadow">Start free trial</a>
@@ -237,8 +237,8 @@ export default function LandingPricing() {
 
                 {/* Features Section */}
                 <section id="features" className="max-w-6xl mx-auto px-6 py-16">
-                    <h2 className="text-3xl font-bold text-center">Everything a restaurant needs</h2>
-                    <p className="text-center text-gray-600 mt-2 max-w-2xl mx-auto">A single plan with real-time orders, KDS, POS printing, analytics and multi-language support.</p>
+                    <h2 className="text-3xl font-bold text-center">Why choose our QR Ordering Software?</h2>
+                    <p className="text-center text-gray-600 mt-2 max-w-2xl mx-auto">A single OQ Ordering plan with real-time orders, KDS, POS printing, analytics and multi-language support.</p>
 
                     <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
                         <Card title="Realtime Orders" desc="Supabase Realtime & push to KDS" />
