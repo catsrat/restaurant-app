@@ -873,7 +873,13 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         // Update local state
         setRecipes(prev => {
             const filtered = prev.filter(r => r.menu_item_id !== menuItemId);
-            const added = data.map((r: any) => ({ ...r, created_at: new Date(r.created_at) }));
+            const added = data.map((r: any) => ({
+                ...r,
+                id: String(r.id),
+                menu_item_id: String(r.menu_item_id),
+                ingredient_id: String(r.ingredient_id),
+                created_at: new Date(r.created_at)
+            }));
             return [...filtered, ...added];
         });
     };
