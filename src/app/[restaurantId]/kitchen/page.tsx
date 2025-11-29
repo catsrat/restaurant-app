@@ -236,7 +236,7 @@ function OrderCard({ group, isTableGroup, tables, oldestTime, onMarkReady, onUpd
             </CardHeader>
             <CardContent className="py-5">
                 <ul className="space-y-3">
-                    {group.flatMap((o: any) => o.items.map((i: any) => ({ ...i, orderId: o.id }))).map((item: any, idx: number) => (
+                    {group.flatMap((o: any) => (Array.isArray(o.items) ? o.items : []).map((i: any) => ({ ...i, orderId: o.id }))).map((item: any, idx: number) => (
                         <li key={`${item.orderId}-${item.id}-${idx}`}
                             className="flex justify-between items-start p-2.5 hover:bg-white/5 rounded-lg cursor-pointer transition-colors group"
                             onClick={() => onUpdateItemStatus(item.orderId, item.id, item.status === 'ready' ? 'pending' : 'ready')}

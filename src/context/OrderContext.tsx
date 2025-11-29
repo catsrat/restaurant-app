@@ -194,17 +194,21 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                     discount: o.discount || 0,
                     orderType: o.order_type, // Map snake_case to camelCase
                     createdAt: new Date(o.created_at),
-                    items: Array.isArray(o.items) ? o.items.map((i: any) => {
+                    items: (Array.isArray(o.items) ? o.items : []).map((i: any) => {
                         const menuItemName = Array.isArray(i.menu_item)
                             ? i.menu_item[0]?.name
                             : i.menu_item?.name;
+
                         return {
-                            ...i,
-                            id: String(i.id),
-                            status: i.status || 'pending',
-                            name: i.name || menuItemName || 'Unknown Item'
+                            id: i.menu_item_id,
+                            name: menuItemName || i.name || 'Unknown Item',
+                            price: i.price,
+                            quantity: i.quantity,
+                            notes: i.notes,
+                            selectedOptions: i.selected_options,
+                            status: i.status || 'pending' // Ensure status is included
                         };
-                    }) : [] // Map back to internal structure
+                    })
                 }));
                 setOrders(parsedOrders);
             }
@@ -302,7 +306,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             status: 'pending',
             notes: item.notes,
             selected_options: item.selectedOptions,
-            // is_upsell: item.isUpsell || false // FIXME: Uncomment after migration is applied
+            is_upsell: item.isUpsell || false // FIXME: Uncomment after migration is applied
         }));
 
         await supabase.from('order_items').insert(orderItems);
@@ -320,15 +324,19 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
 
         // 3. Deduct Inventory
         // Fetch FRESH ingredients from DB
-        const { data: freshIngredients, error: fetchError } = await supabase
-            .from('ingredients')
-            .select('*')
-            .in('id', ingredients.map(i => i.id));
+        let freshIngredients: Ingredient[] | null = null;
+        if (ingredients.length > 0) {
+            const { data, error: fetchError } = await supabase
+                .from('ingredients')
+                .select('*')
+                .in('id', ingredients.map(i => i.id));
 
-        if (fetchError) {
-            console.error("Failed to fetch fresh ingredients:", fetchError);
-        } else {
-            console.log("[Inventory] Fresh ingredients fetched:", freshIngredients?.map(i => `${i.name}: ${i.current_stock}`));
+            if (fetchError) {
+                console.error("Failed to fetch fresh ingredients:", fetchError);
+            } else {
+                freshIngredients = data;
+                console.log("[Inventory] Fresh ingredients fetched:", freshIngredients?.map(i => `${i.name}: ${i.current_stock}`));
+            }
         }
 
         // Use a local map to track stock changes within this transaction
