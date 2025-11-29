@@ -488,11 +488,13 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
 
         try {
             // 1. Update Item
-            const { error: itemError, count } = await supabase
+            const { data: updatedItems, error: itemError } = await supabase
                 .from('order_items')
                 .update({ status })
                 .eq('id', itemId)
-                .select('*', { count: 'exact' });
+                .select();
+
+            const count = updatedItems ? updatedItems.length : 0;
 
             console.log(`[Update Item] Result:`, { count, error: itemError });
 
