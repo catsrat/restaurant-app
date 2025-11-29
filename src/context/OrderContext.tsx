@@ -463,10 +463,13 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
 
         // Optimistic update
         setOrders(prev => prev.map(o => {
-            if (o.id === orderId) {
-                const updatedItems = o.items.map(i => i.id === itemId ? { ...i, status } : i);
-
-                // Auto-calculate parent status
+            if (String(o.id) === String(orderId)) {
+                const updatedItems = o.items.map(i => {
+                    if (String(i.id) === String(itemId)) {
+                        return { ...i, status };
+                    }
+                    return i;
+                });
                 const allReady = updatedItems.every(i => i.status === 'ready');
                 const someReady = updatedItems.some(i => i.status === 'ready');
                 let newOrderStatus = o.status;
@@ -521,7 +524,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
             if (siblingItems) {
                 // Force the updated item's status in the check to handle potential read-after-write lag
                 const effectiveSiblings = siblingItems.map((i: any) =>
-                    i.id === itemId ? { ...i, status: status } : i
+                    String(i.id) === String(itemId) ? { ...i, status: status } : i
                 );
 
                 const allReady = effectiveSiblings.every((i: any) => i.status === 'ready');
