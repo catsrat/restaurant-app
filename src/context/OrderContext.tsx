@@ -426,12 +426,24 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         for (const [id, newStock] of stockUpdates.entries()) {
             const original = ingredients.find(i => String(i.id) === id);
             if (original && original.current_stock !== newStock) {
-                // Update DB (Add to promises)
+                const deductAmount = original.current_stock - newStock;
+
+                // Use atomic decrement to prevent race conditions
+                // Instead of setting the value, we decrement it
                 updatePromises.push(
-                    supabase
-                        .from('ingredients')
-                        .update({ current_stock: newStock })
-                        .eq('id', id)
+                    supabase.rpc('decrement_ingredient_stock', {
+                        ingredient_id: id,
+                        amount: deductAmount
+                    }).then(({ error }) => {
+                        if (error) {
+                            console.error(`Failed to decrement ingredient ${id}:`, error);
+                            // Fallback to direct update if RPC fails
+                            return supabase
+                                .from('ingredients')
+                                .update({ current_stock: newStock })
+                                .eq('id', id);
+                        }
+                    })
                 );
 
                 // Update State (Optimistic/Immediate)
