@@ -249,8 +249,15 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                 }
             });
 
+        // Polling Fallback (every 15 seconds)
+        const pollInterval = setInterval(() => {
+            console.log('Polling for updates...');
+            fetchData();
+        }, 15000);
+
         return () => {
             supabase.removeChannel(channel);
+            clearInterval(pollInterval);
         };
     }, [restaurantId]);
 
@@ -312,16 +319,16 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         }
 
         // 3. Deduct Inventory
-        // Fetch FRESH ingredients from DB to ensure we have the absolute latest stock values
-        // This prevents stale state issues if multiple orders are placed or if local state is lagging
+        // Fetch FRESH ingredients from DB
         const { data: freshIngredients, error: fetchError } = await supabase
             .from('ingredients')
             .select('*')
-            .in('id', ingredients.map(i => i.id)); // Optimization: only fetch needed? Or just fetch all.
+            .in('id', ingredients.map(i => i.id));
 
-        if (fetchError || !freshIngredients) {
-            console.error("Failed to fetch fresh ingredients for deduction:", fetchError);
-            // Fallback to local state if fetch fails, but warn
+        if (fetchError) {
+            console.error("Failed to fetch fresh ingredients:", fetchError);
+        } else {
+            console.log("[Inventory] Fresh ingredients fetched:", freshIngredients?.map(i => `${i.name}: ${i.current_stock}`));
         }
 
         // Use a local map to track stock changes within this transaction
