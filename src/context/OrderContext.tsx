@@ -530,7 +530,9 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                 const allReady = effectiveSiblings.every((i: any) => i.status === 'ready');
                 const someReady = effectiveSiblings.some((i: any) => i.status === 'ready');
 
-                console.log(`[Status Update] Order ${orderId} siblings:`, siblingItems.map((i: any) => i.status), `All Ready: ${allReady}`);
+                console.log(`[Status Update] Item ID types - itemId: ${typeof itemId} (${itemId}), sibling IDs:`, siblingItems.map((i: any) => `${typeof i.id} (${i.id})`));
+                console.log(`[Status Update] Order ${orderId} raw siblings:`, siblingItems.map((i: any) => i.status));
+                console.log(`[Status Update] Order ${orderId} effective siblings:`, effectiveSiblings.map((i: any) => i.status), `All Ready: ${allReady}`);
 
                 // Fetch current order status to avoid overwriting 'served' or 'paid'
                 const { data: currentOrder } = await supabase.from('orders').select('status').eq('id', orderId).single();
