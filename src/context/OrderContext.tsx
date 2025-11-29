@@ -91,7 +91,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                 .eq('is_available', true);
 
             if (menuError) console.error("Error fetching menu items:", menuError);
-            if (menuData) setMenuItems(menuData);
+            if (menuData) setMenuItems(menuData.map((m: any) => ({ ...m, id: String(m.id) })));
 
             // Fetch Restaurant Details (Currency, Tax, Subscription)
             const { data: restaurantData, error: restaurantError } = await supabase
@@ -891,7 +891,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
     };
 
     const getRecipeForMenuItem = (menuItemId: string) => {
-        return recipes.filter(r => r.menu_item_id === menuItemId);
+        return recipes.filter(r => String(r.menu_item_id) === String(menuItemId));
     };
 
     const [restaurantName, setRestaurantName] = useState('My Restaurant');
