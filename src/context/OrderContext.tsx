@@ -221,7 +221,8 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                         : i.menu_item?.name;
 
                     return {
-                        id: i.menu_item_id,
+                        id: i.id, // Use the actual order_items.id, not menu_item_id
+                        menuItemId: i.menu_item_id, // Keep menu_item_id for reference
                         name: menuItemName || i.name || 'Unknown Item',
                         price: i.price,
                         quantity: i.quantity,
