@@ -255,10 +255,20 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                 console.log('Realtime Menu Update');
                 fetchData();
             })
-            // .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items' }, () => {
-            //     console.log('Realtime Order Items Update');
-            //     fetchData();
-            // })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items' }, (payload) => {
+                console.log('Realtime Order Items Update:', payload);
+                if (payload.eventType === 'UPDATE' && payload.new) {
+                    // Update the specific item in state without refetching everything
+                    setOrders(prev => prev.map(o => ({
+                        ...o,
+                        items: o.items.map(i =>
+                            String(i.id) === String(payload.new.id)
+                                ? { ...i, status: payload.new.status }
+                                : i
+                        )
+                    })));
+                }
+            })
             .on('postgres_changes', { event: '*', schema: 'public', table: 'ingredients' }, () => {
                 console.log('Realtime Ingredients Update');
                 fetchData();
