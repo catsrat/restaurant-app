@@ -488,10 +488,21 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
 
         try {
             // 1. Update Item
-            const { error: itemError } = await supabase
+            const { error: itemError, count } = await supabase
                 .from('order_items')
                 .update({ status })
-                .eq('id', itemId);
+                .eq('id', itemId)
+                .select('*', { count: 'exact' });
+
+            console.log(`[Update Item] Result:`, { count, error: itemError });
+
+            if (count === 0) {
+                console.error("❌ Update failed: 0 rows affected. RLS is likely blocking this.");
+                alert("Failed to update item: Permission denied (RLS). Please run the fix script.");
+                // Revert optimistic update?
+                fetchData(); // Force refresh to revert
+                return;
+            }
 
             if (itemError) throw itemError;
 
