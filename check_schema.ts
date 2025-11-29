@@ -1,5 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
-import * as dotenv from 'dotenv';
+
+const { createClient } = require('@supabase/supabase-js');
+const dotenv = require('dotenv');
 
 dotenv.config({ path: '.env.local' });
 
@@ -7,22 +8,32 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-    console.error("Missing Supabase credentials");
+    console.error('Missing Supabase env vars');
     process.exit(1);
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function main() {
-    console.log("--- Checking Restaurants Table Schema ---");
-    const { data, error } = await supabase.from('restaurants').select('*').limit(1);
-    if (error) { console.error(error); return; }
-    if (data && data.length > 0) {
-        console.log("Columns:", Object.keys(data[0]));
-        console.log("Sample Data:", data[0]);
+async function checkSchema() {
+    console.log('Checking order_items schema...');
+
+    // Try to insert a dummy item with is_upsell to see if it errors
+    // actually, let's just inspect the error from a failed insert if possible, 
+    // or better, just try to select it.
+
+    const { error } = await supabase
+        .from('order_items')
+        .select('is_upsell')
+        .limit(1);
+
+    if (error) {
+        console.log('❌ Error selecting is_upsell:', error.message);
+        if (error.message.includes('does not exist')) {
+            console.log('CONFIRMED: is_upsell column is MISSING.');
+        }
     } else {
-        console.log("No data found in restaurants table.");
+        console.log('✅ is_upsell column EXISTS.');
     }
 }
 
-main();
+checkSchema();
