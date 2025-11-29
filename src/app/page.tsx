@@ -170,7 +170,7 @@ export default function LandingPricing() {
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
             />
             {/* NAV */}
-            <nav className="max-w-6xl mx-auto flex items-center justify-between py-6 px-6">
+            <nav className="max-w-6xl mx-auto flex flex-wrap items-center justify-between py-6 px-6 gap-4">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold">QR</div>
                     <div>
@@ -180,7 +180,7 @@ export default function LandingPricing() {
                 </div>
 
                 {/* Navigation links now have proper anchors and smooth-scroll behavior */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-wrap">
                     <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm text-gray-600 hover:text-indigo-600">Features</a>
                     <a href="#book" onClick={(e) => { e.preventDefault(); document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm text-gray-600 hover:text-indigo-600">Pricing</a>
                     <a href="#contact" onClick={(e) => { e.preventDefault(); document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm text-gray-600 hover:text-indigo-600">Contact</a>
@@ -200,11 +200,11 @@ export default function LandingPricing() {
 
             <main>
                 {/* HERO */}
-                <header className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white py-20">
+                <header className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white py-12 lg:py-20">
                     <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                         <div>
-                            <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight">Order QR: The Best QR Ordering Software</h1>
-                            <p className="mt-4 text-lg opacity-90">Order QR gives you QR menus, table ordering, and a real-time kitchen display — all in one simple plan. Onboard in 30 minutes.</p>
+                            <h1 className="text-3xl lg:text-5xl font-extrabold leading-tight">Order QR: The Best QR Ordering Software</h1>
+                            <p className="mt-4 text-base lg:text-lg opacity-90">Order QR gives you QR menus, table ordering, and a real-time kitchen display — all in one simple plan. Onboard in 30 minutes.</p>
 
                             <div className="mt-8 flex gap-4">
                                 <a href="#book" className="bg-white text-indigo-600 px-5 py-3 rounded-lg font-semibold shadow">Start free trial</a>
@@ -236,7 +236,7 @@ export default function LandingPricing() {
                 </header>
 
                 {/* Features Section */}
-                <section id="features" className="max-w-6xl mx-auto px-6 py-16">
+                <section id="features" className="max-w-6xl mx-auto px-6 py-10 lg:py-16">
                     <h2 className="text-3xl font-bold text-center">Why choose our QR Ordering Software?</h2>
                     <p className="text-center text-gray-600 mt-2 max-w-2xl mx-auto">A single Order QR plan with real-time orders, KDS, POS printing, analytics and multi-language support.</p>
 
@@ -251,7 +251,7 @@ export default function LandingPricing() {
                 </section>
 
                 {/* FAQ Section */}
-                <section className="max-w-4xl mx-auto px-6 py-16">
+                <section className="max-w-4xl mx-auto px-6 py-10 lg:py-16">
                     <h2 className="text-3xl font-bold text-center mb-10">Frequently Asked Questions</h2>
                     <div className="space-y-6">
                         <FAQItem
@@ -274,7 +274,7 @@ export default function LandingPricing() {
                 </section>
 
                 {/* Pricing + Booking */}
-                <section id="book" className="bg-gray-50 py-16">
+                <section id="book" className="bg-gray-50 py-10 lg:py-16">
                     <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                         <div className="lg:col-span-1">
                             <h3 className="text-2xl font-bold">Simple pricing. One plan.</h3>
@@ -350,7 +350,7 @@ export default function LandingPricing() {
             </main>
 
             {/* Contact Section */}
-            <section id="contact" className="bg-white py-16 border-t">
+            <section id="contact" className="bg-white py-10 lg:py-16 border-t">
                 <div className="max-w-4xl mx-auto px-6 text-center">
                     <h2 className="text-3xl font-bold mb-6">Contact Us</h2>
                     <p className="text-gray-600 mb-8 text-lg">Have questions? We're here to help.</p>
