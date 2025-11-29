@@ -299,6 +299,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
     }, [fetchData, restaurantId]);
 
     const addOrder = async (items: OrderItem[], orderType: OrderType, details: { tableId?: string, contactNumber?: string }) => {
+        alert(`DEBUG: addOrder called with ${items.length} items`);
         console.log('[addOrder] Starting order creation');
         console.log('[addOrder] Ingredients available:', ingredients.length, ingredients.map(i => `${i.name}: ${i.current_stock}`));
         console.log('[addOrder] Recipes available:', recipes.length);
