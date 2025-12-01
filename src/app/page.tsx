@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
-import { ChefHat, Smartphone, CreditCard, TrendingUp, Globe, Zap, Check } from 'lucide-react';
+import { ChefHat, Smartphone, CreditCard, TrendingUp, Globe, Zap, Check, QrCode } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function LandingPage() {
@@ -172,32 +172,68 @@ export default function LandingPage() {
                     </motion.div>
                 </div>
 
-                {/* Hero Mockup */}
-                <motion.div
-                    initial={{ opacity: 0, y: 100, rotateX: 20 }}
-                    animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                    transition={{ duration: 1, delay: 0.2 }}
-                    className="mt-20 max-w-6xl mx-auto relative perspective-1000"
-                >
+                {/* Hero Mockup with "Ordering by QR" Animation */}
+                <div className="mt-20 max-w-6xl mx-auto relative perspective-1000 h-[600px] md:h-[800px] flex items-center justify-center">
                     <div className="absolute inset-0 bg-gradient-to-t from-purple-500/20 via-blue-500/10 to-transparent blur-3xl -z-10 transform scale-150 opacity-50"></div>
-                    <div className="relative rounded-2xl border border-white/10 shadow-2xl overflow-hidden bg-[#0B0C10] ring-1 ring-white/10">
+
+                    {/* Dashboard (Background) */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 100, rotateX: 20, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
+                        transition={{ duration: 1, delay: 0.2 }}
+                        className="absolute top-20 left-0 right-0 rounded-2xl border border-white/10 shadow-2xl overflow-hidden bg-[#0B0C10] ring-1 ring-white/10 z-0"
+                    >
                         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
                         <Image
                             src="/dashboard-counter.png"
                             alt="Counter Dashboard"
                             width={1920}
                             height={1080}
-                            className="w-full h-auto object-cover"
+                            className="w-full h-auto object-cover opacity-80"
                             priority
                         />
-                        {/* Overlay gradient for better text readability if needed, or just aesthetic */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-transparent to-transparent opacity-20"></div>
-                    </div>
-                </motion.div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-transparent to-transparent opacity-40"></div>
+                    </motion.div>
+
+                    {/* Phone (Foreground) - Simulating QR Scan/Order */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 200, x: 100 }}
+                        animate={{ opacity: 1, y: 50, x: 50 }}
+                        transition={{ duration: 1, delay: 0.6, type: "spring" }}
+                        className="absolute bottom-0 right-10 md:right-20 w-64 md:w-80 z-20"
+                    >
+                        <div className="relative rounded-[2.5rem] border-8 border-gray-900 bg-gray-900 shadow-2xl overflow-hidden">
+                            {/* Notch */}
+                            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-gray-900 rounded-b-2xl z-30"></div>
+
+                            {/* Screen Content */}
+                            <Image
+                                src="/dashboard-menu.png"
+                                alt="Mobile Menu"
+                                width={375}
+                                height={812}
+                                className="w-full h-auto"
+                            />
+
+                            {/* Scan Animation Overlay */}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: [0, 1, 0] }}
+                                transition={{ duration: 2, delay: 1.5, repeat: Infinity, repeatDelay: 5 }}
+                                className="absolute inset-0 bg-black/60 flex items-center justify-center z-40"
+                            >
+                                <div className="text-center">
+                                    <QrCode className="w-16 h-16 text-white mx-auto mb-4 animate-pulse" />
+                                    <div className="text-white font-bold">Scanning QR...</div>
+                                </div>
+                            </motion.div>
+                        </div>
+                    </motion.div>
+                </div>
             </section>
 
             {/* Features Bento Grid */}
-            <section id="features" className="max-w-7xl mx-auto px-6 py-32">
+            <section id="features" className="max-w-7xl mx-auto px-6 py-32 relative z-20 bg-[#0B0C10]">
                 <div className="text-center mb-20">
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
