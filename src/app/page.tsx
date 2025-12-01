@@ -290,8 +290,17 @@ export default function LandingPage() {
                     {/* Large Card - Kitchen Display */}
                     <motion.div variants={fadeInUp} className="lg:col-span-2 bg-gradient-to-br from-gray-900/50 to-gray-800/50 rounded-3xl p-8 border border-white/10 hover:border-purple-500/30 transition group overflow-hidden relative">
                         <div className="relative z-10">
-                            <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                                <ChefHat className="w-6 h-6 text-purple-400" />
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                    <ChefHat className="w-6 h-6 text-purple-400" />
+                                </div>
+                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20">
+                                    <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                    </span>
+                                    <span className="text-xs font-medium text-green-400">Live Sync</span>
+                                </div>
                             </div>
                             <h3 className="text-2xl font-bold text-white mb-2">Kitchen Display System</h3>
                             <p className="text-gray-400 mb-8 max-w-md">Real-time order sync with timers and status tracking. Keep your kitchen organized and efficient.</p>
@@ -303,6 +312,13 @@ export default function LandingPage() {
                                 width={800}
                                 height={450}
                                 className="w-full h-auto"
+                            />
+                            {/* Animated Overlay for "New Order" simulation */}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                whileInView={{ opacity: [0, 0.5, 0] }}
+                                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                                className="absolute inset-0 bg-purple-500/10 pointer-events-none"
                             />
                         </div>
                         <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 blur-3xl rounded-full -mr-32 -mt-32 pointer-events-none"></div>
@@ -317,14 +333,20 @@ export default function LandingPage() {
                             <h3 className="text-2xl font-bold text-white mb-2">QR Menu</h3>
                             <p className="text-gray-400 mb-8">Scan and order from any device. No app required.</p>
                         </div>
-                        <div className="relative mt-auto mx-auto w-48 rounded-[2rem] border-4 border-gray-800 overflow-hidden shadow-2xl transform group-hover:translate-y-2 transition-transform duration-500">
-                            <Image
-                                src="/dashboard-menu.png"
-                                alt="Mobile Menu"
-                                width={300}
-                                height={600}
-                                className="w-full h-auto"
-                            />
+                        <div className="relative mt-auto mx-auto w-48 h-64 rounded-[2rem] border-4 border-gray-800 overflow-hidden shadow-2xl bg-black">
+                            {/* Auto-scrolling content */}
+                            <motion.div
+                                animate={{ y: [0, -100, 0] }}
+                                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                            >
+                                <Image
+                                    src="/dashboard-menu.png"
+                                    alt="Mobile Menu"
+                                    width={300}
+                                    height={600}
+                                    className="w-full h-auto"
+                                />
+                            </motion.div>
                         </div>
                         <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 blur-3xl rounded-full -ml-32 -mb-32 pointer-events-none"></div>
                     </motion.div>
@@ -336,11 +358,28 @@ export default function LandingPage() {
                         </div>
                         <h3 className="text-xl font-bold text-white mb-2">Multi-currency</h3>
                         <p className="text-gray-400 mb-4">Support for global payments.</p>
-                        <div className="flex gap-3 text-2xl font-mono text-gray-500">
-                            <span className="text-green-400">₹</span>
-                            <span>$</span>
-                            <span>€</span>
-                            <span>Kč</span>
+                        <div className="flex gap-3 text-2xl font-mono text-gray-500 h-8 overflow-hidden">
+                            <motion.div
+                                animate={{ y: [0, -32, -64, -96, 0] }}
+                                transition={{ duration: 4, repeat: Infinity, times: [0, 0.25, 0.5, 0.75, 1], ease: "easeInOut" }}
+                                className="flex flex-col text-green-400"
+                            >
+                                <span>₹</span><span>$</span><span>€</span><span>Kč</span><span>₹</span>
+                            </motion.div>
+                            <motion.div
+                                animate={{ y: [-32, -64, -96, 0, -32] }}
+                                transition={{ duration: 4, repeat: Infinity, times: [0, 0.25, 0.5, 0.75, 1], ease: "easeInOut" }}
+                                className="flex flex-col"
+                            >
+                                <span>$</span><span>€</span><span>Kč</span><span>₹</span><span>$</span>
+                            </motion.div>
+                            <motion.div
+                                animate={{ y: [-64, -96, 0, -32, -64] }}
+                                transition={{ duration: 4, repeat: Infinity, times: [0, 0.25, 0.5, 0.75, 1], ease: "easeInOut" }}
+                                className="flex flex-col"
+                            >
+                                <span>€</span><span>Kč</span><span>₹</span><span>$</span><span>€</span>
+                            </motion.div>
                         </div>
                     </motion.div>
 
@@ -351,9 +390,14 @@ export default function LandingPage() {
                         </div>
                         <h3 className="text-xl font-bold text-white mb-2">Stripe</h3>
                         <p className="text-gray-400 mb-4">Secure, instant payouts.</p>
-                        <div className="flex items-center gap-2 text-sm text-purple-300 bg-purple-500/10 px-3 py-1 rounded-full w-fit">
-                            <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                            Connected
+                        <div className="flex items-center gap-2 text-sm text-purple-300 bg-purple-500/10 px-3 py-1 rounded-full w-fit relative overflow-hidden">
+                            <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse z-10"></div>
+                            <span className="z-10">Connected</span>
+                            <motion.div
+                                animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                                className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 bg-purple-500/20 rounded-full"
+                            />
                         </div>
                     </motion.div>
 
@@ -366,7 +410,14 @@ export default function LandingPage() {
                         <p className="text-gray-400 mb-4">Track revenue & growth.</p>
                         <div className="h-12 flex items-end gap-1">
                             {[40, 70, 50, 90, 60, 80].map((h, i) => (
-                                <div key={i} className="flex-1 bg-orange-500/20 rounded-t-sm hover:bg-orange-500/40 transition-colors" style={{ height: `${h}%` }}></div>
+                                <motion.div
+                                    key={i}
+                                    initial={{ height: "0%" }}
+                                    whileInView={{ height: `${h}%` }}
+                                    viewport={{ once: false }}
+                                    transition={{ duration: 0.5, delay: i * 0.1 }}
+                                    className="flex-1 bg-orange-500/20 rounded-t-sm hover:bg-orange-500/40 transition-colors"
+                                ></motion.div>
                             ))}
                         </div>
                     </motion.div>
