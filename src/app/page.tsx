@@ -305,13 +305,13 @@ export default function LandingPage() {
                             <h3 className="text-2xl font-bold text-white mb-2">Kitchen Display System</h3>
                             <p className="text-gray-400 mb-6 max-w-md">Real-time order sync with timers and status tracking. Keep your kitchen organized and efficient.</p>
                         </div>
-                        <div className="relative mt-auto -mx-8 -mb-8 rounded-t-xl overflow-hidden border-t border-white/10 shadow-2xl transform group-hover:scale-[1.02] transition-transform duration-500">
+                        <div className="relative flex-1 -mx-8 -mb-8 mt-6 rounded-t-xl overflow-hidden border-t border-white/10 shadow-2xl transform group-hover:scale-[1.02] transition-transform duration-500 min-h-[250px]">
                             <Image
                                 src="/dashboard-kitchen.png"
                                 alt="Kitchen Display"
                                 width={800}
                                 height={450}
-                                className="w-full h-auto"
+                                className="w-full h-full object-cover object-top"
                             />
                             {/* Animated Overlay for "New Order" simulation */}
                             <motion.div
