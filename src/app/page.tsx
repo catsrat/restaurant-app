@@ -143,19 +143,7 @@ export default function LandingPage() {
                                 >
                                     Pricing
                                 </a>
-                                <div className="py-2">
-                                    <label className="text-xs text-gray-500 mb-1 block">Currency</label>
-                                    <select
-                                        value={currency}
-                                        onChange={(e) => setCurrency(e.target.value)}
-                                        className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-sm focus:outline-none focus:border-purple-500 transition"
-                                    >
-                                        <option value="INR">INR</option>
-                                        <option value="CZK">CZK</option>
-                                        <option value="USD">USD</option>
-                                        <option value="EUR">EUR</option>
-                                    </select>
-                                </div>
+
                             </div>
                         </motion.div>
                     )}
@@ -406,7 +394,19 @@ export default function LandingPage() {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                             {/* Pricing Card */}
                             <div>
-                                <div className="text-sm font-medium text-purple-400 mb-2 uppercase tracking-wider">Pro Plan</div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="text-sm font-medium text-purple-400 uppercase tracking-wider">Pro Plan</div>
+                                    <select
+                                        value={currency}
+                                        onChange={(e) => setCurrency(e.target.value)}
+                                        className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-gray-300 focus:outline-none focus:border-purple-500 transition cursor-pointer hover:bg-white/10"
+                                    >
+                                        <option value="INR">INR</option>
+                                        <option value="CZK">CZK</option>
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                    </select>
+                                </div>
                                 <div className="flex items-baseline gap-2 mb-2">
                                     <div className="text-5xl md:text-6xl font-bold text-white">{currencySymbol}{convertedPrice}</div>
                                     <div className="text-xl text-gray-400">/ {billingCycle === 'monthly' ? 'mo' : 'yr'}</div>
