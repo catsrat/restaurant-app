@@ -242,7 +242,7 @@ export default function LandingPage() {
                         whileInView={{ opacity: 1, x: 0, rotateY: -15, rotateX: 5, z: 50 }}
                         viewport={{ once: false }}
                         transition={{ duration: 1.2, delay: 0.6 }}
-                        className="absolute top-16 md:top-32 right-[-5%] md:right-[15%] w-[25%] md:w-[20%] rounded-[1rem] md:rounded-[2rem] shadow-2xl border-[3px] md:border-[6px] border-[#1a1b20] overflow-hidden z-20 bg-black"
+                        className="absolute top-16 md:top-32 right-[2%] md:right-[15%] w-[30%] md:w-[20%] rounded-[1rem] md:rounded-[2rem] shadow-2xl border-[3px] md:border-[6px] border-[#1a1b20] overflow-hidden z-20 bg-black"
                     >
                         <Image src="/dashboard-menu.png" alt="Mobile Menu" width={375} height={812} className="w-full h-auto" />
                     </motion.div>
