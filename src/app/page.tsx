@@ -338,7 +338,7 @@ export default function LandingPage() {
                         </div>
 
                         {/* Full width scrolling menu container */}
-                        <div className="relative mt-auto -mx-8 -mb-8 h-72 overflow-hidden border-t border-white/5 bg-black/20 mask-image-b-fade">
+                        <div className="relative flex-1 -mx-8 -mb-8 overflow-hidden border-t border-white/5 bg-black/20 mask-image-b-fade min-h-[200px]">
                             <motion.div
                                 animate={{ y: [0, -240, 0] }}
                                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
