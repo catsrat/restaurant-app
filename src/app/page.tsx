@@ -288,7 +288,7 @@ export default function LandingPage() {
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                 >
                     {/* Large Card - Kitchen Display */}
-                    <motion.div variants={fadeInUp} className="lg:col-span-2 bg-gradient-to-br from-gray-900/50 to-gray-800/50 rounded-3xl p-8 border border-white/10 hover:border-purple-500/30 transition group overflow-hidden relative">
+                    <motion.div variants={fadeInUp} className="lg:col-span-2 bg-gradient-to-br from-gray-900/50 to-gray-800/50 rounded-3xl p-8 border border-white/10 hover:border-purple-500/30 transition group overflow-hidden relative flex flex-col">
                         <div className="relative z-10">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -303,9 +303,9 @@ export default function LandingPage() {
                                 </div>
                             </div>
                             <h3 className="text-2xl font-bold text-white mb-2">Kitchen Display System</h3>
-                            <p className="text-gray-400 mb-8 max-w-md">Real-time order sync with timers and status tracking. Keep your kitchen organized and efficient.</p>
+                            <p className="text-gray-400 mb-6 max-w-md">Real-time order sync with timers and status tracking. Keep your kitchen organized and efficient.</p>
                         </div>
-                        <div className="relative mt-4 rounded-xl overflow-hidden border border-white/10 shadow-2xl transform group-hover:scale-[1.02] transition-transform duration-500">
+                        <div className="relative mt-auto -mx-8 -mb-8 rounded-t-xl overflow-hidden border-t border-white/10 shadow-2xl transform group-hover:scale-[1.02] transition-transform duration-500">
                             <Image
                                 src="/dashboard-kitchen.png"
                                 alt="Kitchen Display"
@@ -338,11 +338,11 @@ export default function LandingPage() {
                         </div>
 
                         {/* Full width scrolling menu container */}
-                        <div className="relative flex-1 -mx-8 -mb-8 overflow-hidden border-t border-white/5 bg-black/20 mask-image-b-fade min-h-[200px]">
+                        <div className="relative flex-1 -mx-8 -mb-8 overflow-hidden border-t border-white/5 bg-black/20 mask-image-b-fade min-h-[240px]">
                             <motion.div
                                 animate={{ y: [0, -240, 0] }}
                                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                                className="w-full"
+                                className="w-full h-full"
                             >
                                 <Image
                                     src="/dashboard-menu.png"
