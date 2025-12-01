@@ -2,8 +2,8 @@
 
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
-import { ChefHat, Smartphone, CreditCard, TrendingUp, Globe, Zap, Check, QrCode } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ChefHat, Smartphone, CreditCard, TrendingUp, Globe, Zap, Check, QrCode, Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LandingPage() {
     const baseMonthlyINR = 2999;
@@ -38,6 +38,7 @@ export default function LandingPage() {
     const [contactEmail, setContactEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: string, text: string } | null>(null);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const currencySymbol = ({ INR: '₹', CZK: 'Kč', USD: '$', EUR: '€', GBP: '£' } as any)[currency] || '';
     const convertedPrice = useMemo(() => {
@@ -92,6 +93,8 @@ export default function LandingPage() {
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-purple-500/20">QR</div>
                         <div className="text-white font-semibold tracking-tight">Order QR</div>
                     </div>
+
+                    {/* Desktop Menu */}
                     <div className="hidden md:flex items-center gap-8">
                         <a href="#features" className="text-sm text-gray-400 hover:text-white transition">Features</a>
                         <a href="#pricing" className="text-sm text-gray-400 hover:text-white transition">Pricing</a>
@@ -106,7 +109,57 @@ export default function LandingPage() {
                             <option value="EUR">EUR</option>
                         </select>
                     </div>
+
+                    {/* Mobile Menu Toggle */}
+                    <button
+                        className="md:hidden text-gray-400 hover:text-white"
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    >
+                        {mobileMenuOpen ? <X /> : <Menu />}
+                    </button>
                 </div>
+
+                {/* Mobile Menu Dropdown */}
+                <AnimatePresence>
+                    {mobileMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="md:hidden bg-[#0B0C10] border-b border-white/10 overflow-hidden"
+                        >
+                            <div className="flex flex-col p-6 gap-4">
+                                <a
+                                    href="#features"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="text-gray-400 hover:text-white transition py-2"
+                                >
+                                    Features
+                                </a>
+                                <a
+                                    href="#pricing"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="text-gray-400 hover:text-white transition py-2"
+                                >
+                                    Pricing
+                                </a>
+                                <div className="py-2">
+                                    <label className="text-xs text-gray-500 mb-1 block">Currency</label>
+                                    <select
+                                        value={currency}
+                                        onChange={(e) => setCurrency(e.target.value)}
+                                        className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-sm focus:outline-none focus:border-purple-500 transition"
+                                    >
+                                        <option value="INR">INR</option>
+                                        <option value="CZK">CZK</option>
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </nav>
 
             {/* Hero */}
