@@ -1,66 +1,41 @@
 "use client"
 
 import React, { useState, useMemo } from 'react';
+import { ChefHat, Smartphone, CreditCard, TrendingUp, Globe, Zap } from 'lucide-react';
 
-
-// Landing page component — visual fixes and dynamic mockup currency conversion
-// - Hero mockup prices now follow the selected currency instead of hardcoded CZK
-// - Adds a helper convertFromCZK to convert example item prices into the chosen currency
-// - Keeps overall website layout and booking form
-
-export default function LandingPricing() {
+export default function LandingPage() {
     const baseMonthlyINR = 2999;
     const baseYearlyINR = 30000;
-    // rates are defined as: 1 INR = rates[target]
     const [rates, setRates] = useState<{ [key: string]: number }>({ INR: 1, CZK: 0.31, USD: 0.012, EUR: 0.011, GBP: 0.009 });
-    const [ratesLoading, setRatesLoading] = useState(false);
-    const [ratesError, setRatesError] = useState<string | null>(null);
 
-    // Fetch live exchange rates from exchangerate.host with INR as base
-    // We fetch CZK, USD, EUR, GBP. If the fetch fails, we silently keep fallback static rates.
     React.useEffect(() => {
-        let mounted = true;
         async function fetchRates() {
-            setRatesLoading(true);
-            setRatesError(null);
             try {
                 const res = await fetch('https://api.exchangerate.host/latest?base=INR&symbols=CZK,USD,EUR,GBP,INR');
-                if (!res.ok) throw new Error('Failed to fetch rates');
+                if (!res.ok) return;
                 const data = await res.json();
-                if (mounted && data && data.rates) {
-                    // Ensure INR rate exists
-                    const newRates = {
+                if (data?.rates) {
+                    setRates({
                         INR: 1,
                         CZK: data.rates.CZK || rates.CZK,
                         USD: data.rates.USD || rates.USD,
                         EUR: data.rates.EUR || rates.EUR,
                         GBP: data.rates.GBP || rates.GBP
-                    };
-                    setRates(newRates);
+                    });
                 }
             } catch (err) {
                 console.error('Exchange rates fetch error', err);
-                if (mounted) setRatesError('Could not load live exchange rates — using fallback rates');
-            } finally {
-                if (mounted) setRatesLoading(false);
             }
         }
         fetchRates();
-        // refresh every 30 minutes
-        const id = setInterval(fetchRates, 1000 * 60 * 30);
-        return () => { mounted = false; clearInterval(id); };
     }, []);
-
 
     const [currency, setCurrency] = useState('INR');
     const [billingCycle, setBillingCycle] = useState('monthly');
     const [companyName, setCompanyName] = useState('');
     const [contactEmail, setContactEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [notes, setNotes] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: string, text: string } | null>(null);
-    const [showModal, setShowModal] = useState(false);
 
     const currencySymbol = ({ INR: '₹', CZK: 'Kč', USD: '$', EUR: '€', GBP: '£' } as any)[currency] || '';
     const convertedPrice = useMemo(() => {
@@ -68,17 +43,6 @@ export default function LandingPricing() {
         const priceINR = billingCycle === 'monthly' ? baseMonthlyINR : baseYearlyINR;
         return Math.round(priceINR * rate).toLocaleString();
     }, [currency, billingCycle, rates]);
-
-    // Helper: convert an amount expressed in INR into the currently selected currency.
-    function convertFromINR(amountINR: number) {
-        const targetRate = rates[currency] || 1; // 1 INR -> target
-        const converted = amountINR * targetRate;
-        // for display, round appropriately
-        if (currency === 'INR') return Math.round(converted).toLocaleString();
-        if (currency === 'CZK') return Math.round(converted).toLocaleString();
-        // for USD/EUR show 2 decimals
-        return converted.toFixed(2);
-    }
 
     async function handleBook(e: React.FormEvent) {
         e.preventDefault();
@@ -89,7 +53,7 @@ export default function LandingPricing() {
         setLoading(true);
         setMessage(null);
         try {
-            const payload = { companyName, contactEmail, phone, currency, billingCycle, notes };
+            const payload = { companyName, contactEmail, currency, billingCycle };
             const res = await fetch('/api/book', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             });
@@ -101,329 +65,245 @@ export default function LandingPricing() {
         } finally { setLoading(false); }
     }
 
-    const jsonLd = {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "Order QR",
-        "applicationCategory": "BusinessApplication",
-        "operatingSystem": "Web",
-        "offers": {
-            "@type": "Offer",
-            "price": "2999",
-            "priceCurrency": "INR"
-        },
-        "description": "Complete restaurant management system with QR code ordering, KDS, and POS features.",
-        "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "4.8",
-            "ratingCount": "120"
-        }
-    };
-
-    const faqJsonLd = {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
-            {
-                "@type": "Question",
-                "name": "How does the QR menu work?",
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Guests scan the QR code on their table to view the menu. They can place orders directly from their phone, which are sent instantly to your kitchen display."
-                }
-            },
-            {
-                "@type": "Question",
-                "name": "Do I need to buy special hardware?",
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "No! Order QR works on any device with a browser. You can use existing tablets, laptops, or phones for the kitchen display and admin dashboard."
-                }
-            },
-            {
-                "@type": "Question",
-                "name": "Can I customize the menu?",
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Yes, you can easily add items, upload photos, set prices, and organize categories from the admin dashboard. Changes update instantly."
-                }
-            },
-            {
-                "@type": "Question",
-                "name": "Is there a free trial?",
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Yes, we offer a 14-day free trial with full access to all features. No credit card is required to start."
-                }
-            }
-        ]
-    };
-
     return (
-        <div className="font-sans text-gray-800">
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-            />
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-            />
-            {/* NAV */}
-            <nav className="max-w-6xl mx-auto flex flex-wrap items-center justify-between py-6 px-6 gap-4">
+        <div className="bg-[#0B0C10] text-gray-300 min-h-screen">
+            {/* Nav */}
+            <nav className="max-w-7xl mx-auto flex items-center justify-between py-6 px-6">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold">QR</div>
-                    <div>
-                        <div className="text-lg font-bold">Order QR</div>
-                        <div className="text-xs text-gray-500">Digital menus & ordering</div>
-                    </div>
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">QR</div>
+                    <div className="text-white font-semibold">Order QR</div>
                 </div>
-
-                {/* Navigation links now have proper anchors and smooth-scroll behavior */}
-                <div className="flex items-center gap-4 flex-wrap">
-                    <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm text-gray-600 hover:text-indigo-600">Features</a>
-                    <a href="#book" onClick={(e) => { e.preventDefault(); document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm text-gray-600 hover:text-indigo-600">Pricing</a>
-                    <a href="#contact" onClick={(e) => { e.preventDefault(); document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm text-gray-600 hover:text-indigo-600">Contact</a>
-
-
-                    {/* Currency select: z-index & aria-label for accessibility */}
-                    <div className="relative">
-                        <select aria-label="Select currency" value={currency} onChange={(e) => setCurrency(e.target.value)} className="border rounded px-2 py-1 text-sm bg-white relative z-20">
-                            <option value="INR">INR</option>
-                            <option value="CZK">CZK</option>
-                            <option value="USD">USD</option>
-                            <option value="EUR">EUR</option>
-                        </select>
-                    </div>
+                <div className="flex items-center gap-6">
+                    <a href="#features" className="text-sm hover:text-white transition">Features</a>
+                    <a href="#pricing" className="text-sm hover:text-white transition">Pricing</a>
+                    <select
+                        value={currency}
+                        onChange={(e) => setCurrency(e.target.value)}
+                        className="bg-white/5 border border-white/10 rounded px-3 py-1.5 text-sm"
+                    >
+                        <option value="INR">INR</option>
+                        <option value="CZK">CZK</option>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                    </select>
                 </div>
             </nav>
 
-            <main>
-                {/* HERO */}
-                <header className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white py-12 lg:py-20">
-                    <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                        <div>
-                            <h1 className="text-3xl lg:text-5xl font-extrabold leading-tight">Order QR: The Best QR Ordering Software</h1>
-                            <p className="mt-4 text-base lg:text-lg opacity-90">Order QR gives you QR menus, table ordering, and a real-time kitchen display — all in one simple plan. Onboard in 30 minutes.</p>
-
-                            <div className="mt-8 flex gap-4">
-                                <a href="#book" className="bg-white text-indigo-600 px-5 py-3 rounded-lg font-semibold shadow">Start free trial</a>
-                                <a href="#features" className="px-5 py-3 rounded-lg border border-white/30">See features</a>
-                            </div>
-
-                            <div className="mt-6 text-sm bg-white/10 inline-block rounded px-3 py-2">Monthly: <span className="font-bold">{currencySymbol}{convertedPrice}</span> / {billingCycle === 'monthly' ? 'month' : 'year'}</div>
-
-                            <div className="mt-6 text-xs text-white/80">14-day free trial • No credit card required to start</div>
-                        </div>
-
-                        <div className="hidden lg:block">
-                            {/* Hero mockup — now uses dynamic conversion so prices match selector */}
-                            <div className="bg-white rounded-2xl p-6 shadow-2xl">
-                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="text-sm font-medium text-gray-800">Cafe Praga</div>
-                                        <div className="text-xs text-gray-500">Table 5</div>
-                                    </div>
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between"><div className="text-gray-800">Margherita Pizza</div><div className="font-semibold text-indigo-700">{currencySymbol}{convertFromINR(599)}</div></div>
-                                        <div className="flex items-center justify-between"><div className="text-gray-800">Caesar Salad</div><div className="font-semibold text-indigo-700">{currencySymbol}{convertFromINR(399)}</div></div>
-                                    </div>
-                                    <div className="mt-4 text-right"><button className="px-4 py-2 bg-indigo-600 text-white rounded">Place order</button></div>
-                                </div>
-                            </div>
-                        </div>
+            {/* Hero */}
+            <section className="max-w-7xl mx-auto px-6 py-20 lg:py-32">
+                <div className="text-center max-w-4xl mx-auto">
+                    <div className="inline-block mb-6 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm">
+                        ✨ Modern QR Ordering Platform
                     </div>
-                </header>
-
-                {/* Features Section */}
-                <section id="features" className="max-w-6xl mx-auto px-6 py-10 lg:py-16">
-                    <h2 className="text-3xl font-bold text-center">Why choose our QR Ordering Software?</h2>
-                    <p className="text-center text-gray-600 mt-2 max-w-2xl mx-auto">A single Order QR plan with real-time orders, KDS, POS printing, analytics and multi-language support.</p>
-
-                    <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <Card title="Realtime Orders" desc="Supabase Realtime & push to KDS" />
-                        <Card title="QR Menu" desc="No app required — scan & order" />
-                        <Card title="KDS" desc="Tablet-ready kitchen display with timers" />
-                        <Card title="POS Printing" desc="80mm thermal receipt printing" />
-                        <Card title="Analytics" desc="Daily revenue & popular items" />
-                        <Card title="Multi-currency" desc="Set currency per restaurant" />
+                    <h1 className="text-5xl lg:text-7xl font-bold text-white tracking-tight leading-tight">
+                        Restaurant ordering,
+                        <br />
+                        <span className="bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">reimagined</span>
+                    </h1>
+                    <p className="mt-6 text-xl text-gray-400 max-w-2xl mx-auto">
+                        QR menus, real-time kitchen display, and seamless payments. Everything you need to run a modern restaurant.
+                    </p>
+                    <div className="mt-10 flex items-center justify-center gap-4">
+                        <a href="#pricing" className="px-6 py-3 bg-white text-black rounded-lg font-semibold hover:bg-gray-100 transition">
+                            Start free trial
+                        </a>
+                        <a href="#features" className="px-6 py-3 border border-white/20 rounded-lg font-semibold hover:bg-white/5 transition">
+                            See features
+                        </a>
                     </div>
-                </section>
-
-                {/* FAQ Section */}
-                <section className="max-w-4xl mx-auto px-6 py-10 lg:py-16">
-                    <h2 className="text-3xl font-bold text-center mb-10">Frequently Asked Questions</h2>
-                    <div className="space-y-6">
-                        <FAQItem
-                            question="How does the QR menu work?"
-                            answer="Guests scan the QR code on their table to view the menu. They can place orders directly from their phone, which are sent instantly to your kitchen display."
-                        />
-                        <FAQItem
-                            question="Do I need to buy special hardware?"
-                            answer="No! Order QR works on any device with a browser. You can use existing tablets, laptops, or phones for the kitchen display and admin dashboard."
-                        />
-                        <FAQItem
-                            question="Can I customize the menu?"
-                            answer="Yes, you can easily add items, upload photos, set prices, and organize categories from the admin dashboard. Changes update instantly."
-                        />
-                        <FAQItem
-                            question="Is there a free trial?"
-                            answer="Yes, we offer a 14-day free trial with full access to all features. No credit card is required to start."
-                        />
+                    <div className="mt-6 text-sm text-gray-500">
+                        14-day free trial • No credit card required
                     </div>
-                </section>
+                </div>
 
-                {/* Pricing + Booking */}
-                <section id="book" className="bg-gray-50 py-10 lg:py-16">
-                    <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                        <div className="lg:col-span-1">
-                            <h3 className="text-2xl font-bold">Simple pricing. One plan.</h3>
-                            <p className="mt-3 text-gray-600">All features included. Monthly and yearly billing — cancel anytime.</p>
-
-                            <div className="mt-6 p-6 bg-white rounded-lg shadow">
-                                <div className="text-sm text-gray-500">Plan</div>
-                                <div className="mt-2 text-3xl font-extrabold">{currencySymbol}{convertedPrice}</div>
-                                <div className="text-sm text-gray-500 mt-1">/ {billingCycle === 'monthly' ? 'month' : 'year'}</div>
-
-                                <div className="mt-4 flex gap-2">
-                                    <button onClick={() => setBillingCycle('monthly')} className={`px-3 py-2 rounded ${billingCycle === 'monthly' ? 'bg-indigo-600 text-white' : 'border'}`}>Monthly</button>
-                                    <button onClick={() => setBillingCycle('yearly')} className={`px-3 py-2 rounded ${billingCycle === 'yearly' ? 'bg-indigo-600 text-white' : 'border'}`}>Yearly</button>
-                                </div>
-
-                                <div className="mt-4 text-sm text-gray-600">Currency</div>
-                                <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="mt-2 w-full border rounded px-3 py-2">
-                                    <option value="INR">INR</option>
-                                    <option value="CZK">CZK</option>
-                                    <option value="USD">USD</option>
-                                    <option value="EUR">EUR</option>
-                                </select>
-
-                                <div className="mt-6 text-sm text-gray-700">Includes: QR menus, ordering, KDS, printing, analytics, support.</div>
-                            </div>
+                {/* Hero Mockup */}
+                <div className="mt-20 relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 blur-3xl"></div>
+                    <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border border-white/10 shadow-2xl transform perspective-1000 rotate-x-2">
+                        <div className="grid grid-cols-3 gap-4 mb-4">
+                            <div className="h-3 bg-white/10 rounded"></div>
+                            <div className="h-3 bg-white/10 rounded"></div>
+                            <div className="h-3 bg-white/10 rounded"></div>
                         </div>
-
-                        <div className="lg:col-span-2">
-                            <div className="bg-white rounded-lg shadow p-6">
-                                <h4 className="text-lg font-semibold mb-4">Book & Get Started</h4>
-
-                                <form onSubmit={handleBook} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <Input label="Restaurant / Company" value={companyName} onChange={(e: any) => setCompanyName(e.target.value)} placeholder="Cafe Praga" />
-                                    <Input label="Contact email" type="email" value={contactEmail} onChange={(e: any) => setContactEmail(e.target.value)} placeholder="owner@restaurant.cz" />
-                                    <Input label="Phone (optional)" value={phone} onChange={(e: any) => setPhone(e.target.value)} placeholder="+420 123 456 789" />
-
-
-                                    <div className="md:col-span-2 flex items-center justify-between">
-                                        <div className="text-sm">You will be charged <span className="font-semibold">{currencySymbol}{convertedPrice}</span> / {billingCycle === 'monthly' ? 'month' : 'year'}</div>
-                                        <div className="flex gap-2">
-                                            <button type="submit" disabled={loading} className="px-6 py-3 bg-indigo-600 text-white rounded shadow">{loading ? 'Processing...' : 'Proceed to Payment'}</button>
-
-                                        </div>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-purple-500/20 rounded"></div>
+                                    <div>
+                                        <div className="h-3 w-24 bg-white/20 rounded mb-2"></div>
+                                        <div className="h-2 w-16 bg-white/10 rounded"></div>
                                     </div>
-
-                                    <div className="md:col-span-2">
-                                        {message && (
-                                            <div className={`p-3 rounded ${message.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{message.text}</div>
-                                        )}
+                                </div>
+                                <div className="h-6 w-20 bg-green-500/20 rounded-full"></div>
+                            </div>
+                            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-blue-500/20 rounded"></div>
+                                    <div>
+                                        <div className="h-3 w-24 bg-white/20 rounded mb-2"></div>
+                                        <div className="h-2 w-16 bg-white/10 rounded"></div>
                                     </div>
-                                </form>
-
-                                <div className="mt-6 text-sm text-gray-500">By booking you agree to our <a href="/terms" className="underline hover:text-indigo-600">terms</a> and <a href="/privacy" className="underline hover:text-indigo-600">privacy policy</a>.</div>
+                                </div>
+                                <div className="h-6 w-20 bg-orange-500/20 rounded-full"></div>
                             </div>
-
-                            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="p-4 bg-white rounded shadow">
-                                    <div className="font-semibold">Onboarding</div>
-                                    <div className="text-sm text-gray-600 mt-2">Free setup call & menu migration</div>
-                                </div>
-                                <div className="p-4 bg-white rounded shadow">
-                                    <div className="font-semibold">Support</div>
-                                    <div className="text-sm text-gray-600 mt-2">Email & chat support during trial</div>
-                                </div>
-                                <div className="p-4 bg-white rounded shadow">
-                                    <div className="font-semibold">Custom brand</div>
-                                    <div className="text-sm text-gray-600 mt-2">Add restaurant logo to menus & QR sheets</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </main>
-
-            {/* Contact Section */}
-            <section id="contact" className="bg-white py-10 lg:py-16 border-t">
-                <div className="max-w-4xl mx-auto px-6 text-center">
-                    <h2 className="text-3xl font-bold mb-6">Contact Us</h2>
-                    <p className="text-gray-600 mb-8 text-lg">Have questions? We're here to help.</p>
-
-                    <div className="inline-flex items-center gap-3 bg-indigo-50 px-6 py-4 rounded-lg border border-indigo-100">
-                        <div className="bg-indigo-600 text-white p-2 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
-                        </div>
-                        <div className="text-left">
-                            <div className="text-sm text-gray-500 font-medium">Email Support</div>
-                            <a href="mailto:support@orderqr.in" className="text-xl font-bold text-indigo-700 hover:underline">support@orderqr.in</a>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <footer className="bg-white border-t mt-10">
-                <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div className="text-sm text-gray-600">© {new Date().getFullYear()} Order QR. Vercel + Supabase</div>
-                    <div className="flex items-center gap-4 text-sm">
-                        <a href="/privacy" className="text-gray-600 hover:text-indigo-600">Privacy</a>
-                        <a href="/terms" className="text-gray-600 hover:text-indigo-600">Terms</a>
-                        <a href="mailto:support@orderqr.in" className="text-gray-600 hover:text-indigo-600">Contact</a>
+            {/* Features Bento Grid */}
+            <section id="features" className="max-w-7xl mx-auto px-6 py-20">
+                <div className="text-center mb-16">
+                    <h2 className="text-4xl font-bold text-white mb-4">Everything you need</h2>
+                    <p className="text-gray-400 text-lg">One platform, infinite possibilities</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Large Card - Kitchen Display */}
+                    <div className="lg:col-span-2 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border border-white/10 hover:border-purple-500/50 transition group">
+                        <ChefHat className="w-10 h-10 text-purple-400 mb-4" />
+                        <h3 className="text-2xl font-bold text-white mb-2">Kitchen Display System</h3>
+                        <p className="text-gray-400 mb-6">Real-time order sync with timers and status tracking</p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-white/5 rounded-lg p-4">
+                                <div className="text-orange-400 font-mono text-sm mb-1">⏱ 12:34</div>
+                                <div className="text-xs text-gray-500">Table 5 • Burger</div>
+                            </div>
+                            <div className="bg-white/5 rounded-lg p-4">
+                                <div className="text-green-400 font-mono text-sm mb-1">✓ Ready</div>
+                                <div className="text-xs text-gray-500">Table 3 • Pizza</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Medium Card - QR Menu */}
+                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border border-white/10 hover:border-blue-500/50 transition">
+                        <Smartphone className="w-10 h-10 text-blue-400 mb-4" />
+                        <h3 className="text-xl font-bold text-white mb-2">QR Menu</h3>
+                        <p className="text-gray-400 mb-6">Scan and order from any device</p>
+                        <div className="bg-white/5 rounded-lg p-4 space-y-2">
+                            <div className="h-3 bg-white/10 rounded w-3/4"></div>
+                            <div className="h-3 bg-white/10 rounded w-1/2"></div>
+                            <div className="h-8 bg-blue-500/20 rounded mt-4"></div>
+                        </div>
+                    </div>
+
+                    {/* Small Card - Multi-currency */}
+                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border border-white/10 hover:border-green-500/50 transition">
+                        <Globe className="w-10 h-10 text-green-400 mb-4" />
+                        <h3 className="text-xl font-bold text-white mb-2">Multi-currency</h3>
+                        <p className="text-gray-400">₹ • Kč • $ • €</p>
+                    </div>
+
+                    {/* Small Card - Stripe */}
+                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border border-white/10 hover:border-purple-500/50 transition">
+                        <CreditCard className="w-10 h-10 text-purple-400 mb-4" />
+                        <h3 className="text-xl font-bold text-white mb-2">Stripe</h3>
+                        <p className="text-gray-400">Secure payments</p>
+                    </div>
+
+                    {/* Small Card - Analytics */}
+                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border border-white/10 hover:border-orange-500/50 transition">
+                        <TrendingUp className="w-10 h-10 text-orange-400 mb-4" />
+                        <h3 className="text-xl font-bold text-white mb-2">Analytics</h3>
+                        <p className="text-gray-400">Revenue insights</p>
                     </div>
                 </div>
-            </footer>
+            </section>
 
-            {showModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
-                    <div className="bg-white max-w-2xl w-full rounded-lg p-6">
-                        <h4 className="text-lg font-semibold mb-2">Terms & Conditions</h4>
-                        <p className="text-sm text-gray-700 mb-4">This is a demo T&C. Replace with your legal copy before going live. Payments handled by Stripe.</p>
-                        <div className="flex justify-end gap-2">
-                            <button onClick={() => setShowModal(false)} className="px-4 py-2 border rounded">Close</button>
+            {/* Pricing */}
+            <section id="pricing" className="max-w-7xl mx-auto px-6 py-20">
+                <div className="text-center mb-16">
+                    <h2 className="text-4xl font-bold text-white mb-4">Simple pricing</h2>
+                    <p className="text-gray-400 text-lg">One plan, all features included</p>
+                </div>
+
+                <div className="max-w-4xl mx-auto">
+                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border border-white/10">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* Pricing Card */}
+                            <div>
+                                <div className="text-sm text-gray-500 mb-2">Starting at</div>
+                                <div className="text-5xl font-bold text-white mb-2">{currencySymbol}{convertedPrice}</div>
+                                <div className="text-gray-400 mb-6">/ {billingCycle === 'monthly' ? 'month' : 'year'}</div>
+
+                                <div className="flex gap-2 mb-6">
+                                    <button
+                                        onClick={() => setBillingCycle('monthly')}
+                                        className={`px-4 py-2 rounded-lg transition ${billingCycle === 'monthly' ? 'bg-white text-black' : 'bg-white/5 hover:bg-white/10'}`}
+                                    >
+                                        Monthly
+                                    </button>
+                                    <button
+                                        onClick={() => setBillingCycle('yearly')}
+                                        className={`px-4 py-2 rounded-lg transition ${billingCycle === 'yearly' ? 'bg-white text-black' : 'bg-white/5 hover:bg-white/10'}`}
+                                    >
+                                        Yearly
+                                    </button>
+                                </div>
+
+                                <div className="space-y-3 text-sm">
+                                    <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-purple-400" /> QR Menus & Ordering</div>
+                                    <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-purple-400" /> Kitchen Display System</div>
+                                    <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-purple-400" /> POS Printing</div>
+                                    <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-purple-400" /> Analytics Dashboard</div>
+                                    <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-purple-400" /> Multi-currency Support</div>
+                                </div>
+                            </div>
+
+                            {/* Booking Form */}
+                            <div>
+                                <form onSubmit={handleBook} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400 mb-2">Restaurant Name</label>
+                                        <input
+                                            type="text"
+                                            value={companyName}
+                                            onChange={(e) => setCompanyName(e.target.value)}
+                                            placeholder="Cafe Praga"
+                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400 mb-2">Email</label>
+                                        <input
+                                            type="email"
+                                            value={contactEmail}
+                                            onChange={(e) => setContactEmail(e.target.value)}
+                                            placeholder="owner@restaurant.com"
+                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition"
+                                        />
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full bg-white text-black rounded-lg px-6 py-3 font-semibold hover:bg-gray-100 transition disabled:opacity-50"
+                                    >
+                                        {loading ? 'Processing...' : 'Start free trial'}
+                                    </button>
+                                    {message && (
+                                        <div className={`p-3 rounded-lg text-sm ${message.type === 'error' ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'}`}>
+                                            {message.text}
+                                        </div>
+                                    )}
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
-            )}
-        </div>
-    );
-}
+            </section>
 
-function Card({ title, desc }: { title: string, desc: string }) {
-    return (
-        <div className="p-6 bg-white rounded-lg shadow text-center">
-            <div className="text-indigo-600 font-bold mb-2">✓</div>
-            <div className="font-semibold">{title}</div>
-            <div className="text-sm text-gray-600 mt-2">{desc}</div>
-        </div>
-    );
-}
-
-function Input({ label, type = 'text', value, onChange, placeholder }: { label: string, type?: string, value: string, onChange: any, placeholder: string }) {
-    return (
-        <div>
-            <label className="block text-sm font-medium text-gray-700">{label}</label>
-            <input type={type} value={value} onChange={onChange} placeholder={placeholder} className="mt-1 block w-full border rounded px-3 py-2 text-sm" />
-        </div>
-    );
-}
-
-function FAQItem({ question, answer }: { question: string, answer: string }) {
-    const [isOpen, setIsOpen] = useState(false);
-    return (
-        <div className="border-b pb-4 last:border-0">
-            <button
-                className="flex justify-between items-center w-full text-left font-semibold text-lg py-2 focus:outline-none"
-                onClick={() => setIsOpen(!isOpen)}
-            >
-                {question}
-                <span className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`}>▼</span>
-            </button>
-            {isOpen && <p className="mt-2 text-gray-600 leading-relaxed">{answer}</p>}
+            {/* Footer */}
+            <footer className="border-t border-white/10 mt-20">
+                <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="text-sm text-gray-500">© {new Date().getFullYear()} Order QR</div>
+                    <div className="flex items-center gap-6 text-sm">
+                        <a href="/privacy" className="text-gray-400 hover:text-white transition">Privacy</a>
+                        <a href="/terms" className="text-gray-400 hover:text-white transition">Terms</a>
+                        <a href="mailto:support@orderqr.in" className="text-gray-400 hover:text-white transition">Contact</a>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 }
