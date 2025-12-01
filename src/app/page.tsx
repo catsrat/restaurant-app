@@ -305,32 +305,15 @@ export default function LandingPage() {
                             <h3 className="text-2xl font-bold text-white mb-2">Kitchen Display System</h3>
                             <p className="text-gray-400 mb-6 max-w-md">Real-time order sync with timers and status tracking. Keep your kitchen organized and efficient.</p>
                         </div>
-                        <div className="relative flex-1 -mx-8 -mb-8 mt-6 flex gap-4 p-4 bg-black/20 border-t border-white/10">
-                            {/* Main Kitchen Dashboard */}
-                            <div className="flex-1 rounded-xl overflow-hidden border border-white/10 shadow-2xl transform group-hover:scale-[1.02] transition-transform duration-500 min-h-[250px] relative">
-                                <Image
-                                    src="/dashboard-kitchen.png"
-                                    alt="Kitchen Display"
-                                    width={800}
-                                    height={450}
-                                    className="w-full h-full object-cover object-top"
-                                />
-                                {/* Animated Overlay for "New Order" simulation */}
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    whileInView={{ opacity: [0, 0.3, 0] }}
-                                    transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 4, ease: [0.4, 0, 0.2, 1] }}
-                                    className="absolute inset-0 bg-purple-500/10 pointer-events-none"
-                                />
-                            </div>
-                            {/* Empty State Small Block */}
-                            <div className="w-64 rounded-xl overflow-hidden border border-white/10 shadow-xl bg-[#0B0C10]">
+                        <div className="relative flex-1 -mx-8 -mb-8 mt-6 flex items-center justify-center p-8 bg-black/20 border-t border-white/10">
+                            {/* Kitchen Empty State */}
+                            <div className="w-full max-w-2xl rounded-xl overflow-hidden border border-white/10 shadow-2xl bg-[#0B0C10]">
                                 <Image
                                     src="/kitchen-empty-state.png"
-                                    alt="Kitchen Empty State"
-                                    width={400}
-                                    height={300}
-                                    className="w-full h-full object-cover"
+                                    alt="Kitchen Display - Empty State"
+                                    width={800}
+                                    height={600}
+                                    className="w-full h-auto object-cover"
                                 />
                             </div>
                         </div>
