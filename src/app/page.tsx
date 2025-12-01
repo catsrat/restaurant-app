@@ -325,7 +325,11 @@ export default function LandingPage() {
                     </motion.div>
 
                     {/* Medium Card - QR Menu */}
-                    <motion.div variants={fadeInUp} className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 rounded-3xl p-8 border border-white/10 hover:border-blue-500/30 transition group overflow-hidden relative">
+                    <motion.div
+                        variants={fadeInUp}
+                        className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 rounded-3xl p-8 border border-white/10 hover:border-blue-500/30 transition group overflow-hidden relative"
+                        whileHover="hover"
+                    >
                         <div className="relative z-10">
                             <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                                 <Smartphone className="w-6 h-6 text-blue-400" />
@@ -333,7 +337,13 @@ export default function LandingPage() {
                             <h3 className="text-2xl font-bold text-white mb-2">QR Menu</h3>
                             <p className="text-gray-400 mb-8">Scan and order from any device. No app required.</p>
                         </div>
-                        <div className="relative mt-auto mx-auto w-56 h-[22rem] rounded-[2.5rem] border-[8px] border-[#121212] ring-1 ring-white/10 overflow-hidden shadow-2xl bg-black">
+
+                        {/* Phone Mockup Container */}
+                        <motion.div
+                            animate={{ y: [0, -10, 0] }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                            className="relative mt-auto mx-auto w-56 h-[22rem] rounded-[2.5rem] border-[8px] border-[#121212] ring-1 ring-white/10 overflow-hidden shadow-2xl bg-black"
+                        >
                             {/* Notch */}
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-[#121212] rounded-b-[1rem] z-20"></div>
 
@@ -345,10 +355,12 @@ export default function LandingPage() {
                                 <div className="w-3 h-3 rounded-full bg-white/80"></div>
                             </div>
 
-                            {/* Auto-scrolling content */}
+                            {/* Interactive Scrolling Content */}
                             <motion.div
-                                animate={{ y: [0, -180, 0] }}
-                                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                                variants={{
+                                    hover: { y: -180 }
+                                }}
+                                transition={{ duration: 2, ease: "easeInOut" }}
                                 className="w-full"
                             >
                                 <Image
@@ -362,7 +374,7 @@ export default function LandingPage() {
 
                             {/* Home Indicator */}
                             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-20 h-1 bg-white/50 rounded-full z-20"></div>
-                        </div>
+                        </motion.div>
                         <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 blur-3xl rounded-full -ml-32 -mb-32 pointer-events-none"></div>
                     </motion.div>
 
