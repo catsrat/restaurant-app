@@ -1,7 +1,9 @@
 "use client"
 
 import React, { useState, useMemo } from 'react';
-import { ChefHat, Smartphone, CreditCard, TrendingUp, Globe, Zap } from 'lucide-react';
+import Image from 'next/image';
+import { ChefHat, Smartphone, CreditCard, TrendingUp, Globe, Zap, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function LandingPage() {
     const baseMonthlyINR = 2999;
@@ -65,242 +67,386 @@ export default function LandingPage() {
         } finally { setLoading(false); }
     }
 
+    // Animation variants
+    const fadeInUp = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+    };
+
+    const staggerContainer = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.2
+            }
+        }
+    };
+
     return (
-        <div className="bg-[#0B0C10] text-gray-300 min-h-screen">
+        <div className="bg-[#0B0C10] text-gray-300 min-h-screen font-sans selection:bg-purple-500/30">
             {/* Nav */}
-            <nav className="max-w-7xl mx-auto flex items-center justify-between py-6 px-6">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">QR</div>
-                    <div className="text-white font-semibold">Order QR</div>
-                </div>
-                <div className="flex items-center gap-6">
-                    <a href="#features" className="text-sm hover:text-white transition">Features</a>
-                    <a href="#pricing" className="text-sm hover:text-white transition">Pricing</a>
-                    <select
-                        value={currency}
-                        onChange={(e) => setCurrency(e.target.value)}
-                        className="bg-white/5 border border-white/10 rounded px-3 py-1.5 text-sm"
-                    >
-                        <option value="INR">INR</option>
-                        <option value="CZK">CZK</option>
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
-                    </select>
+            <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0B0C10]/80 backdrop-blur-md border-b border-white/5">
+                <div className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-purple-500/20">QR</div>
+                        <div className="text-white font-semibold tracking-tight">Order QR</div>
+                    </div>
+                    <div className="hidden md:flex items-center gap-8">
+                        <a href="#features" className="text-sm text-gray-400 hover:text-white transition">Features</a>
+                        <a href="#pricing" className="text-sm text-gray-400 hover:text-white transition">Pricing</a>
+                        <select
+                            value={currency}
+                            onChange={(e) => setCurrency(e.target.value)}
+                            className="bg-white/5 border border-white/10 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500 transition cursor-pointer hover:bg-white/10"
+                        >
+                            <option value="INR">INR</option>
+                            <option value="CZK">CZK</option>
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                        </select>
+                    </div>
                 </div>
             </nav>
 
             {/* Hero */}
-            <section className="max-w-7xl mx-auto px-6 py-20 lg:py-32">
-                <div className="text-center max-w-4xl mx-auto">
-                    <div className="inline-block mb-6 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm">
-                        ✨ Modern QR Ordering Platform
-                    </div>
-                    <h1 className="text-5xl lg:text-7xl font-bold text-white tracking-tight leading-tight">
+            <section className="pt-32 pb-20 lg:pt-48 lg:pb-32 px-6 overflow-hidden">
+                <div className="max-w-7xl mx-auto text-center relative z-10">
+                    <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        variants={fadeInUp}
+                        className="inline-flex items-center gap-2 mb-8 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm font-medium"
+                    >
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+                        </span>
+                        Modern QR Ordering Platform
+                    </motion.div>
+
+                    <motion.h1
+                        initial="hidden"
+                        animate="visible"
+                        variants={fadeInUp}
+                        className="text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-[1.1] mb-8"
+                    >
                         Restaurant ordering,
                         <br />
-                        <span className="bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">reimagined</span>
-                    </h1>
-                    <p className="mt-6 text-xl text-gray-400 max-w-2xl mx-auto">
-                        QR menus, real-time kitchen display, and seamless payments. Everything you need to run a modern restaurant.
-                    </p>
-                    <div className="mt-10 flex items-center justify-center gap-4">
-                        <a href="#pricing" className="px-6 py-3 bg-white text-black rounded-lg font-semibold hover:bg-gray-100 transition">
+                        <span className="bg-gradient-to-r from-purple-400 via-blue-500 to-purple-400 bg-clip-text text-transparent bg-300% animate-gradient">
+                            reimagined
+                        </span>
+                    </motion.h1>
+
+                    <motion.p
+                        initial="hidden"
+                        animate="visible"
+                        variants={fadeInUp}
+                        className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed"
+                    >
+                        QR menus, real-time kitchen display, and seamless payments.
+                        Everything you need to run a modern restaurant efficiently.
+                    </motion.p>
+
+                    <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        variants={fadeInUp}
+                        className="flex flex-col sm:flex-row items-center justify-center gap-4"
+                    >
+                        <a href="#pricing" className="w-full sm:w-auto px-8 py-4 bg-white text-black rounded-xl font-semibold hover:bg-gray-100 transition transform hover:scale-105 active:scale-95">
                             Start free trial
                         </a>
-                        <a href="#features" className="px-6 py-3 border border-white/20 rounded-lg font-semibold hover:bg-white/5 transition">
+                        <a href="#features" className="w-full sm:w-auto px-8 py-4 border border-white/10 bg-white/5 text-white rounded-xl font-semibold hover:bg-white/10 transition backdrop-blur-sm">
                             See features
                         </a>
-                    </div>
-                    <div className="mt-6 text-sm text-gray-500">
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.8, duration: 1 }}
+                        className="mt-8 text-sm text-gray-500"
+                    >
                         14-day free trial • No credit card required
-                    </div>
+                    </motion.div>
                 </div>
 
                 {/* Hero Mockup */}
-                <div className="mt-20 relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 blur-3xl"></div>
-                    <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border border-white/10 shadow-2xl transform perspective-1000 rotate-x-2">
-                        <div className="grid grid-cols-3 gap-4 mb-4">
-                            <div className="h-3 bg-white/10 rounded"></div>
-                            <div className="h-3 bg-white/10 rounded"></div>
-                            <div className="h-3 bg-white/10 rounded"></div>
-                        </div>
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-purple-500/20 rounded"></div>
-                                    <div>
-                                        <div className="h-3 w-24 bg-white/20 rounded mb-2"></div>
-                                        <div className="h-2 w-16 bg-white/10 rounded"></div>
-                                    </div>
-                                </div>
-                                <div className="h-6 w-20 bg-green-500/20 rounded-full"></div>
-                            </div>
-                            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-blue-500/20 rounded"></div>
-                                    <div>
-                                        <div className="h-3 w-24 bg-white/20 rounded mb-2"></div>
-                                        <div className="h-2 w-16 bg-white/10 rounded"></div>
-                                    </div>
-                                </div>
-                                <div className="h-6 w-20 bg-orange-500/20 rounded-full"></div>
-                            </div>
-                        </div>
+                <motion.div
+                    initial={{ opacity: 0, y: 100, rotateX: 20 }}
+                    animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                    transition={{ duration: 1, delay: 0.2 }}
+                    className="mt-20 max-w-6xl mx-auto relative perspective-1000"
+                >
+                    <div className="absolute inset-0 bg-gradient-to-t from-purple-500/20 via-blue-500/10 to-transparent blur-3xl -z-10 transform scale-150 opacity-50"></div>
+                    <div className="relative rounded-2xl border border-white/10 shadow-2xl overflow-hidden bg-[#0B0C10] ring-1 ring-white/10">
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                        <Image
+                            src="/dashboard-counter.png"
+                            alt="Counter Dashboard"
+                            width={1920}
+                            height={1080}
+                            className="w-full h-auto object-cover"
+                            priority
+                        />
+                        {/* Overlay gradient for better text readability if needed, or just aesthetic */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-transparent to-transparent opacity-20"></div>
                     </div>
-                </div>
+                </motion.div>
             </section>
 
             {/* Features Bento Grid */}
-            <section id="features" className="max-w-7xl mx-auto px-6 py-20">
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl font-bold text-white mb-4">Everything you need</h2>
-                    <p className="text-gray-400 text-lg">One platform, infinite possibilities</p>
+            <section id="features" className="max-w-7xl mx-auto px-6 py-32">
+                <div className="text-center mb-20">
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="text-3xl md:text-5xl font-bold text-white mb-6"
+                    >
+                        Everything you need
+                    </motion.h2>
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.1 }}
+                        className="text-gray-400 text-lg md:text-xl"
+                    >
+                        One platform, infinite possibilities
+                    </motion.p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <motion.div
+                    variants={staggerContainer}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                >
                     {/* Large Card - Kitchen Display */}
-                    <div className="lg:col-span-2 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border border-white/10 hover:border-purple-500/50 transition group">
-                        <ChefHat className="w-10 h-10 text-purple-400 mb-4" />
-                        <h3 className="text-2xl font-bold text-white mb-2">Kitchen Display System</h3>
-                        <p className="text-gray-400 mb-6">Real-time order sync with timers and status tracking</p>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-white/5 rounded-lg p-4">
-                                <div className="text-orange-400 font-mono text-sm mb-1">⏱ 12:34</div>
-                                <div className="text-xs text-gray-500">Table 5 • Burger</div>
+                    <motion.div variants={fadeInUp} className="lg:col-span-2 bg-gradient-to-br from-gray-900/50 to-gray-800/50 rounded-3xl p-8 border border-white/10 hover:border-purple-500/30 transition group overflow-hidden relative">
+                        <div className="relative z-10">
+                            <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                                <ChefHat className="w-6 h-6 text-purple-400" />
                             </div>
-                            <div className="bg-white/5 rounded-lg p-4">
-                                <div className="text-green-400 font-mono text-sm mb-1">✓ Ready</div>
-                                <div className="text-xs text-gray-500">Table 3 • Pizza</div>
-                            </div>
+                            <h3 className="text-2xl font-bold text-white mb-2">Kitchen Display System</h3>
+                            <p className="text-gray-400 mb-8 max-w-md">Real-time order sync with timers and status tracking. Keep your kitchen organized and efficient.</p>
                         </div>
-                    </div>
+                        <div className="relative mt-4 rounded-xl overflow-hidden border border-white/10 shadow-2xl transform group-hover:scale-[1.02] transition-transform duration-500">
+                            <Image
+                                src="/dashboard-kitchen.png"
+                                alt="Kitchen Display"
+                                width={800}
+                                height={450}
+                                className="w-full h-auto"
+                            />
+                        </div>
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 blur-3xl rounded-full -mr-32 -mt-32 pointer-events-none"></div>
+                    </motion.div>
 
                     {/* Medium Card - QR Menu */}
-                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border border-white/10 hover:border-blue-500/50 transition">
-                        <Smartphone className="w-10 h-10 text-blue-400 mb-4" />
-                        <h3 className="text-xl font-bold text-white mb-2">QR Menu</h3>
-                        <p className="text-gray-400 mb-6">Scan and order from any device</p>
-                        <div className="bg-white/5 rounded-lg p-4 space-y-2">
-                            <div className="h-3 bg-white/10 rounded w-3/4"></div>
-                            <div className="h-3 bg-white/10 rounded w-1/2"></div>
-                            <div className="h-8 bg-blue-500/20 rounded mt-4"></div>
+                    <motion.div variants={fadeInUp} className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 rounded-3xl p-8 border border-white/10 hover:border-blue-500/30 transition group overflow-hidden relative">
+                        <div className="relative z-10">
+                            <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                                <Smartphone className="w-6 h-6 text-blue-400" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-white mb-2">QR Menu</h3>
+                            <p className="text-gray-400 mb-8">Scan and order from any device. No app required.</p>
                         </div>
-                    </div>
+                        <div className="relative mt-auto mx-auto w-48 rounded-[2rem] border-4 border-gray-800 overflow-hidden shadow-2xl transform group-hover:translate-y-2 transition-transform duration-500">
+                            <Image
+                                src="/dashboard-menu.png"
+                                alt="Mobile Menu"
+                                width={300}
+                                height={600}
+                                className="w-full h-auto"
+                            />
+                        </div>
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 blur-3xl rounded-full -ml-32 -mb-32 pointer-events-none"></div>
+                    </motion.div>
 
                     {/* Small Card - Multi-currency */}
-                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border border-white/10 hover:border-green-500/50 transition">
-                        <Globe className="w-10 h-10 text-green-400 mb-4" />
+                    <motion.div variants={fadeInUp} className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 rounded-3xl p-8 border border-white/10 hover:border-green-500/30 transition group">
+                        <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <Globe className="w-6 h-6 text-green-400" />
+                        </div>
                         <h3 className="text-xl font-bold text-white mb-2">Multi-currency</h3>
-                        <p className="text-gray-400">₹ • Kč • $ • €</p>
-                    </div>
+                        <p className="text-gray-400 mb-4">Support for global payments.</p>
+                        <div className="flex gap-3 text-2xl font-mono text-gray-500">
+                            <span className="text-green-400">₹</span>
+                            <span>$</span>
+                            <span>€</span>
+                            <span>Kč</span>
+                        </div>
+                    </motion.div>
 
                     {/* Small Card - Stripe */}
-                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border border-white/10 hover:border-purple-500/50 transition">
-                        <CreditCard className="w-10 h-10 text-purple-400 mb-4" />
+                    <motion.div variants={fadeInUp} className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 rounded-3xl p-8 border border-white/10 hover:border-purple-500/30 transition group">
+                        <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <CreditCard className="w-6 h-6 text-purple-400" />
+                        </div>
                         <h3 className="text-xl font-bold text-white mb-2">Stripe</h3>
-                        <p className="text-gray-400">Secure payments</p>
-                    </div>
+                        <p className="text-gray-400 mb-4">Secure, instant payouts.</p>
+                        <div className="flex items-center gap-2 text-sm text-purple-300 bg-purple-500/10 px-3 py-1 rounded-full w-fit">
+                            <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                            Connected
+                        </div>
+                    </motion.div>
 
                     {/* Small Card - Analytics */}
-                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border border-white/10 hover:border-orange-500/50 transition">
-                        <TrendingUp className="w-10 h-10 text-orange-400 mb-4" />
+                    <motion.div variants={fadeInUp} className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 rounded-3xl p-8 border border-white/10 hover:border-orange-500/30 transition group">
+                        <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <TrendingUp className="w-6 h-6 text-orange-400" />
+                        </div>
                         <h3 className="text-xl font-bold text-white mb-2">Analytics</h3>
-                        <p className="text-gray-400">Revenue insights</p>
-                    </div>
-                </div>
+                        <p className="text-gray-400 mb-4">Track revenue & growth.</p>
+                        <div className="h-12 flex items-end gap-1">
+                            {[40, 70, 50, 90, 60, 80].map((h, i) => (
+                                <div key={i} className="flex-1 bg-orange-500/20 rounded-t-sm hover:bg-orange-500/40 transition-colors" style={{ height: `${h}%` }}></div>
+                            ))}
+                        </div>
+                    </motion.div>
+                </motion.div>
             </section>
 
             {/* Pricing */}
-            <section id="pricing" className="max-w-7xl mx-auto px-6 py-20">
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl font-bold text-white mb-4">Simple pricing</h2>
-                    <p className="text-gray-400 text-lg">One plan, all features included</p>
+            <section id="pricing" className="max-w-7xl mx-auto px-6 py-32 relative">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent blur-3xl -z-10"></div>
+                <div className="text-center mb-20">
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="text-3xl md:text-5xl font-bold text-white mb-6"
+                    >
+                        Simple pricing
+                    </motion.h2>
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.1 }}
+                        className="text-gray-400 text-lg md:text-xl"
+                    >
+                        Start for free, upgrade when you grow
+                    </motion.p>
                 </div>
 
-                <div className="max-w-4xl mx-auto">
-                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border border-white/10">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="max-w-5xl mx-auto">
+                    <motion.div
+                        initial={{ opacity: 0, y: 40 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8 }}
+                        className="bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-xl rounded-3xl p-8 md:p-12 border border-white/10 shadow-2xl"
+                    >
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                             {/* Pricing Card */}
                             <div>
-                                <div className="text-sm text-gray-500 mb-2">Starting at</div>
-                                <div className="text-5xl font-bold text-white mb-2">{currencySymbol}{convertedPrice}</div>
-                                <div className="text-gray-400 mb-6">/ {billingCycle === 'monthly' ? 'month' : 'year'}</div>
+                                <div className="text-sm font-medium text-purple-400 mb-2 uppercase tracking-wider">Pro Plan</div>
+                                <div className="flex items-baseline gap-2 mb-2">
+                                    <div className="text-5xl md:text-6xl font-bold text-white">{currencySymbol}{convertedPrice}</div>
+                                    <div className="text-xl text-gray-400">/ {billingCycle === 'monthly' ? 'mo' : 'yr'}</div>
+                                </div>
+                                <div className="text-gray-400 mb-8">Everything you need to run your restaurant.</div>
 
-                                <div className="flex gap-2 mb-6">
+                                <div className="flex gap-1 p-1 bg-white/5 rounded-xl mb-8 w-fit">
                                     <button
                                         onClick={() => setBillingCycle('monthly')}
-                                        className={`px-4 py-2 rounded-lg transition ${billingCycle === 'monthly' ? 'bg-white text-black' : 'bg-white/5 hover:bg-white/10'}`}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${billingCycle === 'monthly' ? 'bg-white text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
                                     >
                                         Monthly
                                     </button>
                                     <button
                                         onClick={() => setBillingCycle('yearly')}
-                                        className={`px-4 py-2 rounded-lg transition ${billingCycle === 'yearly' ? 'bg-white text-black' : 'bg-white/5 hover:bg-white/10'}`}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${billingCycle === 'yearly' ? 'bg-white text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
                                     >
-                                        Yearly
+                                        Yearly <span className="text-xs text-green-600 ml-1">-17%</span>
                                     </button>
                                 </div>
 
-                                <div className="space-y-3 text-sm">
-                                    <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-purple-400" /> QR Menus & Ordering</div>
-                                    <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-purple-400" /> Kitchen Display System</div>
-                                    <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-purple-400" /> POS Printing</div>
-                                    <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-purple-400" /> Analytics Dashboard</div>
-                                    <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-purple-400" /> Multi-currency Support</div>
+                                <div className="space-y-4">
+                                    {[
+                                        'Unlimited QR Menus',
+                                        'Real-time Kitchen Display',
+                                        'POS & Receipt Printing',
+                                        'Advanced Analytics',
+                                        'Multi-currency Support',
+                                        '24/7 Priority Support'
+                                    ].map((feature, i) => (
+                                        <div key={i} className="flex items-center gap-3 text-gray-300">
+                                            <div className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center">
+                                                <Check className="w-3 h-3 text-purple-400" />
+                                            </div>
+                                            {feature}
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 
                             {/* Booking Form */}
-                            <div>
-                                <form onSubmit={handleBook} className="space-y-4">
+                            <div className="bg-white/5 rounded-2xl p-6 md:p-8 border border-white/5">
+                                <h3 className="text-xl font-bold text-white mb-6">Create your account</h3>
+                                <form onSubmit={handleBook} className="space-y-5">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-400 mb-2">Restaurant Name</label>
                                         <input
                                             type="text"
                                             value={companyName}
                                             onChange={(e) => setCompanyName(e.target.value)}
-                                            placeholder="Cafe Praga"
-                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition"
+                                            placeholder="e.g. Cafe Praga"
+                                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-400 mb-2">Email</label>
+                                        <label className="block text-sm font-medium text-gray-400 mb-2">Email Address</label>
                                         <input
                                             type="email"
                                             value={contactEmail}
                                             onChange={(e) => setContactEmail(e.target.value)}
-                                            placeholder="owner@restaurant.com"
-                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition"
+                                            placeholder="name@restaurant.com"
+                                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition"
                                         />
                                     </div>
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="w-full bg-white text-black rounded-lg px-6 py-3 font-semibold hover:bg-gray-100 transition disabled:opacity-50"
+                                        className="w-full bg-white text-black rounded-xl px-6 py-4 font-bold hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed mt-2"
                                     >
-                                        {loading ? 'Processing...' : 'Start free trial'}
+                                        {loading ? 'Processing...' : 'Start 14-day free trial'}
                                     </button>
+                                    <p className="text-xs text-center text-gray-500 mt-4">
+                                        By signing up, you agree to our Terms and Privacy Policy.
+                                    </p>
                                     {message && (
-                                        <div className={`p-3 rounded-lg text-sm ${message.type === 'error' ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'}`}>
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className={`p-4 rounded-xl text-sm ${message.type === 'error' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-green-500/10 text-green-400 border border-green-500/20'}`}
+                                        >
                                             {message.text}
-                                        </div>
+                                        </motion.div>
                                     )}
                                 </form>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </section>
 
             {/* Footer */}
-            <footer className="border-t border-white/10 mt-20">
-                <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div className="text-sm text-gray-500">© {new Date().getFullYear()} Order QR</div>
-                    <div className="flex items-center gap-6 text-sm">
-                        <a href="/privacy" className="text-gray-400 hover:text-white transition">Privacy</a>
-                        <a href="/terms" className="text-gray-400 hover:text-white transition">Terms</a>
-                        <a href="mailto:support@orderqr.in" className="text-gray-400 hover:text-white transition">Contact</a>
+            <footer className="border-t border-white/10 mt-20 bg-[#0B0C10]">
+                <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold">QR</div>
+                        <span className="text-gray-400 text-sm">© {new Date().getFullYear()} Order QR</span>
+                    </div>
+                    <div className="flex items-center gap-8 text-sm">
+                        <a href="/privacy" className="text-gray-500 hover:text-white transition">Privacy</a>
+                        <a href="/terms" className="text-gray-500 hover:text-white transition">Terms</a>
+                        <a href="mailto:support@orderqr.in" className="text-gray-500 hover:text-white transition">Contact</a>
                     </div>
                 </div>
             </footer>
