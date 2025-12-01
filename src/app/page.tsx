@@ -151,11 +151,12 @@ export default function LandingPage() {
             </nav>
 
             {/* Hero */}
-            <section className="pt-32 pb-20 lg:pt-48 lg:pb-32 px-6 overflow-visible">
-                <div className="max-w-7xl mx-auto text-center relative z-10 mb-20">
+            <section className="pt-32 pb-10 lg:pt-48 lg:pb-32 px-6 overflow-visible">
+                <div className="max-w-7xl mx-auto text-center relative z-10 mb-12 lg:mb-20">
                     <motion.div
                         initial="hidden"
-                        animate="visible"
+                        whileInView="visible"
+                        viewport={{ once: false }}
                         variants={fadeInUp}
                         className="inline-flex items-center gap-2 mb-8 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm font-medium"
                     >
@@ -168,7 +169,8 @@ export default function LandingPage() {
 
                     <motion.h1
                         initial="hidden"
-                        animate="visible"
+                        whileInView="visible"
+                        viewport={{ once: false }}
                         variants={fadeInUp}
                         className="text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-[1.1] mb-8"
                     >
@@ -181,7 +183,8 @@ export default function LandingPage() {
 
                     <motion.p
                         initial="hidden"
-                        animate="visible"
+                        whileInView="visible"
+                        viewport={{ once: false }}
                         variants={fadeInUp}
                         className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed"
                     >
@@ -191,7 +194,8 @@ export default function LandingPage() {
 
                     <motion.div
                         initial="hidden"
-                        animate="visible"
+                        whileInView="visible"
+                        viewport={{ once: false }}
                         variants={fadeInUp}
                         className="flex flex-col sm:flex-row items-center justify-center gap-4"
                     >
@@ -205,16 +209,17 @@ export default function LandingPage() {
                 </div>
 
                 {/* Linear-style 3D Hero Composition */}
-                <div className="relative w-full max-w-[1400px] mx-auto h-[600px] md:h-[800px] perspective-[2000px]">
+                <div className="relative w-full max-w-[1400px] mx-auto h-[400px] sm:h-[500px] md:h-[800px] perspective-[2000px]">
                     {/* Background Glow */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-purple-500/20 blur-[120px] rounded-full pointer-events-none"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[800px] h-[300px] md:h-[500px] bg-purple-500/20 blur-[80px] md:blur-[120px] rounded-full pointer-events-none"></div>
 
                     {/* Layer 1: Kitchen Display (Left, Back) */}
                     <motion.div
                         initial={{ opacity: 0, x: -100, rotateY: 15, rotateX: 5, z: -100 }}
-                        animate={{ opacity: 0.6, x: 0, rotateY: 15, rotateX: 5, z: -100 }}
+                        whileInView={{ opacity: 0.6, x: 0, rotateY: 15, rotateX: 5, z: -100 }}
+                        viewport={{ once: false }}
                         transition={{ duration: 1.2, delay: 0.2 }}
-                        className="absolute top-20 left-[-5%] md:left-[5%] w-[60%] md:w-[50%] rounded-xl shadow-2xl border border-white/5 overflow-hidden z-0"
+                        className="absolute top-10 md:top-20 left-[-5%] md:left-[5%] w-[60%] md:w-[50%] rounded-xl shadow-2xl border border-white/5 overflow-hidden z-0"
                     >
                         <Image src="/dashboard-kitchen.png" alt="Kitchen Display" width={1200} height={800} className="w-full h-auto" />
                         <div className="absolute inset-0 bg-gradient-to-r from-[#0B0C10] to-transparent opacity-80"></div>
@@ -223,7 +228,8 @@ export default function LandingPage() {
                     {/* Layer 2: Admin Dashboard (Center, Main) */}
                     <motion.div
                         initial={{ opacity: 0, y: 100, rotateX: 10 }}
-                        animate={{ opacity: 1, y: 0, rotateX: 10 }}
+                        whileInView={{ opacity: 1, y: 0, rotateX: 10 }}
+                        viewport={{ once: false }}
                         transition={{ duration: 1, delay: 0.4 }}
                         className="absolute top-0 left-[15%] md:left-[20%] w-[70%] md:w-[60%] rounded-xl shadow-2xl border border-white/10 overflow-hidden z-10 bg-[#0B0C10]"
                     >
@@ -233,25 +239,26 @@ export default function LandingPage() {
                     {/* Layer 3: Mobile Menu (Right, Front) */}
                     <motion.div
                         initial={{ opacity: 0, x: 100, rotateY: -15, rotateX: 5, z: 50 }}
-                        animate={{ opacity: 1, x: 0, rotateY: -15, rotateX: 5, z: 50 }}
+                        whileInView={{ opacity: 1, x: 0, rotateY: -15, rotateX: 5, z: 50 }}
+                        viewport={{ once: false }}
                         transition={{ duration: 1.2, delay: 0.6 }}
-                        className="absolute top-32 right-[-5%] md:right-[15%] w-[25%] md:w-[20%] rounded-[2rem] shadow-2xl border-[6px] border-[#1a1b20] overflow-hidden z-20 bg-black"
+                        className="absolute top-16 md:top-32 right-[-5%] md:right-[15%] w-[25%] md:w-[20%] rounded-[1rem] md:rounded-[2rem] shadow-2xl border-[3px] md:border-[6px] border-[#1a1b20] overflow-hidden z-20 bg-black"
                     >
                         <Image src="/dashboard-menu.png" alt="Mobile Menu" width={375} height={812} className="w-full h-auto" />
                     </motion.div>
 
                     {/* Bottom Fade Gradient */}
-                    <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#0B0C10] to-transparent z-30"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-20 md:h-40 bg-gradient-to-t from-[#0B0C10] to-transparent z-30"></div>
                 </div>
             </section>
 
             {/* Features Bento Grid */}
-            <section id="features" className="max-w-7xl mx-auto px-6 py-32 relative z-20 bg-[#0B0C10]">
-                <div className="text-center mb-20">
+            <section id="features" className="max-w-7xl mx-auto px-6 py-20 lg:py-32 relative z-20 bg-[#0B0C10]">
+                <div className="text-center mb-12 lg:mb-20">
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                        viewport={{ once: false }}
                         className="text-3xl md:text-5xl font-bold text-white mb-6"
                     >
                         Everything you need
@@ -259,7 +266,7 @@ export default function LandingPage() {
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                        viewport={{ once: false }}
                         transition={{ delay: 0.1 }}
                         className="text-gray-400 text-lg md:text-xl"
                     >
@@ -271,7 +278,7 @@ export default function LandingPage() {
                     variants={staggerContainer}
                     initial="hidden"
                     whileInView="visible"
-                    viewport={{ once: true }}
+                    viewport={{ once: false }}
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                 >
                     {/* Large Card - Kitchen Display */}
