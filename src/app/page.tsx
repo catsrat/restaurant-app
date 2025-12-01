@@ -328,7 +328,6 @@ export default function LandingPage() {
                     <motion.div
                         variants={fadeInUp}
                         className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 rounded-3xl p-8 border border-white/10 hover:border-blue-500/30 transition group overflow-hidden relative"
-                        whileHover="hover"
                     >
                         <div className="relative z-10">
                             <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
@@ -355,12 +354,10 @@ export default function LandingPage() {
                                 <div className="w-3 h-3 rounded-full bg-white/80"></div>
                             </div>
 
-                            {/* Interactive Scrolling Content */}
+                            {/* Auto-scrolling content */}
                             <motion.div
-                                variants={{
-                                    hover: { y: -180 }
-                                }}
-                                transition={{ duration: 2, ease: "easeInOut" }}
+                                animate={{ y: [0, -180, 0] }}
+                                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
                                 className="w-full"
                             >
                                 <Image
