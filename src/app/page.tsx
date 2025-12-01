@@ -151,7 +151,13 @@ export default function LandingPage() {
             </nav>
 
             {/* Hero */}
-            <section className="pt-32 lg:pt-48 px-6 overflow-visible">
+            <section className="pt-32 lg:pt-48 px-6 overflow-hidden relative">
+                {/* Animated Background Grid */}
+                <div className="absolute inset-0 z-0 pointer-events-none perspective-grid-container">
+                    <div className="perspective-grid"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-transparent to-transparent"></div>
+                </div>
+
                 <div className="max-w-7xl mx-auto text-center relative z-10 mb-12 lg:mb-20">
                     <motion.div
                         initial="hidden"
