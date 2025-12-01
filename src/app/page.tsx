@@ -209,7 +209,7 @@ export default function LandingPage() {
                 </div>
 
                 {/* Linear-style 3D Hero Composition */}
-                <div className="relative w-full max-w-[1400px] mx-auto h-[300px] sm:h-[500px] md:h-[800px] perspective-[2000px]">
+                <div className="relative w-full max-w-[1400px] mx-auto h-[300px] sm:h-[500px] md:h-[600px] perspective-[2000px]">
                     {/* Background Glow */}
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[800px] h-[300px] md:h-[500px] bg-purple-500/20 blur-[80px] md:blur-[120px] rounded-full pointer-events-none"></div>
 
@@ -253,7 +253,7 @@ export default function LandingPage() {
             </section>
 
             {/* Features Bento Grid */}
-            <section id="features" className="max-w-7xl mx-auto px-6 py-10 lg:py-32 relative z-20 bg-[#0B0C10]">
+            <section id="features" className="max-w-7xl mx-auto px-6 py-10 lg:py-20 relative z-20 bg-[#0B0C10]">
                 <div className="text-center mb-12 lg:mb-20">
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
