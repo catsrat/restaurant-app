@@ -333,11 +333,14 @@ export default function LandingPage() {
                             <h3 className="text-2xl font-bold text-white mb-2">QR Menu</h3>
                             <p className="text-gray-400 mb-8">Scan and order from any device. No app required.</p>
                         </div>
-                        <div className="relative mt-auto mx-auto w-48 h-64 rounded-[2rem] border-4 border-gray-800 overflow-hidden shadow-2xl bg-black">
+                        <div className="relative mt-auto mx-auto w-56 h-72 rounded-[2.5rem] border-[6px] border-gray-800 overflow-hidden shadow-2xl bg-black">
+                            {/* Notch */}
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-gray-800 rounded-b-xl z-20"></div>
+
                             {/* Auto-scrolling content */}
                             <motion.div
-                                animate={{ y: [0, -100, 0] }}
-                                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                                animate={{ y: [0, -120, 0] }}
+                                transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
                             >
                                 <Image
                                     src="/dashboard-menu.png"
