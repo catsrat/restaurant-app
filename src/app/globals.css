@@ -168,14 +168,14 @@
   left: -50%;
   top: -50%;
   background-image:
-    linear-gradient(to right, rgba(168, 85, 247, 0.2) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(168, 85, 247, 0.2) 1px, transparent 1px);
+    linear-gradient(to right, rgba(168, 85, 247, 0.4) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(168, 85, 247, 0.4) 1px, transparent 1px);
   background-size: 60px 60px;
   transform-origin: 50% 100%;
   transform: rotateX(60deg);
   animation: grid-move 20s linear infinite;
-  mask-image: linear-gradient(to bottom, transparent 5%, black 40%, black 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 5%, black 40%, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 10%, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 10%, black 100%);
 }
 
 @keyframes grid-move {
