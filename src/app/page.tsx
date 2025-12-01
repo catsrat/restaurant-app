@@ -316,8 +316,8 @@ export default function LandingPage() {
                             {/* Animated Overlay for "New Order" simulation */}
                             <motion.div
                                 initial={{ opacity: 0 }}
-                                whileInView={{ opacity: [0, 0.5, 0] }}
-                                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                                whileInView={{ opacity: [0, 0.3, 0] }}
+                                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 4, ease: [0.4, 0, 0.2, 1] }}
                                 className="absolute inset-0 bg-purple-500/10 pointer-events-none"
                             />
                         </div>
@@ -341,7 +341,7 @@ export default function LandingPage() {
                         <div className="relative flex-1 -mx-8 -mb-8 overflow-hidden border-t border-white/5 bg-black/20 mask-image-b-fade min-h-[240px]">
                             <motion.div
                                 animate={{ y: [0, -240, 0] }}
-                                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                                transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
                                 className="w-full h-full"
                             >
                                 <Image
@@ -369,21 +369,21 @@ export default function LandingPage() {
                         <div className="flex gap-3 text-2xl font-mono text-gray-500 h-8 overflow-hidden">
                             <motion.div
                                 animate={{ y: [0, -32, -64, -96, 0] }}
-                                transition={{ duration: 4, repeat: Infinity, times: [0, 0.25, 0.5, 0.75, 1], ease: "easeInOut" }}
+                                transition={{ duration: 6, repeat: Infinity, ease: [0.45, 0, 0.55, 1] }}
                                 className="flex flex-col text-green-400"
                             >
                                 <span>₹</span><span>$</span><span>€</span><span>Kč</span><span>₹</span>
                             </motion.div>
                             <motion.div
                                 animate={{ y: [-32, -64, -96, 0, -32] }}
-                                transition={{ duration: 4, repeat: Infinity, times: [0, 0.25, 0.5, 0.75, 1], ease: "easeInOut" }}
+                                transition={{ duration: 6, repeat: Infinity, ease: [0.45, 0, 0.55, 1] }}
                                 className="flex flex-col"
                             >
                                 <span>$</span><span>€</span><span>Kč</span><span>₹</span><span>$</span>
                             </motion.div>
                             <motion.div
                                 animate={{ y: [-64, -96, 0, -32, -64] }}
-                                transition={{ duration: 4, repeat: Infinity, times: [0, 0.25, 0.5, 0.75, 1], ease: "easeInOut" }}
+                                transition={{ duration: 6, repeat: Infinity, ease: [0.45, 0, 0.55, 1] }}
                                 className="flex flex-col"
                             >
                                 <span>€</span><span>Kč</span><span>₹</span><span>$</span><span>€</span>
@@ -402,9 +402,9 @@ export default function LandingPage() {
                             <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse z-10"></div>
                             <span className="z-10">Connected</span>
                             <motion.div
-                                animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
-                                transition={{ duration: 2, repeat: Infinity }}
-                                className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 bg-purple-500/20 rounded-full"
+                                animate={{ scale: [1, 2, 1], opacity: [0.6, 0, 0.6] }}
+                                transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut" }}
+                                className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 bg-purple-500/30 rounded-full"
                             />
                         </div>
                     </motion.div>
@@ -423,7 +423,12 @@ export default function LandingPage() {
                                     initial={{ height: "0%" }}
                                     whileInView={{ height: `${h}%` }}
                                     viewport={{ once: false }}
-                                    transition={{ duration: 0.5, delay: i * 0.1 }}
+                                    transition={{
+                                        type: "spring",
+                                        stiffness: 100,
+                                        damping: 15,
+                                        delay: i * 0.08
+                                    }}
                                     className="flex-1 bg-orange-500/20 rounded-t-sm hover:bg-orange-500/40 transition-colors"
                                 ></motion.div>
                             ))}
