@@ -333,23 +333,35 @@ export default function LandingPage() {
                             <h3 className="text-2xl font-bold text-white mb-2">QR Menu</h3>
                             <p className="text-gray-400 mb-8">Scan and order from any device. No app required.</p>
                         </div>
-                        <div className="relative mt-auto mx-auto w-52 h-80 rounded-[2.5rem] border-[6px] border-gray-800 overflow-hidden shadow-2xl bg-black">
+                        <div className="relative mt-auto mx-auto w-56 h-[22rem] rounded-[2.5rem] border-[8px] border-[#121212] ring-1 ring-white/10 overflow-hidden shadow-2xl bg-black">
                             {/* Notch */}
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-5 bg-gray-800 rounded-b-lg z-20"></div>
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-[#121212] rounded-b-[1rem] z-20"></div>
+
+                            {/* Status Bar Time (Fake) */}
+                            <div className="absolute top-2 left-6 text-[10px] font-medium text-white/80 z-20">9:41</div>
+                            {/* Status Bar Icons (Fake) */}
+                            <div className="absolute top-2 right-6 flex gap-1 z-20">
+                                <div className="w-3 h-3 rounded-full border border-white/30"></div>
+                                <div className="w-3 h-3 rounded-full bg-white/80"></div>
+                            </div>
 
                             {/* Auto-scrolling content */}
                             <motion.div
-                                animate={{ y: [0, -120, 0] }}
-                                transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                                animate={{ y: [0, -180, 0] }}
+                                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                                className="w-full"
                             >
                                 <Image
                                     src="/dashboard-menu.png"
                                     alt="Mobile Menu"
                                     width={300}
                                     height={600}
-                                    className="w-full h-auto"
+                                    className="w-full h-auto object-cover"
                                 />
                             </motion.div>
+
+                            {/* Home Indicator */}
+                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-20 h-1 bg-white/50 rounded-full z-20"></div>
                         </div>
                         <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 blur-3xl rounded-full -ml-32 -mb-32 pointer-events-none"></div>
                     </motion.div>
