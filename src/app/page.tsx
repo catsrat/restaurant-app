@@ -84,7 +84,7 @@ export default function LandingPage() {
     };
 
     return (
-        <div className="bg-[#0B0C10] text-gray-300 min-h-screen font-sans selection:bg-purple-500/30">
+        <div className="bg-[#0B0C10] text-gray-300 min-h-screen font-sans selection:bg-purple-500/30 overflow-x-hidden">
             {/* Nav */}
             <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0B0C10]/80 backdrop-blur-md border-b border-white/5">
                 <div className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
@@ -110,8 +110,8 @@ export default function LandingPage() {
             </nav>
 
             {/* Hero */}
-            <section className="pt-32 pb-20 lg:pt-48 lg:pb-32 px-6 overflow-hidden">
-                <div className="max-w-7xl mx-auto text-center relative z-10">
+            <section className="pt-32 pb-20 lg:pt-48 lg:pb-32 px-6 overflow-visible">
+                <div className="max-w-7xl mx-auto text-center relative z-10 mb-20">
                     <motion.div
                         initial="hidden"
                         animate="visible"
@@ -161,74 +161,46 @@ export default function LandingPage() {
                             See features
                         </a>
                     </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.8, duration: 1 }}
-                        className="mt-8 text-sm text-gray-500"
-                    >
-                        14-day free trial • No credit card required
-                    </motion.div>
                 </div>
 
-                {/* Hero Mockup with "Ordering by QR" Animation */}
-                <div className="mt-20 max-w-6xl mx-auto relative perspective-1000 h-[600px] md:h-[800px] flex items-center justify-center">
-                    <div className="absolute inset-0 bg-gradient-to-t from-purple-500/20 via-blue-500/10 to-transparent blur-3xl -z-10 transform scale-150 opacity-50"></div>
+                {/* Linear-style 3D Hero Composition */}
+                <div className="relative w-full max-w-[1400px] mx-auto h-[600px] md:h-[800px] perspective-[2000px]">
+                    {/* Background Glow */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-purple-500/20 blur-[120px] rounded-full pointer-events-none"></div>
 
-                    {/* Dashboard (Background) */}
+                    {/* Layer 1: Kitchen Display (Left, Back) */}
                     <motion.div
-                        initial={{ opacity: 0, y: 100, rotateX: 20, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
-                        transition={{ duration: 1, delay: 0.2 }}
-                        className="absolute top-20 left-0 right-0 rounded-2xl border border-white/10 shadow-2xl overflow-hidden bg-[#0B0C10] ring-1 ring-white/10 z-0"
+                        initial={{ opacity: 0, x: -100, rotateY: 15, rotateX: 5, z: -100 }}
+                        animate={{ opacity: 0.6, x: 0, rotateY: 15, rotateX: 5, z: -100 }}
+                        transition={{ duration: 1.2, delay: 0.2 }}
+                        className="absolute top-20 left-[-5%] md:left-[5%] w-[60%] md:w-[50%] rounded-xl shadow-2xl border border-white/5 overflow-hidden z-0"
                     >
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                        <Image
-                            src="/dashboard-counter.png"
-                            alt="Counter Dashboard"
-                            width={1920}
-                            height={1080}
-                            className="w-full h-auto object-cover opacity-80"
-                            priority
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-transparent to-transparent opacity-40"></div>
+                        <Image src="/dashboard-kitchen.png" alt="Kitchen Display" width={1200} height={800} className="w-full h-auto" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#0B0C10] to-transparent opacity-80"></div>
                     </motion.div>
 
-                    {/* Phone (Foreground) - Simulating QR Scan/Order */}
+                    {/* Layer 2: Admin Dashboard (Center, Main) */}
                     <motion.div
-                        initial={{ opacity: 0, y: 200, x: 100 }}
-                        animate={{ opacity: 1, y: 50, x: 50 }}
-                        transition={{ duration: 1, delay: 0.6, type: "spring" }}
-                        className="absolute bottom-0 right-10 md:right-20 w-64 md:w-80 z-20"
+                        initial={{ opacity: 0, y: 100, rotateX: 10 }}
+                        animate={{ opacity: 1, y: 0, rotateX: 10 }}
+                        transition={{ duration: 1, delay: 0.4 }}
+                        className="absolute top-0 left-[15%] md:left-[20%] w-[70%] md:w-[60%] rounded-xl shadow-2xl border border-white/10 overflow-hidden z-10 bg-[#0B0C10]"
                     >
-                        <div className="relative rounded-[2.5rem] border-8 border-gray-900 bg-gray-900 shadow-2xl overflow-hidden">
-                            {/* Notch */}
-                            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-gray-900 rounded-b-2xl z-30"></div>
-
-                            {/* Screen Content */}
-                            <Image
-                                src="/dashboard-menu.png"
-                                alt="Mobile Menu"
-                                width={375}
-                                height={812}
-                                className="w-full h-auto"
-                            />
-
-                            {/* Scan Animation Overlay */}
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: [0, 1, 0] }}
-                                transition={{ duration: 2, delay: 1.5, repeat: Infinity, repeatDelay: 5 }}
-                                className="absolute inset-0 bg-black/60 flex items-center justify-center z-40"
-                            >
-                                <div className="text-center">
-                                    <QrCode className="w-16 h-16 text-white mx-auto mb-4 animate-pulse" />
-                                    <div className="text-white font-bold">Scanning QR...</div>
-                                </div>
-                            </motion.div>
-                        </div>
+                        <Image src="/dashboard-counter.png" alt="Admin Dashboard" width={1920} height={1080} className="w-full h-auto" />
                     </motion.div>
+
+                    {/* Layer 3: Mobile Menu (Right, Front) */}
+                    <motion.div
+                        initial={{ opacity: 0, x: 100, rotateY: -15, rotateX: 5, z: 50 }}
+                        animate={{ opacity: 1, x: 0, rotateY: -15, rotateX: 5, z: 50 }}
+                        transition={{ duration: 1.2, delay: 0.6 }}
+                        className="absolute top-32 right-[-5%] md:right-[15%] w-[25%] md:w-[20%] rounded-[2rem] shadow-2xl border-[6px] border-[#1a1b20] overflow-hidden z-20 bg-black"
+                    >
+                        <Image src="/dashboard-menu.png" alt="Mobile Menu" width={375} height={812} className="w-full h-auto" />
+                    </motion.div>
+
+                    {/* Bottom Fade Gradient */}
+                    <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#0B0C10] to-transparent z-30"></div>
                 </div>
             </section>
 
