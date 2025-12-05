@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { ChefHat, Smartphone, CreditCard, TrendingUp, Globe, Zap, Check, QrCode, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Script from 'next/script';
 
 export default function LandingPage() {
     const baseMonthlyINR = 2999;
@@ -170,7 +171,7 @@ export default function LandingPage() {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
                         </span>
-                        Modern QR Ordering Platform
+                        QR Order Platform
                     </motion.div>
 
                     <motion.h1
@@ -180,10 +181,10 @@ export default function LandingPage() {
                         variants={fadeInUp}
                         className="text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-[1.1] mb-8"
                     >
-                        Restaurant ordering,
+                        QR Order System
                         <br />
                         <span className="bg-gradient-to-r from-purple-400 via-blue-500 to-purple-400 bg-clip-text text-transparent bg-300% animate-gradient">
-                            reimagined
+                            for Restaurants
                         </span>
                     </motion.h1>
 
@@ -194,7 +195,7 @@ export default function LandingPage() {
                         variants={fadeInUp}
                         className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed"
                     >
-                        QR menus, real-time kitchen display, and seamless payments.
+                        Complete QR order solution with digital menus, real-time kitchen display, and seamless payments.
                         Everything you need to run a modern restaurant efficiently.
                     </motion.p>
 
@@ -580,6 +581,40 @@ export default function LandingPage() {
                     </div>
                 </div>
             </footer>
+
+            {/* Structured Data for SEO */}
+            <Script
+                id="structured-data"
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "SoftwareApplication",
+                        "name": "Order QR - QR Order System",
+                        "applicationCategory": "BusinessApplication",
+                        "offers": {
+                            "@type": "Offer",
+                            "price": "2999",
+                            "priceCurrency": "INR"
+                        },
+                        "description": "QR order system for modern restaurants. Complete solution for QR ordering, digital menus, kitchen display system, and point of sale.",
+                        "operatingSystem": "Web Browser",
+                        "featureList": [
+                            "QR order and digital menu system",
+                            "Real-time kitchen display",
+                            "POS and receipt printing",
+                            "Multi-currency support",
+                            "Advanced analytics",
+                            "Table ordering system"
+                        ],
+                        "aggregateRating": {
+                            "@type": "AggregateRating",
+                            "ratingValue": "4.9",
+                            "ratingCount": "127"
+                        }
+                    })
+                }}
+            />
         </div>
     );
 }

@@ -9,11 +9,11 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "Order QR | QR Ordering Software & Digital Menus",
+    default: "QR Order System | Order QR - Digital Menu & Ordering Software",
     template: "%s | Order QR"
   },
-  description: "The best QR ordering software for restaurants. Order QR offers digital menus, table ordering, KDS, and POS printing in one simple platform.",
-  keywords: ["restaurant management system", "qr code menu", "digital menu", "kitchen display system", "KDS", "restaurant pos", "order qr", "table ordering system", "qr ordering software", "online ordering system"],
+  description: "QR order system for modern restaurants. Order QR offers seamless QR ordering, digital menus, kitchen display, and POS printing in one powerful platform.",
+  keywords: ["qr order", "qr order system", "qr ordering", "order qr", "restaurant management system", "qr code menu", "digital menu", "kitchen display system", "KDS", "restaurant pos", "table ordering system", "qr ordering software", "online ordering system"],
   authors: [{ name: "Order QR Team" }],
   creator: "Order QR",
   publisher: "Order QR",
@@ -23,8 +23,8 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "Order QR | QR Ordering Software & Digital Menus",
-    description: "Streamline your restaurant with Order QR - the top-rated QR ordering software and management system.",
+    title: "QR Order System | Order QR - Digital Menu & Ordering Software",
+    description: "QR order system for modern restaurants. Streamline operations with digital menus, table ordering, and real-time kitchen display.",
     url: "https://www.orderqr.in",
     siteName: "Order QR",
     locale: "en_US",
@@ -32,8 +32,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Order QR | QR Ordering Software & Digital Menus",
-    description: "Streamline your restaurant with Order QR - the top-rated QR ordering software and management system.",
+    title: "QR Order System | Order QR - Digital Menu & Ordering Software",
+    description: "QR order system for modern restaurants. Streamline operations with digital menus, table ordering, and real-time kitchen display.",
   },
   robots: {
     index: true,
