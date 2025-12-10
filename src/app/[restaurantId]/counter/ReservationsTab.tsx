@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar, Clock, Users, Phone, Mail, MessageSquare, Settings, RefreshCw, Check, X, UserCheck, CheckCircle2, XCircle } from 'lucide-react';
+import { Calendar, Clock, Users, Phone, Mail, MessageSquare, Settings, RefreshCw, Check, X, UserCheck, CheckCircle2, XCircle, Plus } from 'lucide-react';
 import { Reservation, ReservationSettings, Table } from '@/types';
 import { formatReservationDateTime, formatDate, getStatusColor, getStatusDisplayName } from '@/lib/reservations';
 import { supabase } from '@/lib/supabase';
@@ -20,8 +20,21 @@ export function ReservationsTab({ restaurantId, tables }: ReservationsTabProps) 
     const [settings, setSettings] = useState<ReservationSettings | null>(null);
     const [loading, setLoading] = useState(true);
     const [showSettings, setShowSettings] = useState(false);
+    const [showNewBooking, setShowNewBooking] = useState(false);
     const [filterDate, setFilterDate] = useState<string>(formatDate(new Date()));
     const [filterStatus, setFilterStatus] = useState<string>('all');
+
+    // New booking form state
+    const [newBooking, setNewBooking] = useState({
+        customerName: '',
+        customerEmail: '',
+        customerPhone: '',
+        partySize: 2,
+        reservationDate: formatDate(new Date()),
+        reservationTime: '',
+        specialRequests: '',
+        tableId: ''
+    });
 
     useEffect(() => {
         fetchReservations();
@@ -135,6 +148,54 @@ export function ReservationsTab({ restaurantId, tables }: ReservationsTabProps) 
         }
     }
 
+    async function createReservation() {
+        if (!newBooking.customerName || !newBooking.reservationTime) {
+            alert('Please fill in customer name and time');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/reservations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    restaurantId,
+                    customerName: newBooking.customerName,
+                    customerEmail: newBooking.customerEmail || null,
+                    customerPhone: newBooking.customerPhone || null,
+                    partySize: newBooking.partySize,
+                    reservationDate: newBooking.reservationDate,
+                    reservationTime: newBooking.reservationTime,
+                    specialRequests: newBooking.specialRequests || null,
+                    tableId: newBooking.tableId || null,
+                }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setShowNewBooking(false);
+                setNewBooking({
+                    customerName: '',
+                    customerEmail: '',
+                    customerPhone: '',
+                    partySize: 2,
+                    reservationDate: formatDate(new Date()),
+                    reservationTime: '',
+                    specialRequests: '',
+                    tableId: ''
+                });
+                fetchReservations();
+                alert('Reservation created successfully!');
+            } else {
+                alert(`Error: ${data.error || 'Failed to create reservation'}`);
+            }
+        } catch (error) {
+            console.error('Error creating reservation:', error);
+            alert('Failed to create reservation');
+        }
+    }
+
     const todayReservations = reservations.filter(r => r.reservation_date === formatDate(new Date()));
     const upcomingToday = todayReservations.filter(r => ['pending', 'confirmed'].includes(r.status));
     const seatedNow = todayReservations.filter(r => r.status === 'seated');
@@ -175,6 +236,14 @@ export function ReservationsTab({ restaurantId, tables }: ReservationsTabProps) 
                     <div className="flex justify-between items-center">
                         <CardTitle>Manage Reservations</CardTitle>
                         <div className="flex gap-2">
+                            <Button
+                                size="sm"
+                                className="bg-purple-600 hover:bg-purple-700 text-white"
+                                onClick={() => setShowNewBooking(true)}
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                New Booking
+                            </Button>
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -318,6 +387,118 @@ export function ReservationsTab({ restaurantId, tables }: ReservationsTabProps) 
                                         />
                                         <span>Require phone</span>
                                     </label>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* New Booking Form */}
+                    {showNewBooking && (
+                        <Card className="mb-4 bg-purple-50 border-purple-200">
+                            <CardHeader>
+                                <div className="flex justify-between items-center">
+                                    <CardTitle className="text-lg">Create New Reservation</CardTitle>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setShowNewBooking(false)}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>Customer Name *</Label>
+                                        <Input
+                                            value={newBooking.customerName}
+                                            onChange={(e) => setNewBooking({ ...newBooking, customerName: e.target.value })}
+                                            placeholder="John Doe"
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label>Party Size *</Label>
+                                        <Input
+                                            type="number"
+                                            value={newBooking.partySize}
+                                            onChange={(e) => setNewBooking({ ...newBooking, partySize: parseInt(e.target.value) })}
+                                            min="1"
+                                            max={settings?.max_party_size || 12}
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label>Date *</Label>
+                                        <Input
+                                            type="date"
+                                            value={newBooking.reservationDate}
+                                            onChange={(e) => setNewBooking({ ...newBooking, reservationDate: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label>Time *</Label>
+                                        <Input
+                                            type="time"
+                                            value={newBooking.reservationTime}
+                                            onChange={(e) => setNewBooking({ ...newBooking, reservationTime: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label>Email</Label>
+                                        <Input
+                                            type="email"
+                                            value={newBooking.customerEmail}
+                                            onChange={(e) => setNewBooking({ ...newBooking, customerEmail: e.target.value })}
+                                            placeholder="john@example.com"
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label>Phone</Label>
+                                        <Input
+                                            type="tel"
+                                            value={newBooking.customerPhone}
+                                            onChange={(e) => setNewBooking({ ...newBooking, customerPhone: e.target.value })}
+                                            placeholder="+1 234 567 8900"
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label>Assign Table (Optional)</Label>
+                                        <select
+                                            value={newBooking.tableId}
+                                            onChange={(e) => setNewBooking({ ...newBooking, tableId: e.target.value })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                        >
+                                            <option value="">No table assigned</option>
+                                            {tables.map(table => (
+                                                <option key={table.id} value={table.id}>{table.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label>Special Requests</Label>
+                                    <textarea
+                                        value={newBooking.specialRequests}
+                                        onChange={(e) => setNewBooking({ ...newBooking, specialRequests: e.target.value })}
+                                        placeholder="Any dietary restrictions or special occasions?"
+                                        rows={2}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                    />
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        onClick={createReservation}
+                                        className="flex-1 bg-purple-600 hover:bg-purple-700"
+                                    >
+                                        Create Reservation
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setShowNewBooking(false)}
+                                        className="flex-1"
+                                    >
+                                        Cancel
+                                    </Button>
                                 </div>
                             </CardContent>
                         </Card>
