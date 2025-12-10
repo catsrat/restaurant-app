@@ -107,19 +107,17 @@ export function ReservationsTab({ restaurantId, tables }: ReservationsTabProps) 
                 // Update table status when seating or completing
                 if (reservation?.table_id) {
                     if (status === 'seated') {
-                        // Mark table as occupied
-                        await fetch(`/api/tables/${reservation.table_id}`, {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ status: 'occupied' }),
-                        });
+                        // Mark table as occupied using Supabase directly
+                        await supabase
+                            .from('tables')
+                            .update({ status: 'occupied' })
+                            .eq('id', reservation.table_id);
                     } else if (status === 'completed' || status === 'cancelled' || status === 'no-show') {
-                        // Mark table as available
-                        await fetch(`/api/tables/${reservation.table_id}`, {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ status: 'available' }),
-                        });
+                        // Mark table as available using Supabase directly
+                        await supabase
+                            .from('tables')
+                            .update({ status: 'available' })
+                            .eq('id', reservation.table_id);
                     }
                 }
                 fetchReservations();
