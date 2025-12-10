@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Utensils, QrCode, List, DollarSign, BarChart3, Trash2, Plus, BadgeCheck, Clock, CheckCircle2, ChefHat, Printer, Download, TrendingUp, Image as ImageIcon, LogOut, Package, Settings } from 'lucide-react';
+import { Utensils, QrCode, List, DollarSign, BarChart3, Trash2, Plus, BadgeCheck, Clock, CheckCircle2, ChefHat, Printer, Download, TrendingUp, Image as ImageIcon, LogOut, Package, Settings, Calendar } from 'lucide-react';
 import { Receipt } from '@/components/Receipt';
 import { cn } from '@/lib/utils';
 import AdminGuard from '@/components/AdminGuard';
@@ -21,6 +21,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { InventoryTab } from './InventoryTab';
 import { SettingsTab } from './SettingsTab';
 import { RecipeEditor } from './RecipeEditor';
+import { ReservationsTab } from './ReservationsTab';
 
 import SubscriptionGuard from '@/components/SubscriptionGuard';
 
@@ -40,7 +41,7 @@ function CounterContent() {
     const { orders, updateOrderStatus, menuItems, addMenuItem, deleteMenuItem, tables, addTable, deleteTable, markTablePaid, resetTableStatus, addOrder, banners, addBanner, deleteBanner, categories, addCategory, deleteCategory, applyDiscount, taxSettings, restaurantName, isLoading } = useOrder();
     const { user, signOut } = useAuth();
     const { format, currency } = useCurrency();
-    const [activeTab, setActiveTab] = useState<'orders' | 'tables' | 'menu' | 'sales' | 'qrcodes' | 'analytics' | 'banners' | 'inventory' | 'settings'>('orders');
+    const [activeTab, setActiveTab] = useState<'orders' | 'tables' | 'menu' | 'sales' | 'qrcodes' | 'analytics' | 'banners' | 'inventory' | 'settings' | 'reservations'>('orders');
 
     // POS State
     const [isPOSOpen, setIsPOSOpen] = useState(false);
@@ -602,6 +603,9 @@ function CounterContent() {
                         <Button variant={activeTab === 'settings' ? 'default' : 'outline'} onClick={() => setActiveTab('settings')} className="whitespace-nowrap">
                             <Settings className="h-4 w-4 mr-2" /> Settings
                         </Button>
+                        <Button variant={activeTab === 'reservations' ? 'default' : 'outline'} onClick={() => setActiveTab('reservations')} className="whitespace-nowrap">
+                            <Calendar className="h-4 w-4 mr-2" /> Reservations
+                        </Button>
                     </div>
                 </div>
             </header>
@@ -1100,6 +1104,10 @@ function CounterContent() {
 
             {activeTab === 'settings' && (
                 <SettingsTab />
+            )}
+
+            {activeTab === 'reservations' && (
+                <ReservationsTab restaurantId={restaurantId} tables={tables} />
             )}
 
             {editingRecipeItem && (

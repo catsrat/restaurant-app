@@ -147,3 +147,45 @@ export interface MenuItemIngredient {
     quantity_required: number;
     created_at: Date;
 }
+
+// Reservation System Types
+export type ReservationStatus = 'pending' | 'confirmed' | 'seated' | 'completed' | 'cancelled' | 'no-show';
+
+export interface Reservation {
+    id: string;
+    restaurant_id: string;
+    table_id?: string;
+    customer_name: string;
+    customer_email?: string;
+    customer_phone?: string;
+    party_size: number;
+    reservation_date: string; // YYYY-MM-DD
+    reservation_time: string; // HH:MM
+    status: ReservationStatus;
+    special_requests?: string;
+    created_at: Date;
+    updated_at: Date;
+}
+
+export interface ReservationSettings {
+    restaurant_id: string;
+    is_enabled: boolean;
+    advance_booking_days: number;
+    slot_duration_minutes: number;
+    opening_time: string; // HH:MM
+    closing_time: string; // HH:MM
+    max_party_size: number;
+    require_phone: boolean;
+    require_email: boolean;
+    auto_confirm: boolean;
+    booking_buffer_minutes: number;
+    created_at?: Date;
+    updated_at?: Date;
+}
+
+export interface TimeSlot {
+    time: string; // HH:MM
+    available: boolean;
+    remainingCapacity?: number;
+}
+
