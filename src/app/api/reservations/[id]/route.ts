@@ -4,10 +4,10 @@ import { supabase } from '@/lib/supabase';
 // GET - Get single reservation
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         const { data, error } = await supabase
             .from('reservations')
@@ -35,10 +35,10 @@ export async function GET(
 // PATCH - Update reservation
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = params;
+        const { id } = await params;
         const body = await request.json();
         const {
             status,
@@ -125,10 +125,10 @@ export async function PATCH(
 // DELETE - Cancel reservation
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         // Instead of deleting, we'll update status to 'cancelled'
         const { data, error } = await supabase
