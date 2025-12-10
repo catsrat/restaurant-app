@@ -95,7 +95,7 @@ export function ReservationsTab({ restaurantId, tables }: ReservationsTabProps) 
         };
     }
 
-    async function updateReservationStatus(id: string, status: string) {
+    async function updateReservationStatus(id: string, status: string, reservation?: Reservation) {
         try {
             const res = await fetch(`/api/reservations/${id}`, {
                 method: 'PATCH',
@@ -104,6 +104,24 @@ export function ReservationsTab({ restaurantId, tables }: ReservationsTabProps) 
             });
 
             if (res.ok) {
+                // Update table status when seating or completing
+                if (reservation?.table_id) {
+                    if (status === 'seated') {
+                        // Mark table as occupied
+                        await fetch(`/api/tables/${reservation.table_id}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: 'occupied' }),
+                        });
+                    } else if (status === 'completed' || status === 'cancelled' || status === 'no-show') {
+                        // Mark table as available
+                        await fetch(`/api/tables/${reservation.table_id}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: 'available' }),
+                        });
+                    }
+                }
                 fetchReservations();
             }
         } catch (error) {
@@ -570,7 +588,7 @@ export function ReservationsTab({ restaurantId, tables }: ReservationsTabProps) 
                                                         <Button
                                                             size="sm"
                                                             className="bg-green-600 hover:bg-green-700"
-                                                            onClick={() => updateReservationStatus(reservation.id, 'confirmed')}
+                                                            onClick={() => updateReservationStatus(reservation.id, 'confirmed', reservation)}
                                                         >
                                                             <Check className="h-4 w-4 mr-1" />
                                                             Confirm
@@ -579,7 +597,7 @@ export function ReservationsTab({ restaurantId, tables }: ReservationsTabProps) 
                                                             size="sm"
                                                             variant="outline"
                                                             className="border-red-300 text-red-600 hover:bg-red-50"
-                                                            onClick={() => updateReservationStatus(reservation.id, 'cancelled')}
+                                                            onClick={() => updateReservationStatus(reservation.id, 'cancelled', reservation)}
                                                         >
                                                             <X className="h-4 w-4 mr-1" />
                                                             Cancel
@@ -591,7 +609,7 @@ export function ReservationsTab({ restaurantId, tables }: ReservationsTabProps) 
                                                         <Button
                                                             size="sm"
                                                             className="bg-blue-600 hover:bg-blue-700"
-                                                            onClick={() => updateReservationStatus(reservation.id, 'seated')}
+                                                            onClick={() => updateReservationStatus(reservation.id, 'seated', reservation)}
                                                         >
                                                             <UserCheck className="h-4 w-4 mr-1" />
                                                             Seat
@@ -612,7 +630,7 @@ export function ReservationsTab({ restaurantId, tables }: ReservationsTabProps) 
                                                             size="sm"
                                                             variant="outline"
                                                             className="border-orange-300 text-orange-600 hover:bg-orange-50"
-                                                            onClick={() => updateReservationStatus(reservation.id, 'no-show')}
+                                                            onClick={() => updateReservationStatus(reservation.id, 'no-show', reservation)}
                                                         >
                                                             <XCircle className="h-4 w-4 mr-1" />
                                                             No Show
@@ -623,7 +641,7 @@ export function ReservationsTab({ restaurantId, tables }: ReservationsTabProps) 
                                                     <Button
                                                         size="sm"
                                                         className="bg-green-600 hover:bg-green-700"
-                                                        onClick={() => updateReservationStatus(reservation.id, 'completed')}
+                                                        onClick={() => updateReservationStatus(reservation.id, 'completed', reservation)}
                                                     >
                                                         <CheckCircle2 className="h-4 w-4 mr-1" />
                                                         Complete
@@ -638,6 +656,6 @@ export function ReservationsTab({ restaurantId, tables }: ReservationsTabProps) 
                     )}
                 </CardContent>
             </Card>
-        </div>
+        </div >
     );
 }
