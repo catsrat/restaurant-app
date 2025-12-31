@@ -197,14 +197,6 @@ function CounterContent() {
             }
         });
 
-        const isGerman = currency === 'EUR';
-
-        // ... Existing calculations ...
-        const taxRate = isGerman ? 19.0 : (taxSettings?.tax_rate || 0); // Enforce 19% for DE, else DB value
-
-        // ... (Keep existing calc logic but beware of overriding) ...
-        // Actually, let's keep the logic simple:
-        // German layout NEEDS specific fields. Standard layout is simpler.
 
         printWindow.document.write(`
         <html>
