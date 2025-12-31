@@ -251,9 +251,24 @@ function CounterContent() {
                 <span>${format(netAmount)}</span>
               </div>
               <div class="info-row">
+                <span>${isGerman ? 'Netto' : 'Net'}</span>
+                <span>${format(netAmount)}</span>
+              </div>
+              ${currency === 'INR' ? `
+              <div class="info-row">
+                <span>SGST ${(taxRate / 2).toFixed(1)}%</span>
+                <span>${format(taxAmount / 2)}</span>
+              </div>
+              <div class="info-row">
+                <span>CGST ${(taxRate / 2).toFixed(1)}%</span>
+                <span>${format(taxAmount / 2)}</span>
+              </div>
+              ` : `
+              <div class="info-row">
                 <span>${isGerman ? 'MwSt' : 'Tax'} ${(taxRate).toFixed(0)}%</span>
                 <span>${format(taxAmount)}</span>
               </div>
+              `}
               ${discountAmount > 0 ? `
               <div class="info-row" style="color: red;">
                 <span>${isGerman ? 'Rabatt' : 'Discount'}</span>
