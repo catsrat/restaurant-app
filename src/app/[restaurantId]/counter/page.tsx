@@ -155,12 +155,28 @@ function CounterContent() {
         const discountAmount = groupOrders.reduce((sum, order) => sum + (order.discount || 0), 0);
         const finalTotal = total - discountAmount;
 
-        // Calculate Tax
+        // Calculate Tax & Totals (Unified Logic)
         const isGerman = currency === 'EUR';
-        const taxRate = isGerman ? 19.0 : (taxSettings?.tax_rate || 0);
+        const isInr = currency === 'INR';
+        const taxRate = isGerman ? 19.0 : (isInr ? 5.0 : (taxSettings?.tax_rate || 0));
 
-        const netAmount = finalTotal / (1 + (taxRate / 100));
-        const taxAmount = finalTotal - netAmount;
+        let netAmount = 0;
+        let taxAmount = 0;
+        let grandTotal = 0;
+
+        if (isInr) {
+            // Exclusive Tax (Add-on) for India
+            // finalTotal (Sum of items from DB) is effectively the Net Price.
+            netAmount = finalTotal;
+            taxAmount = finalTotal * (taxRate / 100);
+            grandTotal = finalTotal + taxAmount;
+        } else {
+            // Inclusive Tax (German/Default)
+            // finalTotal IS Gross.
+            grandTotal = finalTotal;
+            netAmount = finalTotal / (1 + (taxRate / 100));
+            taxAmount = finalTotal - netAmount;
+        }
 
         const isPaid = groupOrders.every(o => o.status === 'paid');
         const receiptNumber = groupOrders[0]?.receipt_number;
@@ -197,27 +213,7 @@ function CounterContent() {
             }
         });
 
-        const isGerman = currency === 'EUR';
-        const isInr = currency === 'INR';
-        const taxRate = isGerman ? 19.0 : (isInr ? 5.0 : (taxSettings?.tax_rate || 0));
 
-        let netAmount = 0;
-        let taxAmount = 0;
-        let grandTotal = 0;
-
-        if (isInr) {
-            // Exclusive Tax (Add-on) for India
-            // finalTotal (Sum of items from DB) is effectively the Net Price.
-            netAmount = finalTotal;
-            taxAmount = finalTotal * (taxRate / 100);
-            grandTotal = finalTotal + taxAmount;
-        } else {
-            // Inclusive Tax (German/Default)
-            // finalTotal IS Gross.
-            grandTotal = finalTotal;
-            netAmount = finalTotal / (1 + (taxRate / 100));
-            taxAmount = finalTotal - netAmount;
-        }
 
         printWindow.document.write(`
         <html>

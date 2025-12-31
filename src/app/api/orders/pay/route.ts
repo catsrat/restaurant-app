@@ -96,7 +96,7 @@ export async function POST(req: Request) {
         if (isGerman) {
             tseSerial = `TSE-DEMO-${restaurantId.slice(0, 4)}-${new Date().getFullYear()}`;
             tseCounter = nextReceiptNumber;
-            tseSignature = Buffer.from(`${tseSerial}|${tseCounter}|${totalAmount}|${timestamp}`).toString('base64');
+            tseSignature = Buffer.from(`${tseSerial}|${tseCounter}|${finalTotalAmount}|${timestamp}`).toString('base64');
         }
 
         // 5. Update Orders
