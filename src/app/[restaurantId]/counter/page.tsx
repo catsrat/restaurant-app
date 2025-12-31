@@ -1077,8 +1077,15 @@ function CounterContent() {
                                                     ? (tables.find(t => t.id === String(order.tableId))?.name || `Table ${order.tableId} `)
                                                     : `Takeaway(${order.contactNumber})`}
                                             </div>
-                                            <div className="text-sm text-gray-500 mb-1">
-                                                {new Date(order.createdAt).toLocaleTimeString()}
+                                            <div className="flex gap-2 items-center mb-1">
+                                                <div className="text-sm text-gray-500">
+                                                    {new Date(order.createdAt).toLocaleTimeString()}
+                                                </div>
+                                                {order.payment_method && (
+                                                    <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${order.payment_method === 'card' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                                                        {order.payment_method === 'card' ? 'Card' : 'Cash'}
+                                                    </span>
+                                                )}
                                             </div>
                                             <div className="text-sm text-gray-600">
                                                 {order.items.map((item, idx) => (
