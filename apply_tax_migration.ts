@@ -22,7 +22,7 @@ async function applyMigration() {
             await client.end();
             console.log("✅ Migration applied successfully via Direct DB Connection.");
             return;
-        } catch (err) {
+        } catch (err: any) {
             console.error("⚠️ Failed with direct connection:", err.message);
         }
     } else {
