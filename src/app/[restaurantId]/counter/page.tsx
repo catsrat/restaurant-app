@@ -24,6 +24,13 @@ import { RecipeEditor } from './RecipeEditor';
 import { ReservationsTab } from './ReservationsTab';
 
 import SubscriptionGuard from '@/components/SubscriptionGuard';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog"
 
 export default function CounterPage() {
     return (
@@ -108,34 +115,67 @@ function CounterContent() {
         }
     };
 
+    // Payment Dialog State
+    const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'cash' | 'card'>('cash');
+    const [pendingPaymentOrder, setPendingPaymentOrder] = useState<{ tableId?: string, orderIds?: string, type: 'dine-in' | 'takeaway' } | null>(null);
+
+    const openPaymentDialog = (type: 'dine-in' | 'takeaway', tableId?: string, orderIds?: string) => {
+        setPendingPaymentOrder({ type, tableId, orderIds });
+        setIsPaymentDialogOpen(true);
+    };
+
+    const handleConfirmPayment = async () => {
+        if (!pendingPaymentOrder) return;
+
+        if (pendingPaymentOrder.type === 'dine-in' && pendingPaymentOrder.tableId) {
+            await markTablePaid(pendingPaymentOrder.tableId, selectedPaymentMethod);
+        } else if (pendingPaymentOrder.orderIds) {
+            // For takeaway, update individually (simplified for now as backend API handles table granularity primarily)
+            // If we have mixed usage, we might need a specific API for single order payment with method
+            // For now assuming we just mark paid via existing context method which might need update for single orders
+            // BUT, the current API /api/orders/pay is table-centric. 
+            // Let's just update the status for takeaway for now as before, but improved context needed for full compliance there.
+            // For this task, focusing on Table/Dine-In compliance primarily.
+            const ids = pendingPaymentOrder.orderIds.split(',');
+            ids.forEach(id => updateOrderStatus(id, 'paid'));
+        }
+
+        setIsPaymentDialogOpen(false);
+        setPendingPaymentOrder(null);
+    };
+
     // Printing Logic
     const [printingData, setPrintingData] = useState<{ tableName: string, orders: typeof orders, totalAmount: number } | null>(null);
     const receiptRef = useRef<HTMLDivElement>(null);
 
-    const handlePrint = (tableName: string, groupOrders: typeof orders, totalAmount: number) => {
+    const handlePrint = async (tableName: string, groupOrders: typeof orders, totalAmount: number) => {
         // Calculate totals including discount
         const total = groupOrders.reduce((sum, order) => sum + order.items.reduce((s, i) => s + i.price * i.quantity, 0), 0);
         const discountAmount = groupOrders.reduce((sum, order) => sum + (order.discount || 0), 0);
         const finalTotal = total - discountAmount;
-        // Calculate Tax
-        const taxRate = taxSettings?.tax_rate || 0;
-        const taxAmount = (finalTotal) * (taxRate / 100); // Tax on discounted amount
-        const grandTotal = finalTotal + taxAmount;
 
-        // Use the state-based approach which triggers a re-render and then prints
-        // This is often more reliable than window.open in some frameworks/browsers
-        setPrintingData({
-            tableName,
-            orders: groupOrders,
-            totalAmount: grandTotal
-        });
+        // Calculate Tax (19% Included)
+        // Net = Gross / 1.19
+        const taxRate = taxSettings?.tax_rate || 19.0;
+        const netAmount = finalTotal / (1 + (taxRate / 100));
+        const taxAmount = finalTotal - netAmount;
 
-        // We need to generate the HTML for the print window here if we want to stick to the window.open approach 
-        // BUT the user said "it stopped", implying a crash or failure.
-        // Let's try to be robust. If we use window.open, let's make sure we don't rely on external state.
+        const isPaid = groupOrders.every(o => o.status === 'paid');
+        const receiptNumber = groupOrders[0]?.receipt_number;
+        const tseSignature = groupOrders[0]?.tse_signature;
+        const tseSerial = groupOrders[0]?.tse_serial;
+        const tseCounter = groupOrders[0]?.tse_counter;
+        const orderDate = new Date().toLocaleString('de-DE');
 
-        // Actually, let's go back to the window.open approach but make it safer.
-        // The previous error might be due to `window.open` returning null (popup blocker).
+        let qrCodeUrl = '';
+        if (tseSignature) {
+            try {
+                qrCodeUrl = await QRCodeLib.toDataURL(tseSignature);
+            } catch (e) {
+                console.error("Failed to generate QR", e);
+            }
+        }
 
         const printWindow = window.open('', '_blank');
         if (!printWindow) {
@@ -145,65 +185,102 @@ function CounterContent() {
 
         const billItems = groupOrders.flatMap(o => o.items);
 
+        // Aggregate identical items for cleaner receipt
+        const aggregatedItems: any[] = [];
+        billItems.forEach(item => {
+            const existing = aggregatedItems.find(i => i.name === item.name && i.price === item.price);
+            if (existing) {
+                existing.quantity += item.quantity;
+            } else {
+                aggregatedItems.push({ ...item });
+            }
+        });
+
         printWindow.document.write(`
         <html>
           <head>
-            <title>Bill - ${tableName}</title>
+            <title>${isPaid ? 'Beleg' : 'Zwischenrechnung'} - ${tableName}</title>
             <style>
-              body { font-family: monospace; padding: 20px; }
-              .header { text-align: center; margin-bottom: 20px; }
-              .item { display: flex; justify-content: space-between; margin-bottom: 5px; }
-              .total { border-top: 1px dashed #000; margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between; font-weight: bold; }
-              .tax-row { display: flex; justify-content: space-between; font-size: 0.9em; color: #555; margin-bottom: 2px; }
+              body { font-family: 'Courier New', monospace; font-size: 12px; max-width: 80mm; margin: 0 auto; padding: 10px; color: #000; }
+              .header { text-align: center; margin-bottom: 15px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
+              .header h2 { margin: 0 0 5px 0; font-size: 16px; }
+              .info-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
+              .item-table { width: 100%; margin-bottom: 10px; }
+              .item-table td { vertical-align: top; }
+              .qty { width: 30px; }
+              .price { text-align: right; }
+              .total-block { border-top: 1px dashed #000; margin-top: 10px; padding-top: 5px; }
+              .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-top: 5px; }
+              .tax-block { margin-top: 10px; border-top: 1px dotted #ccc; padding-top: 5px; font-size: 10px; }
+              .tse-block { margin-top: 15px; border-top: 1px dashed #000; padding-top: 10px; text-align: center; word-break: break-all; font-size: 10px; }
+              .footer { text-align: center; margin-top: 20px; font-size: 10px; }
+              .qr-code { display: block; margin: 10px auto; width: 120px; height: 120px; }
             </style>
           </head>
           <body>
             <div class="header">
               <h2>${restaurantName}</h2>
-              <p>Date: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
-              <p>${tableName}</p>
-              ${taxSettings?.tax_number ? `<p>Tax ID: ${taxSettings.tax_number}</p>` : ''}
+              <p>Musterstraße 1, 10115 Berlin</p>
+              ${taxSettings?.tax_number ? `<p>St-Nr.: ${taxSettings.tax_number}</p>` : ''}
+              <br/>
+              <p>${isPaid ? 'BEWIRTUNGSBELEG' : 'ZWISCHENRECHNUNG'}</p>
             </div>
-            ${billItems.map((item: any) => `
-              <div class="item">
-                <span>${item.quantity}x ${item.name}</span>
-                <span>${format(item.price * item.quantity)}</span>
+
+            <div class="info-row">
+              <span>Tisch: ${tableName}</span>
+              <span>${orderDate}</span>
+            </div>
+            ${receiptNumber ? `<div class="info-row"><span>Beleg-Nr.:</span><span>#${receiptNumber}</span></div>` : ''}
+            <br/>
+
+            <table class="item-table">
+              ${aggregatedItems.map((item: any) => `
+                <tr>
+                  <td class="qty">${item.quantity}x</td>
+                  <td>${item.name}</td>
+                  <td class="price">${format(item.price * item.quantity)}</td>
+                </tr>
+              `).join('')}
+            </table>
+            
+            <div class="total-block">
+              <div class="info-row">
+                <span>Netto</span>
+                <span>${format(netAmount)}</span>
               </div>
-            `).join('')}
-            <div class="total">
-              <span>Subtotal</span>
-              <span>${format(total)}</span>
+              <div class="info-row">
+                <span>MwSt ${(taxRate).toFixed(0)}%</span>
+                <span>${format(taxAmount)}</span>
+              </div>
+              ${discountAmount > 0 ? `
+              <div class="info-row" style="color: red;">
+                <span>Rabatt</span>
+                <span>-${format(Number(discountAmount))}</span>
+              </div>` : ''}
+              <div class="total-row">
+                <span>GESAMT / EUR</span>
+                <span>${format(finalTotal + (isPaid ? 0 : 0))}</span> 
+              </div>
             </div>
-            ${discountAmount > 0 ? `
-            <div class="item" style="color: red;">
-              <span>Discount</span>
-              <span>-${format(Number(discountAmount))}</span>
+
+            ${isPaid && tseSignature ? `
+            <div class="tse-block">
+               <strong>TSE-Transaktion</strong><br/>
+               Start: ${groupOrders[0]?.createdAt ? new Date(groupOrders[0].createdAt).toISOString() : new Date().toISOString()}<br/>
+               Ende: ${new Date().toISOString()}<br/>
+               Seriennummer: ${tseSerial}<br/>
+               Signaturzähler: ${tseCounter}<br/>
+               <img src="${qrCodeUrl}" class="qr-code"/>
+               <br/>
+               Signatur: ${tseSignature.substring(0, 20)}...
             </div>
             ` : ''}
 
-            ${taxRate > 0 ? (
-                taxSettings.tax_name?.toUpperCase() === 'GST' && currency === 'INR' ? `
-                        <div class="tax-row">
-                            <span>CGST (${taxRate / 2}%)</span>
-                            <span>${format(taxAmount / 2)}</span>
-                        </div>
-                        <div class="tax-row">
-                            <span>SGST (${taxRate / 2}%)</span>
-                            <span>${format(taxAmount / 2)}</span>
-                        </div>
-                    ` : `
-                        <div class="tax-row">
-                            <span>${taxSettings.tax_name || 'Tax'} (${taxRate}%)</span>
-                            <span>${format(taxAmount)}</span>
-                        </div>
-                    `
-            ) : ''}
-
-            <div class="total" style="border-top: 2px solid #000; font-size: 1.2em;">
-              <span>TOTAL</span>
-              <span>${format(grandTotal)}</span>
+            <div class="footer">
+              <p>Vielen Dank für Ihren Besuch!</p>
+              <p>Es bediente Sie: Admin</p>
             </div>
-            <div style="text-align: center; margin-top: 20px;">Thank you for dining with us!<br>Please visit again.</div>
+
             <script>
                 window.onload = function() { window.print(); }
             </script>
@@ -708,11 +785,9 @@ function CounterContent() {
                                                 className="w-full bg-green-700 hover:bg-green-800"
                                                 onClick={() => {
                                                     if (groupOrders[0].orderType === 'dine-in' && groupOrders[0].tableId && groupOrders[0].tableId !== 'null') {
-                                                        // Pass the Table ID (UUID) not the name
-                                                        markTablePaid(groupOrders[0].tableId);
+                                                        openPaymentDialog('dine-in', groupOrders[0].tableId);
                                                     } else {
-                                                        // For takeaway or bugged orders (no table), just mark all as paid
-                                                        groupOrders.forEach(o => updateOrderStatus(o.id, 'paid'));
+                                                        openPaymentDialog('takeaway', undefined, groupOrders.map(o => o.id).join(','));
                                                     }
                                                 }}
                                             >
@@ -1214,6 +1289,29 @@ function CounterContent() {
                         </div>
                     </div>
                 )}
+            {/* Payment Dialog */}
+            <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Confirm Payment</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Label className="mb-2 block">Payment Method</Label>
+                        <select
+                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            value={selectedPaymentMethod}
+                            onChange={(e) => setSelectedPaymentMethod(e.target.value as any)}
+                        >
+                            <option value="cash">Cash (Bar)</option>
+                            <option value="card">Card (Karte)</option>
+                        </select>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={handleConfirmPayment}>Confirm Payment</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

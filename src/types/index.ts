@@ -63,6 +63,15 @@ export interface Order {
     contactNumber?: string;
     orderType: OrderType;
     discount?: number;
+    // German Tax & TSE Fields
+    receipt_number?: number;
+    tse_signature?: string;
+    tse_serial?: string;
+    tse_counter?: number;
+    tax_rate?: number;
+    tax_amount?: number;
+    net_amount?: number;
+    payment_method?: string;
 }
 
 export interface MenuItem {

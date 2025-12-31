@@ -24,7 +24,7 @@ interface OrderContextType {
     tables: Table[];
     addTable: (name: string) => Promise<void>;
     deleteTable: (id: string) => Promise<void>;
-    markTablePaid: (tableId: string) => Promise<void>;
+    markTablePaid: (tableId: string, paymentMethod?: string) => Promise<void>;
     resetTableStatus: (tableId: string) => Promise<void>;
     // Banner Management
     banners: Banner[];
@@ -215,6 +215,13 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                 discount: o.discount || 0,
                 orderType: o.order_type, // Map snake_case to camelCase
                 createdAt: new Date(o.created_at),
+                receipt_number: o.receipt_number,
+                tse_signature: o.tse_signature,
+                tse_serial: o.tse_serial,
+                tse_counter: o.tse_counter,
+                tax_rate: o.tax_rate,
+                tax_amount: o.tax_amount,
+                net_amount: o.net_amount,
                 items: (Array.isArray(o.items) ? o.items : []).map((i: any) => {
                     const menuItemName = Array.isArray(i.menu_item)
                         ? i.menu_item[0]?.name
@@ -706,7 +713,7 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         }
     };
 
-    const markTablePaid = async (tableId: string) => {
+    const markTablePaid = async (tableId: string, paymentMethod: string = 'cash') => {
         // Find table by ID (more robust than name)
         const table = tables.find(t => t.id === tableId);
         if (!table) {
@@ -719,29 +726,33 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         setTables(prev => prev.map(t => t.id === table.id ? { ...t, status: 'available' } : t));
 
         try {
-            // 1. Mark orders as paid
-            const { error: orderError } = await supabase
-                .from('orders')
-                .update({ status: 'paid' })
-                .eq('table_id', table.id)
-                .neq('status', 'paid');
+            console.log("Processing payment via API...");
+            const response = await fetch('/api/orders/pay', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tableId: table.id,
+                    restaurantId,
+                    paymentMethod
+                })
+            });
 
-            if (orderError) throw orderError;
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Payment API failed');
+            }
 
-            // 2. Free the table
-            const { error: tableError } = await supabase
-                .from('tables')
-                .update({ status: 'available' })
-                .eq('id', table.id);
+            const result = await response.json();
+            console.log("Payment processed successfully:", result);
 
-            if (tableError) throw tableError;
-
-            console.log("Table marked available successfully via supabase client");
+            // Trigger refresh to get the updated orders with receipt numbers
+            await fetchData();
 
         } catch (error: any) {
             console.error("Error in markTablePaid:", error);
             alert(`Failed to mark table paid: ${error.message}`);
-            // Revert optimistic update if needed (omitted for simplicity)
+            // Revert optimistic update? (omitted for simplicity, but ideally should revert)
+            fetchData();
         }
     };
 
