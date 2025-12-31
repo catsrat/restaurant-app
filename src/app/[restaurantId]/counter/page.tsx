@@ -125,24 +125,29 @@ function CounterContent() {
         setIsPaymentDialogOpen(true);
     };
 
+    const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+
     const handleConfirmPayment = async () => {
         if (!pendingPaymentOrder) return;
 
-        if (pendingPaymentOrder.type === 'dine-in' && pendingPaymentOrder.tableId) {
-            await markTablePaid(pendingPaymentOrder.tableId, selectedPaymentMethod);
-        } else if (pendingPaymentOrder.orderIds) {
-            // For takeaway, update individually (simplified for now as backend API handles table granularity primarily)
-            // If we have mixed usage, we might need a specific API for single order payment with method
-            // For now assuming we just mark paid via existing context method which might need update for single orders
-            // BUT, the current API /api/orders/pay is table-centric. 
-            // Let's just update the status for takeaway for now as before, but improved context needed for full compliance there.
-            // For this task, focusing on Table/Dine-In compliance primarily.
-            const ids = pendingPaymentOrder.orderIds.split(',');
-            ids.forEach(id => updateOrderStatus(id, 'paid'));
+        setIsPaymentProcessing(true);
+        try {
+            if (pendingPaymentOrder.type === 'dine-in' && pendingPaymentOrder.tableId) {
+                await markTablePaid(pendingPaymentOrder.tableId, selectedPaymentMethod);
+            } else if (pendingPaymentOrder.orderIds) {
+                const ids = pendingPaymentOrder.orderIds.split(',');
+                // Process these in parallel or sequence
+                await Promise.all(ids.map(id => updateOrderStatus(id, 'paid')));
+            }
+            // Close dialog on success
+            setIsPaymentDialogOpen(false);
+            setPendingPaymentOrder(null);
+        } catch (e) {
+            console.error("Payment confirmation failed", e);
+            // Optionally alert if markTablePaid didn't already
+        } finally {
+            setIsPaymentProcessing(false);
         }
-
-        setIsPaymentDialogOpen(false);
-        setPendingPaymentOrder(null);
     };
 
     // Printing Logic
@@ -1337,8 +1342,10 @@ function CounterContent() {
                         </select>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)}>Cancel</Button>
-                        <Button onClick={handleConfirmPayment}>Confirm Payment</Button>
+                        <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)} disabled={isPaymentProcessing}>Cancel</Button>
+                        <Button onClick={handleConfirmPayment} disabled={isPaymentProcessing}>
+                            {isPaymentProcessing ? 'Processing...' : 'Confirm Payment'}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
