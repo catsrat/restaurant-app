@@ -155,9 +155,10 @@ function CounterContent() {
         const discountAmount = groupOrders.reduce((sum, order) => sum + (order.discount || 0), 0);
         const finalTotal = total - discountAmount;
 
-        // Calculate Tax (19% Included)
-        // Net = Gross / 1.19
-        const taxRate = taxSettings?.tax_rate || 19.0;
+        // Calculate Tax
+        const isGerman = currency === 'EUR';
+        const taxRate = isGerman ? 19.0 : (taxSettings?.tax_rate || 0);
+
         const netAmount = finalTotal / (1 + (taxRate / 100));
         const taxAmount = finalTotal - netAmount;
 
@@ -196,10 +197,19 @@ function CounterContent() {
             }
         });
 
+        const isGerman = currency === 'EUR';
+
+        // ... Existing calculations ...
+        const taxRate = isGerman ? 19.0 : (taxSettings?.tax_rate || 0); // Enforce 19% for DE, else DB value
+
+        // ... (Keep existing calc logic but beware of overriding) ...
+        // Actually, let's keep the logic simple:
+        // German layout NEEDS specific fields. Standard layout is simpler.
+
         printWindow.document.write(`
         <html>
           <head>
-            <title>${isPaid ? 'Beleg' : 'Zwischenrechnung'} - ${tableName}</title>
+            <title>${isPaid ? (isGerman ? 'Beleg' : 'Receipt') : (isGerman ? 'Zwischenrechnung' : 'Bill')} - ${tableName}</title>
             <style>
               body { font-family: 'Courier New', monospace; font-size: 12px; max-width: 80mm; margin: 0 auto; padding: 10px; color: #000; }
               .header { text-align: center; margin-bottom: 15px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
@@ -221,16 +231,16 @@ function CounterContent() {
             <div class="header">
               <h2>${restaurantName}</h2>
               <p>Musterstraße 1, 10115 Berlin</p>
-              ${taxSettings?.tax_number ? `<p>St-Nr.: ${taxSettings.tax_number}</p>` : ''}
+              ${taxSettings?.tax_number ? `<p>${isGerman ? 'St-Nr.' : 'Tax ID'}: ${taxSettings.tax_number}</p>` : ''}
               <br/>
-              <p>${isPaid ? 'BEWIRTUNGSBELEG' : 'ZWISCHENRECHNUNG'}</p>
+              <p>${isPaid ? (isGerman ? 'BEWIRTUNGSBELEG' : 'RECEIPT') : (isGerman ? 'ZWISCHENRECHNUNG' : 'PROVISIONAL BILL')}</p>
             </div>
 
             <div class="info-row">
-              <span>Tisch: ${tableName}</span>
+              <span>${isGerman ? 'Tisch' : 'Table'}: ${tableName}</span>
               <span>${orderDate}</span>
             </div>
-            ${receiptNumber ? `<div class="info-row"><span>Beleg-Nr.:</span><span>#${receiptNumber}</span></div>` : ''}
+            ${receiptNumber ? `<div class="info-row"><span>${isGerman ? 'Beleg-Nr.' : 'Receipt #'}:</span><span>#${receiptNumber}</span></div>` : ''}
             <br/>
 
             <table class="item-table">
@@ -245,25 +255,25 @@ function CounterContent() {
             
             <div class="total-block">
               <div class="info-row">
-                <span>Netto</span>
+                <span>${isGerman ? 'Netto' : 'Net'}</span>
                 <span>${format(netAmount)}</span>
               </div>
               <div class="info-row">
-                <span>MwSt ${(taxRate).toFixed(0)}%</span>
+                <span>${isGerman ? 'MwSt' : 'Tax'} ${(taxRate).toFixed(0)}%</span>
                 <span>${format(taxAmount)}</span>
               </div>
               ${discountAmount > 0 ? `
               <div class="info-row" style="color: red;">
-                <span>Rabatt</span>
+                <span>${isGerman ? 'Rabatt' : 'Discount'}</span>
                 <span>-${format(Number(discountAmount))}</span>
               </div>` : ''}
               <div class="total-row">
-                <span>GESAMT / EUR</span>
+                <span>${isGerman ? 'GESAMT' : 'TOTAL'} / ${currency}</span>
                 <span>${format(finalTotal + (isPaid ? 0 : 0))}</span> 
               </div>
             </div>
 
-            ${isPaid && tseSignature ? `
+            ${isGerman && isPaid && tseSignature ? `
             <div class="tse-block">
                <strong>TSE-Transaktion</strong><br/>
                Start: ${groupOrders[0]?.createdAt ? new Date(groupOrders[0].createdAt).toISOString() : new Date().toISOString()}<br/>
@@ -277,8 +287,8 @@ function CounterContent() {
             ` : ''}
 
             <div class="footer">
-              <p>Vielen Dank für Ihren Besuch!</p>
-              <p>Es bediente Sie: Admin</p>
+              <p>${isGerman ? 'Vielen Dank für Ihren Besuch!' : 'Thank you for your visit!'}</p>
+              <p>${isGerman ? 'Es bediente Sie' : 'Server'}: Admin</p>
             </div>
 
             <script>
@@ -489,7 +499,7 @@ function CounterContent() {
         const printWindow = window.open('', '', 'width=300,height=600');
         if (printWindow) {
             printWindow.document.write(`
-                <html>
+        < html >
                 <head>
                     <title>Bill #${order.id}</title>
                     <style>
@@ -552,8 +562,8 @@ function CounterContent() {
                         <p>Thank you for dining with us!</p>
                     </div>
                 </body>
-                </html>
-            `);
+                </html >
+        `);
             printWindow.document.close();
             printWindow.print();
         }
@@ -571,7 +581,7 @@ function CounterContent() {
         const printWindow = window.open('', '_blank');
         if (printWindow) {
             printWindow.document.write(`
-         <html>
+        < html >
            <head>
              <title>Sales Report - ${selectedDate}</title>
              <style>
@@ -616,8 +626,8 @@ function CounterContent() {
                <div>Total Revenue: ${format(totalRevenue)}</div>
              </div>
            </body>
-         </html>
-       `);
+         </html >
+        `);
             printWindow.document.close();
             printWindow.print();
         }
@@ -1039,8 +1049,8 @@ function CounterContent() {
                                         <div>
                                             <div className="font-medium">
                                                 {order.orderType === 'dine-in'
-                                                    ? (tables.find(t => t.id === String(order.tableId))?.name || `Table ${order.tableId}`)
-                                                    : `Takeaway (${order.contactNumber})`}
+                                                    ? (tables.find(t => t.id === String(order.tableId))?.name || `Table ${order.tableId} `)
+                                                    : `Takeaway(${order.contactNumber})`}
                                             </div>
                                             <div className="text-sm text-gray-500 mb-1">
                                                 {new Date(order.createdAt).toLocaleTimeString()}
@@ -1323,8 +1333,8 @@ function QRCodeCard({ tableName, restaurantId, isTakeaway = false }: { tableName
     useEffect(() => {
         if (canvasRef.current) {
             const url = isTakeaway
-                ? `${window.location.origin}/${restaurantId}/menu/Takeaway?type=takeaway`
-                : `${window.location.origin}/${restaurantId}/menu/${tableName}`;
+                ? `${window.location.origin} /${restaurantId}/menu / Takeaway ? type = takeaway`
+                : `${window.location.origin} /${restaurantId}/menu / ${tableName} `;
             QRCodeLib.toCanvas(canvasRef.current, url, {
                 width: 256,
                 margin: 2,
@@ -1343,7 +1353,7 @@ function QRCodeCard({ tableName, restaurantId, isTakeaway = false }: { tableName
         if (canvasRef.current) {
             const url = canvasRef.current.toDataURL('image/png');
             const link = document.createElement('a');
-            link.download = `table-${tableName}-qr.png`;
+            link.download = `table - ${tableName} -qr.png`;
             link.href = url;
             link.click();
         }
@@ -1354,7 +1364,7 @@ function QRCodeCard({ tableName, restaurantId, isTakeaway = false }: { tableName
             <CardHeader>
                 <CardTitle className="text-2xl">Table {tableName}</CardTitle>
                 <CardDescription className="text-xs break-all">
-                    {typeof window !== 'undefined' && `${window.location.origin}/${restaurantId}/menu/${tableName}`}
+                    {typeof window !== 'undefined' && `${window.location.origin} /${restaurantId}/menu / ${tableName} `}
                 </CardDescription>
                 {typeof window !== 'undefined' && window.location.hostname === 'localhost' && (
                     <div className="bg-yellow-50 text-yellow-800 text-xs p-2 rounded mt-2 text-left">

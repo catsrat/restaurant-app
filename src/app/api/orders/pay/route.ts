@@ -29,17 +29,47 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'No unpaid orders found for this table' }, { status: 404 });
         }
 
+        // 1b. Fetch Restaurant Currency & Settings
+        const { data: restaurant, error: restError } = await supabaseAdmin
+            .from('restaurants')
+            .select('currency, tax_rate')
+            .eq('id', restaurantId)
+            .single();
+
+        if (restError) throw restError;
+        const currency = restaurant?.currency || 'USD';
+        const isGerman = currency === 'EUR';
+
         // 2. Calculate Totals
         const totalAmount = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
-        const taxRate = 19.0; // Standard DE VAT
-        const taxFactor = taxRate / 100;
-        // Gross = Net * (1 + rate)  => Net = Gross / (1 + rate)
-        const netAmount = totalAmount / (1 + taxFactor);
-        const taxAmount = totalAmount - netAmount;
 
-        // 3. Generate Receipt Number (Simulated Sequence)
-        // In a real app, use a DB Sequence or strict locking. 
-        // Here we query the max receipt_number for the restaurant.
+        let taxRate = 0;
+        let netAmount = totalAmount;
+        let taxAmount = 0;
+
+        if (isGerman) {
+            taxRate = 19.0; // Standard DE VAT
+            const taxFactor = taxRate / 100;
+            // Gross = Net * (1 + rate)  => Net = Gross / (1 + rate)
+            netAmount = totalAmount / (1 + taxFactor);
+            taxAmount = totalAmount - netAmount;
+        } else {
+            // Generic Tax Logic (e.g. valid for USD/others if tax_rate is set in DB)
+            // Assuming the total_amount in orders usually includes tax or is just base price? 
+            // The current app seems to treat total_amount as final.
+            // Let's just use the DB tax rate if available, otherwise 0.
+            taxRate = restaurant?.tax_rate || 0;
+            if (taxRate > 0) {
+                // Backward compat: if generic tax logic existed, keep it. 
+                // For now, let's assume non-EUR just records the total.
+                // We can refine this if we see other tax logic.
+                const taxFactor = taxRate / 100;
+                netAmount = totalAmount / (1 + taxFactor);
+                taxAmount = totalAmount - netAmount;
+            }
+        }
+
+        // 3. Generate Receipt Number (German Requirement, but good for all)
         const { data: maxReceipt } = await supabaseAdmin
             .from('orders')
             .select('receipt_number')
@@ -50,11 +80,17 @@ export async function POST(req: Request) {
 
         const nextReceiptNumber = (maxReceipt?.receipt_number || 0) + 1;
 
-        // 4. Generate Mock TSE Data
-        const tseSerial = `TSE-DEMO-${restaurantId.slice(0, 4)}-${new Date().getFullYear()}`;
-        const tseCounter = nextReceiptNumber; // Simplified: syncing counter with receipt #
+        // 4. Generate Mock TSE Data (ONLY FOR GERMANY/EUR)
+        let tseSerial = null;
+        let tseCounter = null;
+        let tseSignature = null;
         const timestamp = new Date().toISOString();
-        const tseSignature = Buffer.from(`${tseSerial}|${tseCounter}|${totalAmount}|${timestamp}`).toString('base64');
+
+        if (isGerman) {
+            tseSerial = `TSE-DEMO-${restaurantId.slice(0, 4)}-${new Date().getFullYear()}`;
+            tseCounter = nextReceiptNumber;
+            tseSignature = Buffer.from(`${tseSerial}|${tseCounter}|${totalAmount}|${timestamp}`).toString('base64');
+        }
 
         // 5. Update Orders
         // We apply the same receipt info to ALL orders in this batch
