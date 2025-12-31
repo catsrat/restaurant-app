@@ -39,35 +39,42 @@ export async function POST(req: Request) {
         if (restError) throw restError;
         const currency = restaurant?.currency || 'USD';
         const isGerman = currency === 'EUR';
+        const isInr = currency === 'INR';
 
         // 2. Calculate Totals
-        const totalAmount = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+        const totalAmountFromItems = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
 
         let taxRate = 0;
-        let netAmount = totalAmount;
+        let netAmount = 0;
         let taxAmount = 0;
+        let finalTotalAmount = 0;
 
         if (isGerman) {
-            taxRate = 19.0; // Standard DE VAT
+            // Inclusive Tax
+            finalTotalAmount = totalAmountFromItems;
+            taxRate = 19.0;
             const taxFactor = taxRate / 100;
-            // Gross = Net * (1 + rate)  => Net = Gross / (1 + rate)
-            netAmount = totalAmount / (1 + taxFactor);
-            taxAmount = totalAmount - netAmount;
+            netAmount = finalTotalAmount / (1 + taxFactor);
+            taxAmount = finalTotalAmount - netAmount;
+        } else if (isInr) {
+            // Exclusive Tax
+            netAmount = totalAmountFromItems;
+            taxRate = 5.0; // 2.5% SGST + 2.5% CGST
+            taxAmount = netAmount * (taxRate / 100);
+            finalTotalAmount = netAmount + taxAmount;
         } else {
-            // Generic Tax Logic (e.g. valid for USD/others if tax_rate is set in DB)
-            // Assuming the total_amount in orders usually includes tax or is just base price? 
-            // The current app seems to treat total_amount as final.
-            // Let's just use the DB tax rate if available, otherwise 0.
+            // Default / Other (Assuming Inclusive or No Tax logic for now, keeping generic)
+            finalTotalAmount = totalAmountFromItems;
             taxRate = restaurant?.tax_rate || 0;
             if (taxRate > 0) {
-                // Backward compat: if generic tax logic existed, keep it. 
-                // For now, let's assume non-EUR just records the total.
-                // We can refine this if we see other tax logic.
                 const taxFactor = taxRate / 100;
-                netAmount = totalAmount / (1 + taxFactor);
-                taxAmount = totalAmount - netAmount;
+                netAmount = finalTotalAmount / (1 + taxFactor);
+                taxAmount = finalTotalAmount - netAmount;
+            } else {
+                netAmount = finalTotalAmount;
             }
         }
+
 
         // 3. Generate Receipt Number (German Requirement, but good for all)
         const { data: maxReceipt } = await supabaseAdmin
@@ -93,7 +100,10 @@ export async function POST(req: Request) {
         }
 
         // 5. Update Orders
-        // We apply the same receipt info to ALL orders in this batch
+        // We apply the same receipt info to ALL orders in this batch.
+        // NOTE: For INR, we are updating the total_amount to be the Gross Amount (Net + Tax).
+        // This effectively "finalizes" the order amount in the DB.
+
         const updatePayload = {
             status: 'paid',
             receipt_number: nextReceiptNumber,
@@ -103,15 +113,40 @@ export async function POST(req: Request) {
             tax_rate: taxRate,
             tax_amount: Number(taxAmount.toFixed(2)),
             net_amount: Number(netAmount.toFixed(2)),
-            payment_method: paymentMethod || 'cash' // Default to cash if not provided
+            // Verify if we should update total_amount. 
+            // If we split the update per order, we need to calculate per-order gross.
+            // But here we are doing a batch update with a single payload. 
+            // We CANNOT update total_amount here easily for multiple orders with different prices.
+            // However, the `orders` array has the original amounts.
+            // If we want to support accurate per-order storage, we should iterate.
+            payment_method: paymentMethod || 'cash'
         };
 
-        const { error: updateError } = await supabaseAdmin
-            .from('orders')
-            .update(updatePayload)
-            .in('id', orders.map(o => o.id));
+        // For INR, we really should update the total_amount to Gross.
+        // But doing it in one UPDATE query is hard if it varies.
+        // Let's iterate if it's INR.
 
-        if (updateError) throw updateError;
+        if (isInr) {
+            for (const order of orders) {
+                const orderNet = order.total_amount;
+                const orderTax = orderNet * (taxRate / 100);
+                const orderGross = orderNet + orderTax;
+
+                await supabaseAdmin.from('orders').update({
+                    ...updatePayload,
+                    total_amount: orderGross,
+                    tax_amount: orderTax,
+                    net_amount: orderNet
+                }).eq('id', order.id);
+            }
+        } else {
+            // For Inclusive tax, total_amount is already Gross, so no change needed to total_amount.
+            const { error: updateError } = await supabaseAdmin
+                .from('orders')
+                .update(updatePayload)
+                .in('id', orders.map(o => o.id));
+            if (updateError) throw updateError;
+        }
 
         // 6. Free the table
         await supabaseAdmin
@@ -123,7 +158,7 @@ export async function POST(req: Request) {
             success: true,
             receipt: {
                 receiptNumber: nextReceiptNumber,
-                totalAmount,
+                totalAmount: finalTotalAmount,
                 netAmount,
                 taxAmount,
                 taxRate,

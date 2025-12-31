@@ -197,6 +197,27 @@ function CounterContent() {
             }
         });
 
+        const isGerman = currency === 'EUR';
+        const isInr = currency === 'INR';
+        const taxRate = isGerman ? 19.0 : (isInr ? 5.0 : (taxSettings?.tax_rate || 0));
+
+        let netAmount = 0;
+        let taxAmount = 0;
+        let grandTotal = 0;
+
+        if (isInr) {
+            // Exclusive Tax (Add-on) for India
+            // finalTotal (Sum of items from DB) is effectively the Net Price.
+            netAmount = finalTotal;
+            taxAmount = finalTotal * (taxRate / 100);
+            grandTotal = finalTotal + taxAmount;
+        } else {
+            // Inclusive Tax (German/Default)
+            // finalTotal IS Gross.
+            grandTotal = finalTotal;
+            netAmount = finalTotal / (1 + (taxRate / 100));
+            taxAmount = finalTotal - netAmount;
+        }
 
         printWindow.document.write(`
         <html>
@@ -250,10 +271,6 @@ function CounterContent() {
                 <span>${isGerman ? 'Netto' : 'Net'}</span>
                 <span>${format(netAmount)}</span>
               </div>
-              <div class="info-row">
-                <span>${isGerman ? 'Netto' : 'Net'}</span>
-                <span>${format(netAmount)}</span>
-              </div>
               ${currency === 'INR' ? `
               <div class="info-row">
                 <span>SGST ${(taxRate / 2).toFixed(1)}%</span>
@@ -276,7 +293,7 @@ function CounterContent() {
               </div>` : ''}
               <div class="total-row">
                 <span>${isGerman ? 'GESAMT' : 'TOTAL'} / ${currency}</span>
-                <span>${format(finalTotal + (isPaid ? 0 : 0))}</span> 
+                <span>${format(grandTotal)}</span> 
               </div>
             </div>
 
