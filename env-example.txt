@@ -3,9 +3,14 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-# Stripe Configuration
+# Payment (Stripe)
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Tax Compliance (Fiskaly)
+FISKALY_API_KEY=your_fiskaly_api_key_v2
+FISKALY_API_SECRET=your_fiskaly_api_secret_v2
+FISKALY_BASE_URL=https://kassensichv-middleware.fiskaly.com/api/v1
 
 # Database Configuration (for migration scripts)
 DATABASE_URL=postgres://postgres:[password]@db.[project].supabase.co:5432/postgres
