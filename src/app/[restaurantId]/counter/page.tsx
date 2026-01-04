@@ -163,7 +163,7 @@ function CounterContent() {
         // Calculate Tax & Totals (Unified Logic)
         const isGerman = currency === 'EUR';
         const isInr = currency === 'INR';
-        const taxRate = isGerman ? 19.0 : (isInr ? 5.0 : (taxSettings?.tax_rate || 0));
+        const taxRate = isGerman ? 7.0 : (isInr ? 5.0 : (taxSettings?.tax_rate || 0));
 
         let netAmount = 0;
         let taxAmount = 0;

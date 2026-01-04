@@ -50,9 +50,9 @@ export async function POST(req: Request) {
         let finalTotalAmount = 0;
 
         if (isGerman) {
-            // Inclusive Tax
+            // Inclusive Tax (User requested 7% for both Dine-in and Takeaway)
             finalTotalAmount = totalAmountFromItems;
-            taxRate = 19.0;
+            taxRate = 7.0;
             const taxFactor = taxRate / 100;
             netAmount = finalTotalAmount / (1 + taxFactor);
             taxAmount = finalTotalAmount - netAmount;
@@ -125,7 +125,8 @@ export async function POST(req: Request) {
                 await FiskalyClient.startTransaction(tssId, clientId, txId);
 
                 // 2. Finish Tx (with Amounts)
-                const tseResponse = await FiskalyClient.finishTransaction(tssId, clientId, txId, Date.now(), finalTotalAmount, 'NORMAL');
+                // Usin REDUCED_1 (7%) as per new requirement
+                const tseResponse = await FiskalyClient.finishTransaction(tssId, clientId, txId, Date.now(), finalTotalAmount, 'REDUCED_1');
 
                 // 3. Extract Data
                 const schema = tseResponse.schema.standard_v1.receipt; // Adjust based on actual V2 response structure
