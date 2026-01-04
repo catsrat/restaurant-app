@@ -342,21 +342,72 @@ export default function OrderTrackingPage() {
                     );
                 })}
 
-                {/* Total Summary */}
-                {tableOrders.length > 1 && (
-                    <Card className="bg-blue-50 border-blue-200">
-                        <CardContent className="pt-6">
-                            <div className="flex justify-between items-center text-xl font-bold">
-                                <span>Grand Total ({tableOrders.length} orders)</span>
-                                <span className="text-blue-600">
-                                    {format(tableOrders.reduce((sum: number, order: any) =>
-                                        sum + order.items.reduce((s: number, i: any) => s + i.price * i.quantity, 0), 0
-                                    ))}
-                                </span>
+                {/* Total Summary & Pay Button */}
+                {/* Logic: Show summary if there are orders. Show Pay Button if any unpaid order exists in current session. */}
+                {/* For simplicity provided user context, we focus on the `currentOrder` or `tableOrders` total */}
+
+                <Card className="bg-blue-50 border-blue-200">
+                    <CardContent className="pt-6">
+                        <div className="flex justify-between items-center text-xl font-bold mb-4">
+                            <span>Grand Total</span>
+                            <span className="text-blue-600">
+                                {format(tableOrders.reduce((sum: number, order: any) =>
+                                    // Logic for INR Gross vs EUR Gross already handled in display? 
+                                    // Wait, the display logic in the list above excludes GST for INR. 
+                                    // We should be consistent.
+                                    // In the list item: "excluding GST" note suggests prices are Net.
+                                    // But `format(item.price)` uses the raw price.
+                                    // Let's reuse the helper logic if possible or just sum raw for now.
+                                    // Detailed tax logic is in Receipt, here we just show sum.
+                                    // Ideally, we fetch the `total_amount` from order if calculated, or sum items.
+                                    sum + order.items.reduce((s: number, i: any) => s + i.price * i.quantity, 0), 0
+                                ))}
+                                {currentOrder?.currency === 'INR' && <span className="text-xs font-normal text-gray-500 block">+ Tax</span>}
+                            </span>
+                        </div>
+
+                        {/* PAY NOW BUTTON */}
+                        {tableOrders.some(o => o.status !== 'paid') && (
+                            <Button
+                                className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6"
+                                onClick={async () => {
+                                    try {
+                                        // For now, we only pay for the CURRENT specific order ID focused, 
+                                        // or do we want to pay for the whole table?
+                                        // The Stripe API I wrote expects a single `orderId`.
+                                        // Let's pay for currentOrder.id.
+
+                                        const res = await fetch('/api/create-checkout-session', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                orderId: currentOrder.id,
+                                                restaurantId: restaurantId
+                                            })
+                                        });
+                                        const data = await res.json();
+                                        if (data.url) {
+                                            window.location.href = data.url;
+                                        } else {
+                                            alert("Payment init failed: " + (data.error || 'Unknown error'));
+                                        }
+                                    } catch (err) {
+                                        console.error(err);
+                                        alert("Error starting payment");
+                                    }
+                                }}
+                            >
+                                Pay Now <DollarSign className="ml-2 h-5 w-5" />
+                            </Button>
+                        )}
+
+                        {tableOrders.every(o => o.status === 'paid') && (
+                            <div className="text-center text-green-700 font-bold flex items-center justify-center gap-2">
+                                <CheckCircle2 className="h-6 w-6" /> All Paid
                             </div>
-                        </CardContent>
-                    </Card>
-                )}
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

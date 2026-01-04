@@ -1,84 +1,44 @@
-import { headers } from 'next/headers';
+
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
+import { processOrderPayment } from '@/lib/payment';
 
-// Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2024-11-20.acacia',
-} as any);
+    apiVersion: '2023-10-16',
+});
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(req: Request) {
     const body = await req.text();
-
-    // Next.js 15 headers() is async
-    const headerList = await headers();
-    const signature = headerList.get('stripe-signature') as string;
+    const sig = req.headers.get('stripe-signature') as string;
 
     let event: Stripe.Event;
 
     try {
-        if (!webhookSecret) throw new Error('Missing STRIPE_WEBHOOK_SECRET');
-        if (!signature) throw new Error('Missing stripe-signature header');
-
-        event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+        event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
     } catch (err: any) {
-        console.error(`Webhook signature verification failed: ${err.message}`);
-        return NextResponse.json({ error: err.message }, { status: 400 });
+        return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
     }
 
-    // Handle the event
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object as Stripe.Checkout.Session;
 
-        // Retrieve the subscription details to get the end date
-        const subscriptionId = session.subscription as string;
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        // Retrieve metadata
+        const orderId = session.client_reference_id; // or session.metadata?.orderId
+        const restaurantId = session.metadata?.restaurantId;
 
-        const userId = session.client_reference_id || session.metadata?.userId;
-        const customerId = session.customer as string;
-        const endDate = new Date((subscription as any).current_period_end * 1000).toISOString();
-
-        if (userId) {
-            // Update the restaurant/user record
-            // We are assuming 1 restaurant per user for now, or we can update based on user_id
-            // Since we added columns to 'restaurants', we need to find the restaurant by user_id
-
-            // IMPORTANT: We need a Supabase client with SERVICE_ROLE key to bypass RLS
-            // Since we don't have that exported in lib/supabase.ts (it likely uses anon key),
-            // we should create one here or update lib/supabase.ts.
-            // For now, let's assume we can use a direct fetch or create a local client if we had the key.
-            // BUT, since we are in a server route, we can use the secret key if we have it in env.
-
-            if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-                console.error('Missing SUPABASE_SERVICE_ROLE_KEY');
-                return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+        if (orderId && restaurantId) {
+            try {
+                console.log(`Processing Order Payment via Webhook: ${orderId}`);
+                await processOrderPayment(orderId, restaurantId, 'card');
+                console.log(`Order ${orderId} successfully processed.`);
+            } catch (err) {
+                console.error(`Error processing order ${orderId}:`, err);
+                return NextResponse.json({ error: 'Internal Processing Error' }, { status: 500 });
             }
-
-            const supabaseAdmin = createClient(
-                process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                process.env.SUPABASE_SERVICE_ROLE_KEY
-            );
-
-            const { error } = await supabaseAdmin
-                .from('restaurants')
-                .update({
-                    subscription_status: 'active',
-                    stripe_customer_id: customerId,
-                    subscription_end_date: endDate
-                })
-                .eq('user_id', userId);
-
-            if (error) {
-                console.error('Error updating database:', error);
-                return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
-            }
-
-            console.log(`Successfully updated subscription for user ${userId}`);
         } else {
-            console.error('No userId found in session metadata');
+            console.error('Webhook missing metadata', session.metadata);
         }
     }
 
