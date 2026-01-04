@@ -45,7 +45,6 @@ export async function POST(req: Request) {
         // 2. Fetch Restaurant Settings (Currency & Tax)
         const { data: restaurant, error: restError } = await supabaseAdmin
             .from('restaurants')
-            .from('restaurants')
             .select('currency, tax_rate, name, stripe_account_id')
             .eq('id', restaurantId)
             .single();
