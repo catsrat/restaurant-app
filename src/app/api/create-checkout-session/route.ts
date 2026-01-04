@@ -45,7 +45,8 @@ export async function POST(req: Request) {
         // 2. Fetch Restaurant Settings (Currency & Tax)
         const { data: restaurant, error: restError } = await supabaseAdmin
             .from('restaurants')
-            .select('currency, tax_rate, name')
+            .from('restaurants')
+            .select('currency, tax_rate, name, stripe_account_id')
             .eq('id', restaurantId)
             .single();
 
@@ -108,7 +109,7 @@ export async function POST(req: Request) {
         }
 
         // 4. Create Session
-        const session = await stripe.checkout.sessions.create({
+        const sessionParams: Stripe.Checkout.SessionCreateParams = {
             payment_method_types: ['card'],
             line_items,
             mode: 'payment',
@@ -120,7 +121,29 @@ export async function POST(req: Request) {
                 orderId,
                 orderType: order.order_type // 'dine-in' or 'takeaway'
             }
-        });
+        };
+
+        // Routing Logic: Destination Charge
+        const stripeAccountId = restaurant.stripe_account_id;
+
+        if (stripeAccountId) {
+            // Calculate a 1% Platform Fee
+            // Sum of line items unit_amount * quantity
+            const totalAmount = line_items.reduce((sum, item) => {
+                return sum + ((item.price_data?.unit_amount || 0) * (item.quantity || 1));
+            }, 0);
+
+            const feeAmount = Math.round(totalAmount * 0.01); // 1% Fee
+
+            sessionParams.payment_intent_data = {
+                transfer_data: {
+                    destination: stripeAccountId,
+                },
+                application_fee_amount: feeAmount,
+            };
+        }
+
+        const session = await stripe.checkout.sessions.create(sessionParams);
 
         return NextResponse.json({ url: session.url });
 
