@@ -1367,8 +1367,8 @@ function QRCodeCard({ tableName, restaurantId, isTakeaway = false }: { tableName
     useEffect(() => {
         if (canvasRef.current) {
             const url = isTakeaway
-                ? `${window.location.origin} /${restaurantId}/menu / Takeaway ? type = takeaway`
-                : `${window.location.origin} /${restaurantId}/menu / ${tableName} `;
+                ? `${window.location.origin}/${restaurantId}/menu/Takeaway?type=takeaway`
+                : `${window.location.origin}/${restaurantId}/menu/${tableName}`;
             QRCodeLib.toCanvas(canvasRef.current, url, {
                 width: 256,
                 margin: 2,
@@ -1398,7 +1398,7 @@ function QRCodeCard({ tableName, restaurantId, isTakeaway = false }: { tableName
             <CardHeader>
                 <CardTitle className="text-2xl">Table {tableName}</CardTitle>
                 <CardDescription className="text-xs break-all">
-                    {typeof window !== 'undefined' && `${window.location.origin} /${restaurantId}/menu / ${tableName} `}
+                    {typeof window !== 'undefined' && `${window.location.origin}/${restaurantId}/menu/${tableName}`}
                 </CardDescription>
                 {typeof window !== 'undefined' && window.location.hostname === 'localhost' && (
                     <div className="bg-yellow-50 text-yellow-800 text-xs p-2 rounded mt-2 text-left">
