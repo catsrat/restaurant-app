@@ -725,8 +725,9 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
         setOrders(prev => prev.map(o => o.tableId === tableId && o.status !== 'paid' ? { ...o, status: 'paid' } : o));
         setTables(prev => prev.map(t => t.id === table.id ? { ...t, status: 'available' } : t));
 
+
         try {
-            console.log("Processing payment via API...");
+            console.log(`[markTablePaid] Requesting /api/orders/pay for table: ${table.id} (${table.name})`);
             const response = await fetch('/api/orders/pay', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -737,20 +738,30 @@ export function OrderProvider({ children, restaurantId }: { children: React.Reac
                 })
             });
 
+            console.log(`[markTablePaid] API Response Status: ${response.status}`);
+
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Payment API failed');
+                let errorMessage = 'Payment API failed';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorMessage;
+                    console.error(`[markTablePaid] API Error Detail:`, errorData);
+                } catch (e) {
+                    const textError = await response.text();
+                    console.error(`[markTablePaid] API Raw Error:`, textError);
+                }
+                throw new Error(errorMessage);
             }
 
             const result = await response.json();
-            console.log("Payment processed successfully:", result);
+            console.log("[markTablePaid] Success:", result);
 
             // Trigger refresh to get the updated orders with receipt numbers
             await fetchData();
 
         } catch (error: any) {
-            console.error("Error in markTablePaid:", error);
-            alert(`Failed to mark table paid: ${error.message}`);
+            console.error("[markTablePaid] Critical Error:", error);
+            alert(`Failed to mark table paid: ${error.message}\n\nCheck the browser console for details.`);
             // Revert optimistic update? (omitted for simplicity, but ideally should revert)
             fetchData();
         }
