@@ -453,17 +453,52 @@ function CounterContent() {
     const [newItem, setNewItem] = useState<Partial<MenuItem>>({
         name: '', description: '', price: 0, category: '', image_url: ''
     });
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
-    const handleAddItem = () => {
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setImageFile(null);
+            setImagePreview(null);
+        }
+    };
+
+    const handleAddItem = async () => {
         if (!newItem.name || !newItem.price) return;
+        setIsUploading(true);
+        let finalImageUrl = newItem.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Zm9vZHxlbnwwfHwwfHx8MA%3D%3D';
+
+        if (imageFile) {
+            try {
+                const { uploadMenuItemImage } = await import('@/lib/storage');
+                finalImageUrl = await uploadMenuItemImage(imageFile, restaurantId);
+            } catch (error) {
+                alert('Failed to upload image. Please try again. Make sure the menu-items bucket exists and is public in Supabase Storage.');
+                setIsUploading(false);
+                return;
+            }
+        }
+
         addMenuItem({
             name: newItem.name!,
             description: newItem.description || '',
             price: Number(newItem.price),
             category: newItem.category || 'General',
-            image_url: newItem.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Zm9vZHxlbnwwfHwwfHx8MA%3D%3D'
+            image_url: finalImageUrl
         });
         setNewItem({ name: '', description: '', price: 0, category: '', image_url: '' });
+        setImageFile(null);
+        setImagePreview(null);
+        setIsUploading(false);
     };
 
     // --- Banner Logic ---
@@ -985,11 +1020,39 @@ function CounterContent() {
                                 <Input value={newItem.description} onChange={e => setNewItem({ ...newItem, description: e.target.value })} placeholder="Delicious..." />
                             </div>
                             <div className="space-y-2">
-                                <Label>Image URL</Label>
-                                <Input value={newItem.image_url} onChange={e => setNewItem({ ...newItem, image_url: e.target.value })} placeholder="https://..." />
+                                <Label>Image (Upload or URL)</Label>
+                                <div className="flex flex-col gap-2">
+                                    {!imagePreview && (
+                                        <Input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                            className="cursor-pointer"
+                                        />
+                                    )}
+                                    {imagePreview ? (
+                                        <div className="relative w-full h-32 rounded-md overflow-hidden border">
+                                            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                className="absolute top-1 right-1 h-6 w-6 p-0"
+                                                onClick={() => { setImageFile(null); setImagePreview(null); }}
+                                            >
+                                                &times;
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <Input value={newItem.image_url} onChange={e => setNewItem({ ...newItem, image_url: e.target.value })} placeholder="Or paste image URL https://..." />
+                                    )}
+                                </div>
                             </div>
-                            <Button className="w-full" onClick={handleAddItem}>
-                                <Plus className="h-4 w-4 mr-2" /> Add Item
+                            <Button className="w-full" onClick={handleAddItem} disabled={isUploading}>
+                                {isUploading ? (
+                                    <><div className="w-4 h-4 border-2 border-slate-400 border-t-white rounded-full animate-spin mr-2"></div> Uploading...</>
+                                ) : (
+                                    <><Plus className="h-4 w-4 mr-2" /> Add Item</>
+                                )}
                             </Button>
                         </CardContent>
                     </Card>
