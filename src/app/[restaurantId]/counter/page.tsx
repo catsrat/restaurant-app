@@ -510,12 +510,56 @@ function CounterContent() {
     // --- Banner Logic ---
     const [newBannerUrl, setNewBannerUrl] = useState('');
     const [newBannerTitle, setNewBannerTitle] = useState('');
+    const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
+    const [bannerImagePreview, setBannerImagePreview] = useState<string | null>(null);
+    const [isUploadingBanner, setIsUploadingBanner] = useState(false);
+
+    const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+                alert("Web browsers do not fully support HEIC images yet. Please convert your photo to a JPEG or PNG before uploading.");
+                e.target.value = '';
+                return;
+            }
+            setBannerImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setBannerImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setBannerImageFile(null);
+            setBannerImagePreview(null);
+        }
+    };
 
     const handleAddBanner = async () => {
-        if (!newBannerUrl) return;
-        await addBanner(newBannerUrl, newBannerTitle);
+        setIsUploadingBanner(true);
+        let finalImageUrl = newBannerUrl;
+
+        if (bannerImageFile) {
+            try {
+                const { uploadMenuItemImage } = await import('@/lib/storage');
+                finalImageUrl = await uploadMenuItemImage(bannerImageFile, restaurantId);
+            } catch (error) {
+                alert('Failed to upload banner image. Please try again.');
+                setIsUploadingBanner(false);
+                return;
+            }
+        }
+
+        if (!finalImageUrl) {
+            setIsUploadingBanner(false);
+            return;
+        }
+
+        await addBanner(finalImageUrl, newBannerTitle);
         setNewBannerUrl('');
         setNewBannerTitle('');
+        setBannerImageFile(null);
+        setBannerImagePreview(null);
+        setIsUploadingBanner(false);
     };
 
     // --- Sales Logic ---
@@ -1227,12 +1271,36 @@ function CounterContent() {
                         <CardContent className="space-y-4">
                             <div className="flex flex-col md:flex-row gap-4">
                                 <div className="flex-1 space-y-2">
-                                    <Label>Image URL</Label>
-                                    <Input
-                                        placeholder="https://example.com/banner.jpg"
-                                        value={newBannerUrl}
-                                        onChange={(e) => setNewBannerUrl(e.target.value)}
-                                    />
+                                    <Label>Image (Upload or URL)</Label>
+                                    <div className="flex flex-col gap-2">
+                                        {!bannerImagePreview && (
+                                            <Input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleBannerImageChange}
+                                                className="cursor-pointer"
+                                            />
+                                        )}
+                                        {bannerImagePreview ? (
+                                            <div className="relative w-full h-24 rounded-md overflow-hidden border">
+                                                <img src={bannerImagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    className="absolute top-1 right-1 h-6 w-6 p-0"
+                                                    onClick={() => { setBannerImageFile(null); setBannerImagePreview(null); }}
+                                                >
+                                                    &times;
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <Input
+                                                placeholder="Or paste image URL https://..."
+                                                value={newBannerUrl}
+                                                onChange={(e) => setNewBannerUrl(e.target.value)}
+                                            />
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="flex-1 space-y-2">
                                     <Label>Title (Optional)</Label>
@@ -1243,8 +1311,12 @@ function CounterContent() {
                                     />
                                 </div>
                                 <div className="flex items-end">
-                                    <Button onClick={handleAddBanner} disabled={!newBannerUrl}>
-                                        <Plus className="h-4 w-4 mr-2" /> Add Banner
+                                    <Button onClick={handleAddBanner} disabled={isUploadingBanner || (!newBannerUrl && !bannerImageFile)}>
+                                        {isUploadingBanner ? (
+                                            <><div className="w-4 h-4 border-2 border-slate-400 border-t-white rounded-full animate-spin mr-2"></div> Uploading...</>
+                                        ) : (
+                                            <><Plus className="h-4 w-4 mr-2" /> Add Banner</>
+                                        )}
                                     </Button>
                                 </div>
                             </div>
