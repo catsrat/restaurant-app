@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { useCurrency } from '@/hooks/useCurrency';
+import Image from 'next/image';
 
 interface ItemModalProps {
     item: MenuItem | null;
@@ -90,8 +91,14 @@ export function ItemModal({ item, isOpen, onClose, onAddToCart }: ItemModalProps
                 <div className="grid gap-6 py-4">
                     {/* Image */}
                     {item.image_url && (
-                        <div className="w-full h-48 rounded-lg overflow-hidden">
-                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                        <div className="w-full h-48 rounded-lg overflow-hidden relative">
+                            <Image
+                                src={item.image_url}
+                                alt={item.name}
+                                fill
+                                sizes="(max-width: 425px) 100vw, 425px"
+                                className="object-cover"
+                            />
                         </div>
                     )}
 

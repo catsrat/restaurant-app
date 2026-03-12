@@ -18,6 +18,7 @@ import { SearchBar } from '@/components/SearchBar';
 import { CategoryNav } from '@/components/CategoryNav';
 import { ItemModal } from '@/components/ItemModal';
 import { MenuItem } from '@/types';
+import Image from 'next/image';
 
 export default function MenuPage() {
     const params = useParams();
@@ -127,10 +128,12 @@ export default function MenuPage() {
                         <div className="w-full overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory flex gap-4">
                             {banners.map(banner => (
                                 <div key={banner.id} className="snap-center shrink-0 w-[85vw] md:w-[400px] aspect-video rounded-xl overflow-hidden shadow-md relative">
-                                    <img
+                                    <Image
                                         src={banner.image_url}
                                         alt={banner.title || 'Offer'}
-                                        className="w-full h-full object-cover"
+                                        fill
+                                        sizes="(max-width: 768px) 85vw, 400px"
+                                        className="object-cover"
                                     />
                                     {banner.title && (
                                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
@@ -158,10 +161,12 @@ export default function MenuPage() {
                             {filteredItems.map((item) => (
                                 <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleItemClick(item)}>
                                     <div className="aspect-video w-full overflow-hidden relative">
-                                        <img
+                                        <Image
                                             src={item.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
                                             alt={item.name}
-                                            className="w-full h-full object-cover transition-transform hover:scale-105"
+                                            fill
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                            className="object-cover transition-transform hover:scale-105"
                                         />
                                         {!item.is_available && (
                                             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">

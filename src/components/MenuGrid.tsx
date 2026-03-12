@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 import { MenuItem, MenuCategory } from '@/types';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface MenuGridProps {
     menuItems: MenuItem[];
@@ -127,11 +128,12 @@ function MenuItemCard({ item, format, onAddToCart }: { item: MenuItem, format: (
     return (
         <Card className="overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col">
             <div className="aspect-video w-full relative bg-gray-100">
-                <img
-                    src={item.image_url || item.image}
+                <Image
+                    src={item.image_url || item.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
                     alt={item.name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover"
                 />
             </div>
             <CardHeader className="flex-1">
