@@ -460,6 +460,12 @@ function CounterContent() {
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+                alert("Web browsers do not fully support HEIC images yet. Please convert your photo to a JPEG or PNG before uploading.");
+                e.target.value = ''; // Reset the input
+                return;
+            }
+
             setImageFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
